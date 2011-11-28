@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Orders with Lots" %}
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+<div class="deliveries">
+
+	{% include "distribution/tabnav.html" %}
+	
+	<p style='margin-left: 2em;' >
+		<i>{% blocktrans %}All Order Items for {{delivery_date}}{% endblocktrans %}</i>
+	</p>
+	
+
+    <table class="ga-event-table" >
+        <tr>
+             <th>{% trans "Date" %}</th>
+             <th>{% trans "Order" %}</th>
+             <th>{% trans "Paid?" %}</th>
+             <th>{% trans "Customer" %}</th>
+             <th>{% trans "Product" %}</th>
+             <th>{% trans "Quantity" %}</th>
+             <th>{% trans "Lots" %}</th>
+        </tr>
+        {% for orderitem in orderitem_list %}
+            <tr>
+                <td>{{ orderitem.order.delivery_date }}</td>
+                <td>{{ orderitem.order.id }}</td>
+                <td>{{ orderitem.order.paid }}</td>
+                <td>{{ orderitem.order.customer }}</td>
+                <td>{{ orderitem.product }}</td>
+                <td style="text-align: right; ">{{ orderitem.quantity }}</td>
+				<td>
+				    {% for delivery in orderitem.inventorytransaction_set.all %}
+						{{ delivery.inventory_item.producer }}:&#160;
+				        {{ delivery.amount }}&#160;&#160;
+				    {% endfor %}
+				</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %} 

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Inventory Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+		
+{% block header %}
+    <script type="text/javascript" >
+
+		function producerChanged(evt)
+		{
+			dojo.byId("contact").innerHTML = '---';
+			dojo.byId("phone").innerHTML = '---';
+			var jsonUrl = "/distribution/jsonproducer/" + evt.target.value + "/";
+			dojo.xhrGet( 
+			{
+					url: jsonUrl,
+					handleAs: "json",
+					load: function(responseObject, ioArgs) 
+					{
+						var producer = responseObject[0];
+						dojo.byId("contact").innerHTML = producer.fields.contact;
+						dojo.byId("phone").innerHTML = producer.fields.phone;
+					}
+			});
+		}
+
+
+		dojo.addOnLoad(function()
+		{
+			dojo.connect(dojo.byId("id_producer"), "onchange", "producerChanged");
+		});
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="avail">
+
+	{% include "producer/producer_tabnav.html" %}
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+            <tr>
+                <th style="text-align: right; " >{% trans "Week of" %}:</th>
+                <td>{{ form.next_delivery_date}}</td>
+				{% if form.next_delivery_date.errors %}
+					<td style="color: red; " >
+						{{ form.next_delivery_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+        </table>
+        <p>
+            <input type="submit" value="{% trans 'Submit' %}" />
+        </p>
+    </form>
+</div>
+{% endblock %}
+

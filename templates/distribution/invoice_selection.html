@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Invoice Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+
+{% block header %}
+
+    <script type="text/javascript" >
+
+		function customerChanged(evt)
+		{
+			dojo.byId("contact").innerHTML = '---';
+			dojo.byId("phone").innerHTML = '---';
+			var jsonUrl = "/distribution/jsoncustomer/" + evt.target.value + "/";
+			dojo.xhrGet( 
+			{
+					url: jsonUrl,
+					handleAs: "json",
+					load: function(responseObject, ioArgs) 
+					{
+						var customer = responseObject[0];
+						dojo.byId("contact").innerHTML = customer.fields.contact;
+						dojo.byId("phone").innerHTML = customer.fields.phone;
+					}
+			});
+		}
+
+
+		dojo.addOnLoad(function()
+		{
+			dojo.connect(dojo.byId("id_customer"), "onchange", "customerChanged");
+
+		});
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="invoices">
+
+	{% include "distribution/tabnav.html" %}
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+            <tr>
+                <th style="text-align: right; " >{% trans "Customer" %}:</th>
+                <td>{{ header_form.customer }}</td>
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Delivery date" %}:</th>
+                <td>{{ header_form.delivery_date}}</td>
+				{% if header_form.delivery_date.errors %}
+					<td style="color: red; " >
+						{{ header_form.delivery_date.errors }}
+					</td>
+				{% endif %}
+		</tr>
+		<tr>
+			<th style="text-align: right; " >{% trans "Order states" %}:</th>
+			<td>{{ header_form.order_state}}</td>
+		</tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Contact" %}:</th>
+               <td  id="contact" >---</td>
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Phone" %}:</th>
+                <td id="phone" >---</td>
+            </tr>
+        </table>
+
+        <p>
+            <input type="submit" value="{% trans 'Submit' %}" />
+        </p>
+	</form>
+
+	{% if unpaid_invoices %}
+	<div style="padding-left: 1em;">
+		<h4>Unpaid Invoices:</h4>
+		<ul>
+		{% for order in unpaid_invoices %}
+
+			<li>
+				<a href="{% url invoices order_state='1' cust_id=order.customer.id year=order.delivery_date.year month=order.delivery_date.month day=order.delivery_date.day %}">
+					#{{ order.id }} {{ order.customer }} 
+					Ordered: {{ order.order_date }} Delivered: {{ order.delivery_date }} 
+					${{ order.grand_total }}	
+				</a>
+			</li>
+
+		{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

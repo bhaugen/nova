@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Delivery Update" %}
+{% endblock %}
+
+{% block header %}
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript" >
+
+		function cleanNumericInput(value)
+		{
+			var cleanNumber = value.replace( /[^\-.0-9]/g, '');
+			var firstPos = cleanNumber.indexOf(".");
+			var lastPos = cleanNumber.lastIndexOf(".");
+			while(firstPos!=lastPos)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				firstPos = cleanNumber.indexOf(".");
+				lastPos = cleanNumber.lastIndexOf(".");
+			}
+			var lastPos = cleanNumber.lastIndexOf("-");
+			while(lastPos>0)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				lastPos = cleanNumber.lastIndexOf("-");
+			}
+			return cleanNumber;
+		}
+
+		
+		function validateNumber(evt, functionToCall)
+		{
+			var isValid = true;
+			var candidate = evt.target.value;
+			var strippedNumber = cleanNumericInput(candidate);
+			strippedNumber = strippedNumber || 0;
+			if(isNaN(candidate))
+			{
+				evt.target.style.color = "red";
+				evt.target.value = "Not number";
+				isValid = false;
+				var anim1 = dojo.animateProperty({
+						node: evt.target, delay: 1000,
+						properties:{
+							opacity: { end: 0 }
+						}
+					}); 
+				var anim2 = dojo.animateProperty
+				({
+						node: evt.target, delay: 1000,
+						properties:
+						{
+							opacity: { end: 1 }, color: { end: 'black'}
+						},
+						onEnd: function()
+						{
+							evt.target.value = strippedNumber;
+							if(functionToCall)
+							{
+								functionToCall(evt);
+							}
+    					}
+				}); 
+				anim1.play();
+				anim2.play();
+			}
+			else
+			{
+				evt.target.value = strippedNumber;
+				if(functionToCall)
+				{
+					functionToCall(evt);
+				}
+			}
+			return isValid;
+		}
+		
+		var thisDeliveryQty = {};
+		var lotQties = {}
+
+		function checkTotalDelivered(evt, row)
+		{
+			var lotCopy = lotQties;
+			var selectedLotPrefix = evt.target.id.split('-')[0];
+			var selectedLotId = selectedLotPrefix +  '-inventory_item';
+			var selectedLotField = dojo.byId(selectedLotId);
+			var selectedLot = selectedLotField.options[selectedLotField.selectedIndex];
+			var selectedLotPk = Number(selectedLot.value);
+			var lotQty = lotQties[selectedLotPk];
+			var totDelivered = 0;
+			for(var idx=0;idx<=3;idx++)
+			{
+				try
+				{
+					var qfid = row + idx + '-amount';
+					var thisQtyField = dojo.byId(qfid);
+					var amt = parseFloat(thisQtyField.value);
+					if (!(isNaN(amt)))
+					{
+						totDelivered += amt;
+					}
+				}
+				catch(e){}
+			}
+			var qtyFieldId = evt.target.id
+			var qtyField = evt.target;
+			qtyField.style.color = "black";
+			var qty = parseFloat(qtyField.value);
+			var ordered = parseFloat(dojo.byId(row + '-order_qty').value);
+			var prevQty = parseFloat(thisDeliveryQty[qtyFieldId] | 0);
+			var qtyDelta = qty - prevQty;
+			totDelivered -= qtyDelta;
+			if (qty > prevQty)
+			{
+				if (totDelivered == ordered)
+				{
+					qtyField.value = prevQty;
+					qtyField.style.color = "red";
+					return;
+				}
+			}
+		
+			
+			var newTotal = totDelivered + qtyDelta;
+			if (newTotal > ordered)
+			{
+				qty = ordered - totDelivered + prevQty;
+				qtyField.value = qty;
+				qtyField.style.color = "red";
+			}
+			var qtyDelta = qty - prevQty;
+			var newTotal = totDelivered + qtyDelta;
+			thisDeliveryQty[qtyFieldId] = qty;
+		}
+		
+		
+		function finishQuantityChange(evt)
+		{
+			var row = evt.target.id.split('-')[0];
+			row = row.substr(0, row.length -1);
+			checkTotalDelivered(evt, row);
+		}
+		
+		
+		function quantityChanged(evt)
+		{	
+			validateNumber(evt, finishQuantityChange);
+		}
+		
+
+		dojo.addOnLoad(function()
+		{
+			var queryNodes = dojo.query(".quantity-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i]
+				dojo.connect(node, "onblur", "quantityChanged");
+				thisDeliveryQty[node.id] = parseFloat(node.value | 0)
+			
+			}
+			
+		});
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="delivery-update">
+
+	{% include "distribution/tabnav.html" %}
+
+    <p style='margin-left: 2em;' >
+		{% if customer %}
+        	<i>{% blocktrans %}Order Items for {{ customer }} on {{delivery_date}}{% endblocktrans %}</i>
+		{% else %}
+        	<i>{% blocktrans %}All order Items for {{delivery_date}}{% endblocktrans %}</i>
+		{% endif %}
+    </p>
+    <form action="." method="POST" >{% csrf_token %}
+        <table class="ga-event-table" >
+                <th>{% trans "Order Item" %}</th>
+                <th>{% trans "Order Qty" %}</th>
+                <th>{% trans "Lot" %} 1</th>
+                <th>{% trans "Qty" %} 1</th>
+                <th>{% trans "Lot" %} 2</th>
+                <th>{% trans "Qty" %} 2</th>
+                <th>{% trans "Lot" %} 3</th>
+                <th>{% trans "Qty" %} 3</th>
+                <th>{% trans "Lot" %} 4</th>
+                <th>{% trans "Qty" %} 4</th>
+            </tr>
+            {% for item_form in item_forms %}
+                 <tr>
+                    <td class="read-only-td"  > {{ item_form.description }} </td>
+                    <td class="read-only-td"  > {{ item_form.order_qty }} </td>
+					{{item_form.order_item_id}}
+					{{item_form.product_id}}
+            		{% for del_form in item_form.delivery_forms %}
+						<td>{{ del_form.inventory_item }}</td>
+						<td>{{ del_form.amount }}</td>
+           			{% endfor %}
+            		{% for empty_field in item_form.empty_fields %}
+						<td>{{ empty_field }}</td>
+           			{% endfor %}
+                </tr>
+           {% endfor %} 
+        </table>
+        <p>
+            <input type="submit" value="{% trans 'Submit' %}" />
+        </p>
+    </form>
+</div>
+		
+{% for lot in lot_list %}
+	<script type="text/javascript" >
+		// todo: finish this thought
+		var lotQty = {{lot}};
+		lotQties[lotQty[0]] = lotQty[1];
+	</script>
+{% endfor %}
+{% endblock %}

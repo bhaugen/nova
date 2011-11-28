@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Plan Update" %}
+{% endblock %}
+
+{% block header %}
+
+{% include "dojo_include.html" %}
+    <script type="text/javascript" >
+
+		function cleanNumericInput(value)
+		{
+			var cleanNumber = value.replace( /[^\-.0-9]/g, '');
+			var firstPos = cleanNumber.indexOf(".");
+			var lastPos = cleanNumber.lastIndexOf(".");
+			while(firstPos!=lastPos)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				firstPos = cleanNumber.indexOf(".");
+				lastPos = cleanNumber.lastIndexOf(".");
+			}
+			var lastPos = cleanNumber.lastIndexOf("-");
+			while(lastPos>0)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				lastPos = cleanNumber.lastIndexOf("-");
+			}
+			return cleanNumber;
+		}
+
+		function validateNumber(evt, functionToCall)
+		{
+			var isValid = true;
+			var candidate = evt.target.value;
+			var strippedNumber = cleanNumericInput(candidate);
+			strippedNumber = strippedNumber || 0;
+			if(isNaN(candidate))
+			{
+				evt.target.style.color = "red";
+				evt.target.value = "Not number";
+				isValid = false;
+				var anim1 = dojo.animateProperty({
+						node: evt.target, delay: 1000,
+						properties:{
+							opacity: { end: 0 }
+						}
+					}); 
+				var anim2 = dojo.animateProperty
+				({
+						node: evt.target, delay: 1000,
+						properties:
+						{
+							opacity: { end: 1 }, color: { end: 'black'}
+						},
+						onEnd: function()
+						{
+							evt.target.value = strippedNumber;
+							//functionToCall(evt);
+    					}
+				}); 
+				anim1.play();
+				anim2.play();
+			}
+			else
+			{
+				evt.target.value = strippedNumber;
+				//functionToCall(evt);
+			}
+			return isValid;
+		}
+
+		dojo.addOnLoad(function()
+		{
+			var queryNodes = dojo.query(".quantity-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i]
+				dojo.connect(node, "onblur", "validateNumber");
+			}
+		});
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="plans">
+
+	{% include "distribution/tabnav.html" %}
+
+    <form action="." method="POST" >{% csrf_token %}
+	<input name='member-id' type='hidden' value='{{ member.id }}' />
+        <table>
+            <tr>
+                <th style="text-align: right; " >{% trans "Member" %}:</th>
+                <td>{{ member.short_name }} - {{ member.long_name }}</td>
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Contact" %}:</th>
+               <td  id="contact" >{{member.contact}}</td>
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Phone" %}:</th>
+                <td id="phone" >{{member.phone}}</td>
+            </tr>
+        </table>
+
+        <table class="ga-event-table" >
+			<tr>
+                <th>{% trans "Category" %}</th>
+                <th>{% trans "Product" %}</th>
+				<th>{% trans "From Date" %}</th>
+				<th>{% trans "To Date" %}</th>
+				<th>{% trans "Qty Per Week" %}</th>
+				{% if member.is_producer %}
+					<th>{% trans "Inventoried?" %}</th>
+				{% endif %}
+				<th>{% trans "Distributor" %}</th>
+            </tr>
+            {% for item_form in item_forms %}
+                 <tr>
+                    <td class="read-only-td"  > {{ item_form.parents }} </td>
+                    <td class="read-only-td" > {{ item_form.long_name }} </td>
+                    <td> {{ item_form.from_date }} </td>
+				    <td> {{ item_form.to_date }} </td>
+				    <td> {{ item_form.quantity }} </td>
+				    {% if member.is_producer %}
+				    	<td> {{ item_form.inventoried }} </td>
+				    {% endif %}
+				    <td>{{ item_form.distributor }}</td>
+                    {{ item_form.item_id }}
+				    {{ item_form.prodname }}
+                </tr>
+           {% endfor %} 
+        </table>
+
+        <p style="margin-bottom: 3em;" >
+            <input type="submit" value="{% trans 'Submit' %}" />
+        </p>
+    </form>
+</div>
+{% endblock %}

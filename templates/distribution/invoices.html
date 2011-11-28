@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Invoices" %}
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="invoices">
+	
+	{% include tabnav %}
+	{% if emails %}
+	<div class="do-not-print">
+		<form style="display: inline; " 
+			action="{% url send_invoices cust_id=cust_id, year=year, month=month, day=day %}" 
+			method="POST">{% csrf_token %}
+			<input class="submit-btn" type="submit" value="{% trans 'Send emails for these Invoices' %}" />
+			<input type="hidden" name="next" value="{% url dashboard %}" />
+		</form>
+	</div>
+	{% endif %}
+
+	{% for order in orders %}
+	<div style="page-break-after: always; page-break-inside: avoid; width: 7in; " >
+		<table style="width: 100%; margin-bottom: 1em; page-break-after: avoid; " >
+			<tr>
+				<td>
+					<h3>{{ network.long_name }}</h3>
+					{% trans "Billing Questions" %}: {{ network.billing_phone }} <br />
+					{{network.billing_address|linebreaksbr }}<br/>
+					{{ network.billing_email_address }}
+				</td>
+				<td>
+					<h3 style="text-align: right; " >{% trans "Invoice" %}</h3>
+					<table class="ga-event-table" style="font-size: 100%; width: 100%; " >
+						<tr>
+							<th>{% trans "Date" %}</th>
+							<th>{% trans "Invoice#" %}</th>				
+						</tr>
+						<tr>
+							<td style="text-align: center; " >{{order.delivery_date}}</td>
+							<td style="text-align: right; ">{{order.id}}</td>
+						</tr>
+						<tr>
+							<th>{% trans "Terms" %}</th>
+							<th>{% trans "Due Date" %}</th>				
+						</tr>
+						<tr>
+							<td style="text-align: center; ">Net {{ network.customer_terms }}</td>
+							<td style="text-align: center; ">{{order.payment_due_date}}</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		
+		<table class="ga-event-table" style="font-size: 100%; page-break-before: avoid; page-break-after: avoid; margin-bottom: 3em; " >
+			<tr>
+				<th>{% trans "Bill To" %}: </th>
+			</tr>
+			<tr>
+				<td>
+					{% if order.customer.long_name %}
+						{{order.customer.long_name}}
+					{% else %}
+						{{order.customer.short_name}}
+					{% endif %}
+					<br />
+					{{order.customer.address|linebreaksbr }}
+				</td>
+			</tr>
+		</table>
+						
+		<table class="ga-event-table" style="font-size: 100%; page-break-before: avoid; page-break-after: avoid; width: 100%; " >
+			<tr>
+				<th>{% trans "Item" %}</th>
+				<th>{% trans "Growing Method" %}</th>
+				 <th>{% trans "Producer" %}</th>
+				 <th>{% trans "Quantity" %}</th>
+				 <th>{% trans "Unit Price" %}</th>
+				 <th>{% trans "Extended Price" %}</th>
+			</tr>
+			{% for orderitem in order.orderitem_set.all %}
+				<tr>
+					<td>{{ orderitem.product.long_name }}</td>
+					<td>{{ orderitem.product.growing_method }}</td>
+					<td>{{ orderitem.producers }}</td>
+					<td style="text-align: right; ">{{ orderitem.quantity }}</td>
+					<td style="text-align: right; ">{{ orderitem.formatted_unit_price }}</td>
+					<td style="text-align: right; ">{{ orderitem.extended_price }}</td>
+				</tr>
+				{% if orderitem.service_cost %}
+					<tr>
+						<td>{% trans "Processing" %}</td>
+						<td>{{ orderitem.processors }}</td>
+						<td style="text-align: right; ">&nbsp;</td>
+						<td style="text-align: right; ">{{ orderitem.service_cost }}</td>
+						<td style="text-align: right; ">{{ orderitem.service_cost }}</td>
+					</tr>
+				{% endif %}
+			{% endfor %}
+		</table>
+		<table style="page-break-before: avoid; margin-top: 1em; margin-left: 53%; " >
+			{% if order.transportation_fee %}
+				<tr>
+					<th style="text-align: right;" >{% trans "Transportation fee" %}:</th>
+					<td style="text-align: right; width: 8em;" >${{ order.display_transportation_fee }}</td>
+				</tr>
+			{% endif %}
+			{% if order.coop_fee %}
+				<tr>
+					<th style="text-align: right;" >{{ order.customer_fee_label }}:</th>
+					<td style="text-align: right; width: 8em;" >${{ order.coop_fee }}</td>
+				</tr>
+			{% endif %}
+			<tr>
+				<th style="text-align: right;" >{% trans "Total" %}:</th>
+				<td style="text-align: right; font-weight: bold; " >${{ order.grand_total }}</td>
+			</tr>
+		</table>
+	</div>
+	{% endfor %}
+</div>
+{% endblock %} 

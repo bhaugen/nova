@@ -1,0 +1,122 @@
+{% load foodnetwork_tags %}
+{% load i18n %}
+
+<!-- 
+	CSS Tabs is licensed under Creative Commons Attribution 2.5 - http://creativecommons.org/licenses/by/2.5/ 
+	Joshua Kaufman, unraveled http://unraveled.com/projects/html/css_tabs/
+	28 January, 2007
+-->
+
+<style type="text/css">
+
+/* begin css tabs */
+
+ul#tabnav 
+{ /* general settings */
+	text-align: left; /* set to left, right or center */
+	margin: 8px 0 16px 0; /* set margins as desired */
+	font: bold 11px verdana, arial, sans-serif; /* set font as desired */
+	border-bottom: 1px solid #006699; /* set border COLOR as desired */
+	list-style-type: none;
+	padding: 1px 10px 2px 10px; /* THIRD number must change with respect to padding-top (X) below */
+}
+
+ul#tabnav li 
+{ /* do not change */
+display: inline;
+}
+
+div.dashboard li.dashboard, 
+div.emails li.emails, 
+div.inventory-update li.inventory-update, 
+div.order-update li.order-update, 
+div.order-table li.order-table, 
+div.delivery-update li.delivery-update, 
+div.deliveries li.deliveries, 
+div.payments li.payments, 
+div.reports li.reports, 
+div.invoices li.invoices, 
+div.help li.help, 
+div.plans li.plans, 
+div.statements li.statements, 
+div.process li.process
+{ /* settings for selected tab */
+	border-bottom: 1px solid #ffffff; /* set border color to page background color */
+	background-color: #ffffff !important; /* set background color to match above border color */
+}
+
+div.dashboard li.dashboard a, 
+div.emails li.emails a, 
+div.inventory-update li.inventory-update a, 
+div.order-update li.order-update a, 
+div.order-table li.order-table a, 
+div.delivery-update li.delivery-update a, 
+div.deliveries li.deliveries a, 
+div.payments li.payments a, 
+div.reports li.reports a, 
+div.invoices li.invoices a, 
+div.help li.help a, 
+div.plans li.plans a, 
+div.statements li.statements a, 
+div.process li.process a
+{ /* settings for selected tab link */
+	background-color: #ffffff  !important; /* set selected tab background color as desired */
+	color: #000000; /* set selected tab link color as desired */
+	position: relative;
+	top: 1px;
+	padding-top: 4px; /* must change with respect to padding (X) above and below */
+}
+
+ul#tabnav li a 
+{ /* settings for all tab links */
+	padding: 3px 4px; /* set padding (tab size) as desired; FIRST number must change with respect to padding-top (X) above */
+	border: 1px solid #006699; /* set border COLOR as desired; usually matches border color specified in #tabnav */
+	background-color: #D0D0D0; /* set unselected tab background color as desired */
+	color: #666; /* set unselected tab link color as desired */
+	margin-right: 0px; /* set additional spacing between tabs as desired */
+	text-decoration: none;
+	border-bottom: none;
+}
+
+ul#tabnav a:hover 
+{ /* settings for hover effect */
+	background: #fff; /* set desired hover color */
+}
+
+/* end css tabs */
+
+</style>
+
+<div style="float: left;">
+	{% food_network %}
+	<ul id="tabnav" class="do-not-print" >
+		<li class="dashboard" ><a title="Home page" href="/distribution/dashboard">{% trans "Dashboard" %}</a> </li>
+		<li class="emails" ><a title="Send emails" href="/distribution/emailselection">{% trans "Emails" %}</a> </li>
+		<li class="inventory-update" >
+			<a title="Update inventory for one or all producers" href="/distribution/inventoryselection">{% trans "Inventory" %}</a>
+		</li>
+		<li class="process" ><a title="Create or update processes" href="/distribution/processselection">{% trans "Process" %}</a></li>
+		<li class="order-update" ><a title="Update orders for one customer at a time" href="/distribution/orderselection">{% trans "Order" %}</a> </li>
+		<li class="order-table" ><a title="Show all orders for all customers for this week" href="/distribution/ordertableselection">{% trans "Orders" %}</a> </li>
+        	{% if not food_network.order_by_lot %}
+			<li class="delivery-update" >
+				<a title="Update lots for all order items for this week" href="/distribution/deliveryselection">{% trans "Assign Lots" %}</a> 
+			</li>
+		{% endif %}
+		<li class="invoices" ><a title="Print invoices for all orders for this week" href="/distribution/invoiceselection">{% trans "Invoices" %}</a> </li>
+		<li class="payments" ><a title="View upcoming payments to members and update payments to members and from customers" href="/distribution/paymentselection">{% trans "Payments" %}</a> </li>
+		<li class="reports" ><a title="View or print business reports" href="/distribution/reportselection">{% trans "Reports" %}</a> </li>
+		<li class="statements" ><a title="Print payment statements" href="/distribution/statementselection">{% trans "Statements" %}</a> </li>
+		<li class="plans" ><a title="Create or update plans for producers" href="/distribution/planselection">{% trans "Plan" %}</a> </li>
+		<li class="admin" ><a title="Maintain Producers, Products and Customers" href="/admin">{% trans "Admin" %}</a> </li>
+		<li class="help" ><a title="Food Distribution System documentation" href="/help">{% trans "Help" %}</a> </li>
+	</ul>
+</div>
+
+<div class="do-not-print" style="float: right;">
+	{{ user }} <a href="{% url acct_logout %}">Logout</a>
+</div>
+
+<div style="clear: both; margin-bottom: 0; padding-bottom: 0;">
+</div>
+

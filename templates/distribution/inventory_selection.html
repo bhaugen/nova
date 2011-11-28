@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Inventory Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+{% include "dojo_include.html" %}
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+		
+{% block header %}
+    <script type="text/javascript" >
+
+		function producerChanged(evt)
+		{
+			dojo.byId("contact").innerHTML = '---';
+			dojo.byId("phone").innerHTML = '---';
+			var jsonUrl = "/distribution/jsonproducer/" + evt.target.value + "/";
+			dojo.xhrGet( 
+			{
+					url: jsonUrl,
+					handleAs: "json",
+					load: function(responseObject, ioArgs) 
+					{
+						var producer = responseObject[0];
+						dojo.byId("contact").innerHTML = producer.fields.contact;
+						dojo.byId("phone").innerHTML = producer.fields.phone;
+					}
+			});
+		}
+
+
+		dojo.addOnLoad(function()
+		{
+			var node = dojo.byId("id_producer");
+			dojo.connect(node, "onchange", "producerChanged");
+			node.focus();
+		});
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="inventory-update">
+
+	{% include "distribution/tabnav.html" %}
+
+	<div style="float: left; border: 2px solid grey; width: 33%; padding-left: 1em; padding-top: 4px; margin-right: 1em; ">
+		<h4 style="margin-top: 0;" >Planned</h4>
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+            <tr>
+                <th style="text-align: right; " >{% trans "Producer" %}:</th>
+                <td>
+					{{ header_form.producer }}
+				</td>
+				{% if header_form.producer.errors %}
+					<td style="color: red; " >
+						{{ header_form.producer.errors }}
+					</td>
+				{% endif %}
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Inventory Date" %}:</th>
+                <td>{{ header_form.avail_date}}</td>
+				{% if header_form.avail_date.errors %}
+					<td style="color: red; " >
+						{{ header_form.avail_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Contact" %}:</th>
+               <td  id="contact" >---</td>
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "Phone" %}:</th>
+                <td id="phone" >---</td>
+            </tr>
+        </table>
+        <p>
+            <input type="submit" name="submit-planned" value='{% trans "Add or change inventory " %}' />
+        </p>
+	</form>
+
+	</div>
+
+	<div style="float: left; border: 2px solid grey; padding-left: 1em; padding-right: 1em; " >
+		<h4 style="margin-top: 0;" >Unplanned</h4>
+
+		<form action="." method="POST" >{% csrf_token %}
+			<table>
+				{% if unplanned_form.non_field_errors %}
+				<ul style="color: red; " >
+					{{ unplanned_form.non_field_errors.as_ul }}
+				</ul>
+				{% endif %}
+				<tr>
+					<th style="text-align: right; " >{% trans "Select Producer" %}:</th>
+					<td>
+						{{ unplanned_form.producer }}
+					</td>
+					{% if unplanned_form.producer.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.producer.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Or New Producer" %}:</th>
+					<td>
+						{{ unplanned_form.new_producer_name }}
+					</td>
+					{% if unplanned_form.new_producer_name.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.new_producer_name.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Product" %}:</th>
+					<td>
+						{{ unplanned_form.product }}
+					</td>
+					{% if unplanned_form.product.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.product.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Lot ID" %}:</th>
+					<td>
+						{{ unplanned_form.freeform_lot_id }}
+					</td>
+					{% if unplanned_form.freeform_lot_id.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.freeform_lot_id.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Field" %}:</th>
+					<td>
+						{{ unplanned_form.field_id }}
+					</td>
+					{% if unplanned_form.field_id.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.field_id.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Custodian" %}:</th>
+					<td>
+						{{ unplanned_form.custodian }}
+					</td>
+					{% if unplanned_form.custodian.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.custodian.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Inventory Date" %}:</th>
+					<td>
+						{{ unplanned_form.inventory_date }}
+					</td>
+					{% if unplanned_form.inventory_date.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.inventory_date.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Ready" %}:</th>
+					<td>
+						{{ unplanned_form.planned }}
+					</td>
+					{% if unplanned_form.planned.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.planned.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Received" %}:</th>
+					<td>
+						{{ unplanned_form.received }}
+					</td>
+					{% if unplanned_form.received.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.received.errors }}
+					</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th style="text-align: right; " >{% trans "Notes" %}:</th>
+					<td>
+						{{ unplanned_form.notes }}
+					</td>
+					{% if unplanned_form.notes.errors %}
+					<td style="color: red; " >
+						{{ unplanned_form.notes.errors }}
+					</td>
+					{% endif %}
+				</tr>
+			</table>
+			<p>
+            			<input type="submit" name="submit-unplanned" value='{% trans "Add unplanned inventory" %}' />
+        		</p>
+		</form>
+
+	</div>
+
+	{% if available %}
+
+	<div style="float: left; margin-top: 1em; " >
+	<h3>What's Available &nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="{% url availability_csv year=avail_year month=avail_month day=avail_day  %}">
+		{% trans "Export availability list as CSV file" %}
+	</a>
+	</h3>
+
+
+	<table class="ga-event-table" style="font-size: 80%;" >
+		<tr>
+			<th>{% trans "Producer" %}</th>
+			<th>{% trans "Product" %}</th>
+			<th>{% trans "Lot" %}</th>
+			<th>{% trans "Inventory Date" %}</th>
+			<th>{% trans "Expiration Date" %}</th>
+			<th>{% trans "Where" %}</th>		
+	        	<th>{% trans "Avail" %}</th>
+			<th>{% trans "Ordered" %}</th>
+			<th>{% trans "Buyers" %}</th>
+		</tr>
+		{% for lot in available %}
+		<tr>
+			<td>{{ lot.producer }}</td>
+			<td>{{ lot.product }}</td>
+			<td>{{ lot.lot_id }}</td>
+			<td>{{ lot.inventory_date }}</td>
+			<td>{{ lot.expiration_date }}</td>
+			<td>{{ lot.where }}</td>
+			<td style="text-align: right;" >{{ lot.avail_qty }}</td>
+			<td style="text-align: right;" >{{ lot.ordered_qty }}</td>
+			<td>{{ lot.customers }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+	</div>
+	<div style="clear: both; "></div>
+	{% endif %}
+</div>
+{% endblock %}

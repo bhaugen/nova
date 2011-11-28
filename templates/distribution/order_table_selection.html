@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Order Date Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="order-table">
+
+	{% include "distribution/tabnav.html" %}
+
+	<h2> {% trans "Enter Order Date" %}</h2>
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+                <th style="text-align: right; " >{% trans "Delivery Date" %}:</th>
+                <td>{{ dsform.selected_date}}</td>
+				{% if dsform.selected_date.errors %}
+					<td style="color: red; " >
+						{{ dsform.selected_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+		</table>
+        <p style="padding-left: 5em;">
+	<input name="submit-order-table" type="submit" value="{% trans 'Order Table' %}" />
+	{% if show_shorts %}
+	&nbsp;&nbsp;
+	<input name="submit-shorts" type="submit" value="{% trans 'Shorts' %}" />
+	&nbsp;&nbsp;
+	<input name="submit-short-changes" type="submit" value="{% trans 'Short Changes' %}" />
+	{% endif %}
+
+
+        </p>
+    </form>
+</div>
+{% endblock %}

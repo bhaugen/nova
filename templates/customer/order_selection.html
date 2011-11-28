@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}
+     Order Selection
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="order">
+
+	{% include "customer/customer_tabnav.html" %}
+
+	<h3 style="padding-top: 0; margin-top: 0; " >Order Selection</h3>
+
+	<div style="border: 2px solid grey; width: 30%; padding-left: 1em;">
+		<h4>New order:</h4>
+
+		<form action="." method="POST" >{% csrf_token %}
+        		<table>
+			<tr>
+				<th style="text-align: right; " >Delivery Date:</th>
+				<th>{{ delivery_date|date:"l, F j" }}</th>
+				{% comment %}
+                		<td>
+					{{ selection_form.order_date }}
+				</td>
+				{% if selection_form.order_date.errors %}
+					<td style="color: red; " >
+						{{selection_form.order_date.errors }}
+					</td>
+				{% endif %}
+				{% endcomment %}
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Product List:</th>
+				<td>{{ selection_form.product_list }}</td>
+			</tr>
+
+
+			</table>
+			<p>
+            			<input type="submit" value="Submit" />
+			</p>
+		</form>
+
+
+	</div>
+
+	
+	{% if unsubmitted_orders %}
+	<div style="padding-left: 1em;">
+		<h4>Unsubmitted orders:</h4>
+		<ul>
+		{% for order in unsubmitted_orders %}
+
+			<li>
+				<a href="{% url order_confirmation order_id=order.id %}">
+					#{{ order.id }} 
+					Ordered: {{ order.order_date }} Delivery: {{ order.delivery_date }} 
+					${{ order.grand_total }}
+				</a>&nbsp;&nbsp; 
+				<a href="{% url edit_order order_id=order.id %}">Change</a>
+				<a href="{% url delete_order_confirmation order_id=order.id %}">Delete</a>
+			</li>
+
+		{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
+
+	{% if changeable_orders %}
+	<div style="padding-left: 1em;">
+		<h4>Changeable orders:</h4>
+		<ul>
+		{% for order in changeable_orders %}
+
+			<li>
+				<a href="{% url order_confirmation order_id=order.id %}">
+					#{{ order.id }} 
+					Ordered: {{ order.order_date }} Delivery: {{ order.delivery_date }} 
+					${{ order.grand_total }}
+					- {{ order.get_state_display }}
+				</a>&nbsp;&nbsp; 
+				<a href="{% url edit_order order_id=order.id %}">Change</a>
+				<a href="{% url delete_order_confirmation order_id=order.id %}">Delete</a>
+			</li>
+
+		{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
+
+	{% if recent_orders %}
+	<div style="padding-left: 1em;">
+		<h4>Recently submitted orders:</h4>
+		<ul>
+		{% for order in recent_orders %}
+
+			<li>
+				<a href="{% url order order_id=order.id %}">
+					#{{ order.id }} 
+					Ordered: {{ order.order_date }} Delivery: {{ order.delivery_date }} 
+					${{ order.grand_total }} 
+					- {{ order.get_state_display }}
+				</a>
+			</li>
+
+		{% endfor %}
+		</ul>
+	</div>
+	{% endif %}
+
+
+</div>
+
+{% endblock %}
+

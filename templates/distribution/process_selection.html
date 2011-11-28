@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Process Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+
+{% block header %}
+
+
+{% endblock %}
+
+{% block content %}
+
+<div class="process">
+
+	{% include "distribution/tabnav.html" %}
+
+	<h3> Week of {{ process_date }}</h3>
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+{% comment %}
+            <tr>
+                <th style="text-align: right; " >{% trans "Process" %}Week of:</th>
+                <td>{{ header_form.process_date}}</td>
+				{% if header_form.process_date.errors %}
+					<td style="color: red; " >
+						{{ header_form.process_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+{% endcomment %}
+			<tr>
+                <th style="text-align: right; " >{% trans "Process Type" %}:</th>
+                <td>{{ header_form.process_type}}</td>
+				{% if header_form.process_type.errors %}
+					<td style="color: red; " >
+						{{ header_form.process_type.errors }}
+					</td>
+				{% endif %}
+				<td><input type="submit" value="{% trans 'Create New Process' %}" /></td>
+				<td>
+            </tr>
+		</table>
+{% comment %}
+        <p>
+            <input type="submit" value="{% trans 'Create New Process' %}" />
+        </p>
+{% endcomment %}
+    </form>
+
+	{% if processes %}
+	<h3>{% trans "Processes" %}:</h3>
+	<table class="ga-event-table" >
+		<tr>
+			<th>{% trans "Type" %}</th>
+			<th>{% trans "Managed By" %}</th>
+			<th>{% trans "Input Lot" %}</th>
+			<th>{% trans "Output Lots" %}</th>
+			<th>{% trans "View" %}</th>
+			<th>{% trans "Delete" %}</th>
+		</tr>
+		{% for process in processes %}
+			<tr>
+				<td>{{ process.process_type }}</td>
+				<td>{{ process.managed_by }}</td>
+				<td>{{ process.input_lot_id }}</td>
+				<td>{{ process.output_lot_ids }}</td>
+				<td><a href="{% url process process_id=process.id %}">View</a>
+				<td>
+					{% if process.is_deletable %}
+						<form method="POST" action="{% url delete_process_confirmation process_id=process.id %}">
+						{% csrf_token %}
+							<input class="submit-btn" type="submit" value="{% trans 'Delete' %}" />
+						</form>
+					{% else %}
+						{% trans "output used" %}
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
+	{% endif %}
+</div>
+{% endblock %}

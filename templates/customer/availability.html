@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% load humanize %}
+
+{% block title %}
+	{{ network.short_name }} Availability
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="availability">
+
+
+	{% include tabnav %}
+
+	<h2>What's available for delivery on {{ delivery_date|date:"l, F j" }} </br>
+		from {{ network.long_name }}</h2>
+
+	<p>
+	Order closing: {{ order_closing|date:"l, F j, f A" }}.&nbsp;&nbsp;
+	{% comment %}
+		If you have customer login credentials, you may 
+		<a href="{% url customer_dashboard %}">place an order</a>.
+	
+	</p>
+
+	<p>
+	If you want customer login credentials, please <a href="mailto:orders@keewaydinorganics.com">send us an email</a>
+	{% endcomment %}
+	</p>
+	<p>Ability to enter and manage your own orders online coming soon.
+	</p>
+
+	<div style="float: left; width: 40%;">
+	<table class="ga-event-table" >
+		<thead>
+		<tr>
+			<th style="text-align:left;" >Product</th>
+			<th>Growing Method</th>
+			<th style="text-align: right:" >Quantity</th>
+			<th style="text-align: right;" >Price</th>
+		</tr>
+		</thead>
+		<tbody>
+
+		{% for row in avail_rows %}
+			<tr>
+				<th style="text-align:left;" >{{ row.product }}</th>
+				<td>{{ row.product.growing_method }}</td>
+				<td style="text-align: right;" >{{ row.qty|intcomma }}</td>
+				<td style="text-align: right;" >{{ row.price}}</td>
+		
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+	</div>
+
+	{% if specials %}
+	<div style="float: left; border: 2px solid grey; width: 40%; padding-left: 1em; padding-bottom: 4px;" >
+		<h2>Specials</h2>
+		{% for special in specials %}
+		<h4>{{ special.headline }}</h4>
+		<p style="margin-top: 0;" >{{ special.description|linebreaksbr }}<br />
+		<b>Special Product:</b> {{ special.product.growing_method }} {{ special.product.long_name }}<br />
+		<b>Special Price:</b> {{ special.formatted_price }} 
+		<b>from:</b> {{ special.from_date|date:"D, M j" }} <b>to:</b> {{ special.to_date|date:"D, M j" }}
+
+		</p>
+		{% endfor %}
+	</div>
+	{% endif %}
+	<div style="clear: both;"></div>
+
+</div>
+<div><p>.</p></div>
+
+ 
+{% endblock %} 
+
+
+

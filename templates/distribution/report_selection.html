@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Report Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+<script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+</script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="reports">
+
+	{% include "distribution/tabnav.html" %}
+
+	<div style="float: left; border: 2px solid grey; padding: 1em;">
+
+	<h4> {% trans "Ordered vs Available Report" %}</h4>
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+                <th style="text-align: right; " >{% trans "Delivery Date" %}:</th>
+                <td>{{ dsform.selected_date}}</td>
+				{% if dsform.selected_date.errors %}
+					<td style="color: red; " >
+						{{ dsform.selected_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+    </table>
+    <center>
+    <input name="submit-ordered_available" type="submit" value="{% trans 'Submit' %}" />
+    </center>
+
+	</div>
+
+	<div style="float: left; border: 2px solid grey; padding: 1em;">
+
+	<h4> {% trans "Receipts and Sales Report" %}</h4>
+
+    <form action="." method="POST" >{% csrf_token %}
+        <center>
+            <input name="submit-receipts-sales" type="submit" value="{% trans 'Submit' %}" />
+        </center>
+</form>
+
+</div>
+<div style="clear: both;"></div>
+</div>
+{% endblock %}
+

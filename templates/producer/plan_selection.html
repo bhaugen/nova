@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Plan Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+
+{% block header %}
+
+	<style>
+		ul {list-style-type:none;}
+	</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="plans">
+
+	{% include "producer/producer_tabnav.html" %}
+
+	<div style="border: 2px solid grey; float: left; width: 30%; padding-left: 1em;">
+
+		<h4>Update Plans</h4>
+
+		<form action="." method="POST" >{% csrf_token %}
+        		<table>
+
+			<tr>
+                		<th style="text-align: right; " >{% trans "From Date" %}:</th>
+                		<td>
+					{{ plan_form.plan_from_date }}
+					{% if plan_form.plan_from_date.errors %}
+					<span style="color: red; " >
+						{{plan_form.plan_from_date.errors }}
+					</span>
+					{% endif %}
+				</td>
+				</tr>
+				<tr>
+                		<th style="text-align: right; " >{% trans "To Date" %}:</th>
+                		<td>
+					{{ plan_form.plan_to_date }}
+					{% if plan_form.plan_to_date.errors %}
+					<span style="color: red; " >
+						{{plan_form.plan_to_date.errors }}
+					</span>
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >{% trans "Product List" %}:</th>
+				<td>{{ plan_form.list_type }}</td>
+			</tr>
+
+
+		        </table>
+        		<p>
+	        	    <input name="submit-plan-update" type="submit" value="{% trans 'Submit' %}" />
+        		</p>
+	    </form>
+
+    	</div>
+
+	<div style="float: left; width: 30%; ">
+	{% if member_has_plans %}
+	<div style="border: 2px solid grey; padding-left: 1em; ">
+		<h4>Supply and Demand Table</h4>
+
+		<form action="." method="POST" >{% csrf_token %}
+
+        		<table>
+		            <tr>
+                		<th style="text-align: right; " >{% trans "From Date" %}:</th>
+                		<td>
+					{{ sdform.from_date }}
+				</td>
+				{% if sdform.from_date.errors %}
+					<td style="color: red; " >
+						{{sdform.from_date.errors }}
+					</td>
+				{% endif %}
+				</tr>
+				<tr>
+                		<th style="text-align: right; " >{% trans "To Date" %}:</th>
+                		<td>
+					{{ sdform.to_date }}
+				</td>
+				{% if sdform.to_date.errors %}
+					<td style="color: red; " >
+						{{sdform.to_date.errors }}
+					</td>
+				{% endif %}
+		            </tr>
+
+		        </table>
+
+	        	<p>
+		            <input name="submit-supply-demand" type="submit" value="{% trans 'Submit' %}" />
+        		</p>
+	    </form>
+    	</div>
+
+	
+    	<div style="border: 2px solid grey; padding-left: 1em; ">
+		<h4>Planned Income Table</h4>
+
+		<form action="." method="POST" >{% csrf_token %}
+
+        		<table>
+		            <tr>
+                		<th style="text-align: right; " >{% trans "From Date" %}:</th>
+                		<td>
+					{{ income_form.from_date }}
+				</td>
+				{% if income_form.from_date.errors %}
+					<td style="color: red; " >
+						{{income_form.from_date.errors }}
+					</td>
+				{% endif %}
+				</tr>
+				<tr>
+                		<th style="text-align: right; " >{% trans "To Date" %}:</th>
+                		<td>
+					{{ income_form.to_date }}
+				</td>
+				{% if income_form.to_date.errors %}
+					<td style="color: red; " >
+						{{income_form.to_date.errors }}
+					</td>
+				{% endif %}
+		            </tr>
+
+		        </table>
+
+	        	<p>
+		            <input name="submit-income" type="submit" value="{% trans 'Submit' %}" />
+        		</p>
+	    </form>
+    	</div>
+	{% else %}
+	<div style="border: 2px solid grey; padding-left: 1em; padding-bottom: 1em; ">
+		<h4>
+			When you have made plans of your own,
+			you will be able to see the Supply vs Demand and Projected Income tables.
+		</h4>
+	</div>
+	{% endif %}
+
+	</div>
+
+	<div style="clear: both;" />
+</div>
+{% endblock %}
+

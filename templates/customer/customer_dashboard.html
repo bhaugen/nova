@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% load humanize %}
+
+{% block title %}
+     {{ food_network }} Customer Dashboard
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+
+    <script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+    </script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="customer-dashboard">
+
+	{% include "customer/customer_tabnav.html" %}
+	
+	<h3 style="padding-top: 0; margin-top: 0; " >{{ food_network.long_name }} Customer Dashboard for {{ customer.long_name }}</h3>
+
+	<p>
+	Next delivery date: {{ cycle.delivery_date|date:"l, F j" }}&nbsp;&nbsp; 
+	Order closing: {{ cycle.order_closing|date:"l, F j, f A" }}
+	</p>
+
+	<div style="float: left; width: 40%;">
+	<h3 style="padding-top: 0; margin-top: 0; " >What's available:</h3>
+	<table class="ga-event-table" >
+		<thead>
+		<tr>
+			<th style="text-align:left;" >Product</th>
+			<th>Growing Method</th>
+			<th style="text-align: right:" >Quantity</th>
+			<th style="text-align: right;" >Price</th>
+		</tr>
+		</thead>
+		<tbody>
+
+		{% for row in avail_rows %}
+			<tr>
+				<th style="text-align:left;" >{{ row.product }}</th>
+				<td>{{ row.product.growing_method }}</td>
+				<td style="text-align: right;" >{{ row.qty|intcomma }}</td>
+				<td style="text-align: right;" >{{ row.price}}</td>
+		
+			</tr>
+			{% endfor %}
+		</tbody>
+
+	</table>
+	</div>
+
+	{% if specials %}
+	<div style="float: left; border: 2px solid grey; width: 40%; padding-left: 1em; padding-bottom: 4px;" >
+		<h2>Specials</h2>
+		{% for special in specials %}
+		<h4>{{ special.headline }}</h4>
+		<p style="margin-top: 0;" >{{ special.description|linebreaksbr }}<br />
+		<b>Special Product:</b> {{ special.product.growing_method }} {{ special.product.long_name }}<br />
+		<b>Special Price:</b> {{ special.formatted_price }} 
+		<b>from:</b> {{ special.from_date|date:"D, M j" }} <b>to:</b> {{ special.to_date|date:"D, M j" }}
+
+		</p>
+		{% endfor %}
+	</div>
+	{% endif %}
+	<div style="clear: both;"></div>
+
+</div>
+{% endblock %}
+

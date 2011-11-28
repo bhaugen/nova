@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Statement Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% include "dojo_include.html" %}
+
+<script type="text/javascript">
+        dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+</script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="statements">
+
+	{% include "distribution/tabnav.html" %}
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+            <tr>
+                <th style="text-align: right; " >{% trans "From Date" %}:</th>
+                <td>{{ header_form.from_date}}</td>
+				{% if header_form.from_date.errors %}
+					<td style="color: red; " >
+						{{ header_form.from_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+            <tr>
+                <th style="text-align: right; " >{% trans "To Date" %}:</th>
+                <td>{{ header_form.to_date}}</td>
+				{% if header_form.to_date.errors %}
+					<td style="color: red; " >
+						{{ header_form.to_date.errors }}
+					</td>
+				{% endif %}
+            </tr>
+
+        </table>
+        <p>
+            <input type="submit" value="{% trans 'Submit' %}" />
+        </p>
+    </form>
+</div>
+{% endblock %}

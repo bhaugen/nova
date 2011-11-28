@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'paypal.standard.ipn',
     'pay',
+    'south',
 )
 
 PAYPAL_RECEIVER_EMAIL = "bobha_1286809456_biz@gmail.com"

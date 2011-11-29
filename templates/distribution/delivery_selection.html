@@ -34,7 +34,7 @@
 					load: function(responseObject, ioArgs) 
 					{
 						var customer = responseObject[0];
-						dojo.byId("contact").innerHTML = customer.fields.contact;
+						dojo.byId("contact").innerHTML = customer.fields.name
 						dojo.byId("phone").innerHTML = customer.fields.phone;
 					}
 			});

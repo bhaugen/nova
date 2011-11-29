@@ -159,7 +159,9 @@ def availability_csv(request, year, month, day):
 
 def json_customer_info(request, customer_id):
     # Note: serializer requires an iterable, not a single object. Thus filter rather than get.
-    data = serializers.serialize("json", Party.objects.filter(pk=customer_id))
+    customer = Customer.objects.get(pk=customer_id)
+    contacts = customer.contacts.all()
+    data = serializers.serialize("json", contacts)
     return HttpResponse(data, mimetype="text/json-comment-filtered")
 
 def json_distributor_info(request, distributor_id):
@@ -172,7 +174,15 @@ def json_distributor_info(request, distributor_id):
 
 
 def json_producer_info(request, producer_id):
-    data = serializers.serialize("json", Party.objects.filter(pk=producer_id))
+    producer = Producer.objects.get(pk=producer_id)
+    contacts = producer.contacts.all()
+    data = serializers.serialize("json", contacts)
+    return HttpResponse(data, mimetype="text/json-comment-filtered")
+
+def json_member_info(request, member_id):
+    member = Party.objects.get(pk=member_id).as_leaf_class()
+    contacts = member.contacts.all()
+    data = serializers.serialize("json", contacts)
     return HttpResponse(data, mimetype="text/json-comment-filtered")
 
 #@login_required

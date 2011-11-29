@@ -72,7 +72,8 @@ urlpatterns = patterns('',
     # json
     url(r'^jsoncustomer/(?P<customer_id>\d+)/$', json_customer_info),
     url(r'^jsondistributor/(?P<distributor_id>\d+)/$', json_distributor_info),
-    url(r'^jsonproducer/(?P<producer_id>\d+)/$', json_producer_info),    
+    url(r'^jsonproducer/(?P<producer_id>\d+)/$', json_producer_info),
+    url(r'^jsonmember/(?P<member_id>\d+)/$', json_member_info),
     url(r'^jsonpayments/(?P<producer_id>\d+)/$', json_payments),
     url(r'^jsoncustomerpayments/(?P<customer_id>\d+)/$', json_customer_payments),
     

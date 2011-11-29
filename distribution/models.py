@@ -371,6 +371,27 @@ class FoodNetwork(Party):
     def email(self):
         return self.email_address
 
+    def billing_contact(self):
+        contacts = self.contacts.filter(role=2)
+        if contacts:
+            return contacts[0]
+        else:
+            return None
+
+    def billing_phone(self):
+        bc = self.billing_contact()
+        if bc:
+            return bc.phone
+        else:
+            return self.phone
+
+    def billing_email_address(self):
+        bc = self.billing_contact()
+        if bc:
+            return bc.email
+        else:
+            return self.email_address
+
     def receipts_sales(self, thisdate):
         month_start = datetime.date(thisdate.year, thisdate.month, 1)
         week_start = thisdate - datetime.timedelta(days=datetime.date.weekday(thisdate))

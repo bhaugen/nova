@@ -31,9 +31,11 @@
 			<tr>
 				<td>
 					<h3>{{ network.long_name }}</h3>
-					{% trans "Billing Questions" %}: {{ network.billing_phone }} <br />
-					{{network.billing_address|linebreaksbr }}<br/>
-					{{ network.billing_email_address }}
+					{% if network.billing_contact %}
+						{% trans "Billing Questions" %}: {{ network.billing_phone }} <br />
+						{{network.billing_address|linebreaksbr }}<br/>
+						{{ network.billing_email_address }}
+					{% endif %}
 				</td>
 				<td>
 					<h3 style="text-align: right; " >{% trans "Invoice" %}</h3>

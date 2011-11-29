@@ -336,10 +336,6 @@ def avail_email_intro():
     return intro
 
 class FoodNetwork(Party):
-    #billing_contact = models.CharField(_('billing contact'), max_length=64, blank=True)
-    #billing_phone = PhoneNumberField(_('billing phone'), blank=True, null=True)
-    #billing_address = models.TextField(_('billing address'), blank=True)
-    #billing_email_address = models.EmailField(_('billing email address'), max_length=96, blank=True, null=True)
     customer_terms = models.IntegerField(_('customer terms'), default=0,
         help_text=_('Net number of days for customer to pay invoice'))
     member_terms = models.IntegerField(_('member terms'), blank=True, null=True,
@@ -372,7 +368,7 @@ class FoodNetwork(Party):
         return self.email_address
 
     def billing_contact(self):
-        contacts = self.contacts.filter(role=2)
+        contacts = self.contacts.filter(Q(role=2)|Q(role=3))
         if contacts:
             return contacts[0]
         else:

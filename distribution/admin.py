@@ -2,9 +2,13 @@ from django.contrib import admin
 from distribution.models import *
 from distribution.forms import CustomerForm, DistributorForm, ProcessorForm, ProducerForm
 
+class StaffContactInline(admin.TabularInline):
+    model = StaffContact
+
 class FoodNetworkAdmin(admin.ModelAdmin):
-    list_display = ('short_name', 'long_name', 'contact', 'customer_fee',
+    list_display = ('short_name', 'long_name', 'customer_fee',
                     'producer_fee', 'transportation_fee')
+    inlines = [ StaffContactInline,]
 
 admin.site.register(FoodNetwork, FoodNetworkAdmin)
 
@@ -15,7 +19,7 @@ class ProducerContactInline(admin.TabularInline):
 
 class ProducerAdmin(admin.ModelAdmin):
     form = ProducerForm
-    list_display = ('short_name', 'member_id', 'long_name', 'contact', 'phone', 'delivers')
+    list_display = ('short_name', 'member_id', 'long_name','delivers')
     inlines = [ ProducerContactInline,]
     
 admin.site.register(Producer, ProducerAdmin)
@@ -23,14 +27,14 @@ admin.site.register(Producer, ProducerAdmin)
 
 class ProcessorAdmin(admin.ModelAdmin):
     form = ProcessorForm
-    list_display = ('short_name', 'long_name', 'contact', 'phone')
+    list_display = ('short_name', 'long_name',)
     
 admin.site.register(Processor, ProcessorAdmin)
 
 
 class DistributorAdmin(admin.ModelAdmin):
     form = DistributorForm
-    list_display = ('short_name', 'member_id', 'long_name', 'contact', 'phone')
+    list_display = ('short_name', 'member_id', 'long_name',)
     
 admin.site.register(Distributor, DistributorAdmin)
 
@@ -44,7 +48,7 @@ class CustomerContactInline(admin.TabularInline):
 
 class CustomerAdmin(admin.ModelAdmin):
     form = CustomerForm
-    list_display = ('short_name', 'member_id', 'long_name', 'contact', 'phone',
+    list_display = ('short_name', 'member_id', 'long_name',
                     'customer_transportation_fee', 'apply_transportation_fee')
     inlines = [ CustomerContactInline, CustomerDeliveryCycleInline, ]
     

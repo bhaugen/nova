@@ -257,9 +257,9 @@ class Party(models.Model):
     member_id = models.CharField(_('member id'), max_length=12, blank=True)
     short_name = models.CharField(_('short name'), max_length=32, unique=True)
     long_name = models.CharField(_('long name'), max_length=64)
-    contact = models.CharField(_('contact'), max_length=64, blank=True)
+    #contact = models.CharField(_('contact'), max_length=64, blank=True)
     phone = PhoneNumberField(_('phone'), blank=True)
-    cell = PhoneNumberField(_('cell'), blank=True)
+    #cell = PhoneNumberField(_('cell'), blank=True)
     fax = PhoneNumberField(_('fax'), blank=True)
     address = models.TextField(_('address'), blank=True)
     email_address = models.EmailField(_('email address'), max_length=96, blank=True, null=True)
@@ -336,10 +336,10 @@ def avail_email_intro():
     return intro
 
 class FoodNetwork(Party):
-    billing_contact = models.CharField(_('billing contact'), max_length=64, blank=True)
-    billing_phone = PhoneNumberField(_('billing phone'), blank=True, null=True)
-    billing_address = models.TextField(_('billing address'), blank=True)
-    billing_email_address = models.EmailField(_('billing email address'), max_length=96, blank=True, null=True)
+    #billing_contact = models.CharField(_('billing contact'), max_length=64, blank=True)
+    #billing_phone = PhoneNumberField(_('billing phone'), blank=True, null=True)
+    #billing_address = models.TextField(_('billing address'), blank=True)
+    #billing_email_address = models.EmailField(_('billing email address'), max_length=96, blank=True, null=True)
     customer_terms = models.IntegerField(_('customer terms'), default=0,
         help_text=_('Net number of days for customer to pay invoice'))
     member_terms = models.IntegerField(_('member terms'), blank=True, null=True,
@@ -350,9 +350,6 @@ class FoodNetwork(Party):
         help_text=_('Producer Fee is a decimal fraction, not a percentage. It is a margin, subtracted from the price, giving the pay price to the producer.'))
     transportation_fee = models.DecimalField(_('transportation fee'), max_digits=8, decimal_places=2, default=Decimal("0"),
         help_text=_('This fee will be added to all orders unless overridden on the Customer'))
-    #current_week = models.DateField(_('current week'), default=datetime.date.today, 
-    #    null=True, blank=True,
-    #    help_text=_('You may use Current week or Next delivery date'))
     next_delivery_date = models.DateField(_('next delivery date'), default=datetime.date.today, 
         help_text=_('Next delivery date for availability and orders'))
     order_by_lot = models.BooleanField(_('order by lot'), default=False, 
@@ -808,6 +805,26 @@ class ProducerContact(models.Model):
     cell = PhoneNumberField(_('cell'), blank=True)
     login_user = models.OneToOneField(User, related_name='producer_contact',
         blank=True, null=True)
+
+STAFF_ROLE_CHOICES = (
+    (1, _('Orders')),
+    (2, _('Billing')),
+    (3, _('Orders and Billing')),
+    (4, _('Other')),
+)
+
+class StaffContact(models.Model):
+    food_network = models.ForeignKey(FoodNetwork,
+        verbose_name=_('food_network'), related_name='contacts')
+    name = models.CharField(_('name'), max_length=64)
+    role = models.PositiveSmallIntegerField(_('role'), max_length="1",
+        choices=STAFF_ROLE_CHOICES, default=4)
+    email = models.EmailField(_('email address'), max_length=96, blank=True, null=True)
+    phone = PhoneNumberField(_('phone'), blank=True)
+    cell = PhoneNumberField(_('cell'), blank=True)
+    login_user = models.OneToOneField(User, related_name='staff_contact',
+        blank=True, null=True)
+
 
 
 # based on dfs from threaded_comments
@@ -1750,7 +1767,6 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=_('order'))
     product = models.ForeignKey(Product, verbose_name=_('product'))
     quantity = models.DecimalField(_('quantity'), max_digits=8, decimal_places=2)
-    #orig_qty = models.DecimalField(_('orig qty'), max_digits=8, decimal_places=2, default=Decimal('0'))
     unit_price = models.DecimalField(_('unit price'), max_digits=8, decimal_places=2)
     fee = models.DecimalField(_('fee'), max_digits=3, decimal_places=2, default=Decimal('0'),
         help_text=_('Fee is a decimal fraction, not a percentage - for example, .05 instead of 5%'))

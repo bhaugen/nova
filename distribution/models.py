@@ -257,9 +257,7 @@ class Party(models.Model):
     member_id = models.CharField(_('member id'), max_length=12, blank=True)
     short_name = models.CharField(_('short name'), max_length=32, unique=True)
     long_name = models.CharField(_('long name'), max_length=64)
-    #contact = models.CharField(_('contact'), max_length=64, blank=True)
     phone = PhoneNumberField(_('phone'), blank=True)
-    #cell = PhoneNumberField(_('cell'), blank=True)
     fax = PhoneNumberField(_('fax'), blank=True)
     address = models.TextField(_('address'), blank=True)
     email_address = models.EmailField(_('email address'), max_length=96, blank=True, null=True)
@@ -273,6 +271,10 @@ class Party(models.Model):
     def __unicode__(self):
         return self.short_name
     
+    @property
+    def name(self):
+        return self.short_name
+
     @property
     def email(self):
         return self.email_address
@@ -289,6 +291,14 @@ class Party(models.Model):
             return model.objects.get(id=self.id)
         else:
             return self
+
+    def contact(self):
+        leaf = self.as_leaf_class()
+        contacts = leaf.contacts.all()
+        if contacts:
+            return contacts[0]
+        else:
+            return leaf
 
     def is_customer(self):
         if isinstance(self.as_leaf_class(), Customer):
@@ -812,6 +822,9 @@ class CustomerContact(models.Model):
     login_user = models.OneToOneField(User, related_name='customer_contact',
         blank=True, null=True)
 
+    def __unicode__(self):
+        return self.name
+
 
 class ProducerContact(models.Model):
     producer = models.ForeignKey(Producer,
@@ -823,12 +836,16 @@ class ProducerContact(models.Model):
     login_user = models.OneToOneField(User, related_name='producer_contact',
         blank=True, null=True)
 
+    def __unicode__(self):
+        return self.name
+
 STAFF_ROLE_CHOICES = (
     (1, _('Orders')),
     (2, _('Billing')),
     (3, _('Orders and Billing')),
     (4, _('Other')),
 )
+
 
 class StaffContact(models.Model):
     food_network = models.ForeignKey(FoodNetwork,
@@ -841,6 +858,9 @@ class StaffContact(models.Model):
     cell = PhoneNumberField(_('cell'), blank=True)
     login_user = models.OneToOneField(User, related_name='staff_contact',
         blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 

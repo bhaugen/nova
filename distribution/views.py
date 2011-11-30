@@ -125,7 +125,7 @@ def send_order_notices(request):
                 for order in order_list:
                     customer = order.customer
                     users = [customer, fn]
-                    for contact in customer.users.all():
+                    for contact in customer.contacts.all():
                         if contact.email != customer.email:
                             users.append(contact)
                     users = list(set(users))
@@ -1564,8 +1564,8 @@ def order_headings_by_product(thisdate, links=True):
             lines.append("<a href='/distribution/order/" + str(order.id) + "/'>" + order.customer.short_name + "</a>")
         else:
             lines.append(order.customer.short_name)
-        lines.append(order.customer.contact)
-        lines.append(order.customer.phone)
+        lines.append(order.customer.contact().name)
+        lines.append(order.customer.contact().phone)
         heading = " ".join(str(i) for i in lines)
         heading_list.append(heading)
     return heading_list

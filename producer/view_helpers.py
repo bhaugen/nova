@@ -6,6 +6,13 @@ from distribution.view_helpers import SupplyDemandTable, SuppliableDemandCell
 from producer.forms import *
 
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
 def create_inventory_item_forms(producer, avail_date, data=None):
     monday = avail_date - datetime.timedelta(days=datetime.date.weekday(avail_date))
     saturday = monday + datetime.timedelta(days=5)
@@ -189,5 +196,67 @@ def producer_plans_table(from_date, to_date, producer):
     rows.sort(lambda x, y: cmp(x[0].short_name, y[0].short_name))
     sdtable = SupplyDemandTable(columns, rows)
     return sdtable
+
+def plan_columns(from_date, to_date):
+    columns = []
+    wkdate = from_date
+    while wkdate <= to_date:
+        columns.append(wkdate.strftime('%Y-%m-%d'))
+        wkdate = wkdate + datetime.timedelta(days=7)
+    return columns
+
+def sd_columns(from_date, to_date):
+    columns = []
+    wkdate = from_date
+    while wkdate <= to_date:
+        columns.append(wkdate.strftime('%Y_%m_%d'))
+        wkdate = wkdate + datetime.timedelta(days=7)
+    return columns
+
+def plans_for_dojo(member, products, from_date, to_date):
+    #import pdb; pdb.set_trace()
+    plans = ProductPlan.objects.filter(member=member)
+    rows = {}    
+    for pp in products:
+        yearly = 0
+        try:
+            product = pp.product
+            yearly = pp.default_quantity
+        except:
+            product = pp
+        if not yearly:
+            try:
+                pp = ProducerProduct.objects.get(producer=member, product=product)
+                yearly = pp.default_quantity
+            except:
+                pass
+        wkdate = from_date
+        row = {}
+        row["product"] = product.long_name
+        row["yearly"] = int(yearly)
+        row["id"] = product.id
+        row["member_id"] = member.id
+        row["from_date"] = from_date.strftime('%Y-%m-%d')
+        row["to_date"] = to_date.strftime('%Y-%m-%d')
+        while wkdate <= to_date:
+            enddate = wkdate + datetime.timedelta(days=6)
+            row[wkdate.strftime('%Y-%m-%d')] = "0"
+            wkdate = enddate + datetime.timedelta(days=1)
+        rows.setdefault(product, row)
+    #import pdb; pdb.set_trace()
+    for plan in plans:
+        product = plan.product
+        wkdate = from_date
+        week = 0
+        while wkdate <= to_date:
+            enddate = wkdate + datetime.timedelta(days=6)
+            if plan.from_date <= wkdate and plan.to_date >= wkdate:
+                rows[product][wkdate.strftime('%Y-%m-%d')] = str(plan.quantity)
+                rows[product][":".join([wkdate.strftime('%Y-%m-%d'), "plan_id"])] = plan.id
+            wkdate = wkdate + datetime.timedelta(days=7)
+            week += 1
+    rows = rows.values()
+    rows.sort(lambda x, y: cmp(x["product"], y["product"]))
+    return rows
 
 

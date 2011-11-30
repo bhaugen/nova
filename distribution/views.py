@@ -399,8 +399,7 @@ def planning_table(request, member_id, list_type, from_date, to_date):
             'tabnav': "distribution/tabnav.html",
         }, context_instance=RequestContext(request))
 
-# todo: needs 2 views, this one to present the page,
-# the other to respond to the JsonRestStore
+
 @login_required
 def dojo_planning_table(request, member_id, list_type, from_date, to_date):
     try:

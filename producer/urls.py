@@ -46,6 +46,31 @@ urlpatterns = patterns('',
     #url(r'^supplydemandweek/(?P<week_date>\w{10})/$',
     #    "producer.views.supply_and_demand_week", name='supply_and_demand_week'),
 
+    # dojo
+    url(r'^dojoplanningtable/(?P<member_id>\d+)/(?P<list_type>\w{1})/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$', 
+        "producer.views.dojo_planning_table", name='producer_dojo_planning_table'),
+    url(r'^jsonplanningtable/(?P<member_id>\d+)/(?P<list_type>\w{1})/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$', 
+        "producer.views.json_planning_table", name='producer_json_planning_table'),
+    url(r'^jsonplanningtable/(?P<member_id>\d+)/(?P<list_type>\w{1})/(?P<from_date>\w{10})/(?P<to_date>\w{10})/(?P<row_id>\d+)$', 
+        "producer.views.json_planning_table", name='producer_json_planning_table'),
+    url(r'^dojomemberplans/(?P<from_date>\w{10})/(?P<to_date>\w{10})/(?P<member_id>\d+)/$',
+        "producer.views.dojo_member_plans", name='producer_dojo_member_plans'),
+    url(r'^jsonmemberplans/(?P<from_date>\w{10})/(?P<to_date>\w{10})/(?P<member_id>\d+)/$',
+        'producer.views.json_member_plans', name='producer_json_member_plans'),
+    #url(r'^dojosupplydemand/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$',
+    #    dojo_supply_and_demand, name='dojo_supply_demand'),
+    #url(r'^jsonsupplydemand/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$',
+    #    json_supply_and_demand, name='json_supply_demand'),
+    #url(r'^dojoincome/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$', dojo_income,
+    #    name='dojo_income'),
+    #url(r'^jsonincome/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$', json_income,
+    #    name='json_income'),
+    #url(r'^dojosupplydemandweek/(?P<tabs>\w{1})/(?P<week_date>\w{10})/$',
+    #    dojo_supply_and_demand_week, name='dojo_supply_and_demand_week'),
+    #url(r'^jsonsupplydemandweek/(?P<week_date>\w{10})/$',
+    #    json_supply_and_demand_week, name='json_supply_and_demand_week'),
+
+
 )
 
 

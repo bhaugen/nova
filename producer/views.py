@@ -414,7 +414,7 @@ def plan_selection(request):
                 from_date = data['from_date'].strftime('%Y_%m_%d')
                 to_date = data['to_date'].strftime('%Y_%m_%d')
                 return HttpResponseRedirect('/%s/%s/%s/'
-                    % ('producer/supplydemand', from_date, to_date))
+                    % ('producer/dojosupplydemand', from_date, to_date))
             else:
                 psform = PlanSelectionForm(initial=plan_init)
                 income_form = DateRangeSelectionForm(prefix = 'inc', initial=init)
@@ -426,7 +426,7 @@ def plan_selection(request):
                 from_date = data['from_date'].strftime('%Y_%m_%d')
                 to_date = data['to_date'].strftime('%Y_%m_%d')
                 return HttpResponseRedirect('/%s/%s/%s/'
-                    % ('producer/income', from_date, to_date))
+                    % ('producer/dojoincome', from_date, to_date))
             else:
                 psform = PlanSelectionForm(initial=plan_init)
                 sdform = DateRangeSelectionForm(prefix='sd', initial=init)
@@ -890,6 +890,133 @@ def json_member_plans(request, from_date, to_date, member_id):
     response['Content-Range'] = "".join(["items ", str(range_start),
         "-", str(range_end), "/", str(count + 1)])
     return response
+
+@login_required
+def dojo_supply_and_demand(request, from_date, to_date):
+    from_datestring = from_date
+    to_datestring = to_date
+    try:
+        from_date = datetime.datetime(*time.strptime(from_date, '%Y_%m_%d')[0:5]).date()
+        to_date = datetime.datetime(*time.strptime(to_date, '%Y_%m_%d')[0:5]).date()
+    except ValueError:
+            raise Http404
+    columns = sd_columns(from_date, to_date)
+    return render_to_response('distribution/dojo_supply_demand.html', 
+        {
+            'from_date': from_date,
+            'to_date': to_date,
+            'from_datestring': from_datestring,
+            'to_datestring': to_datestring,
+            'columns': columns,
+            'column_count': len(columns),
+            'tabnav': "producer/producer_tabnav.html",
+            'tabs': 'P',
+        }, context_instance=RequestContext(request))
+
+@login_required
+def json_supply_and_demand(request, from_date, to_date):
+    try:
+        from_date = datetime.datetime(*time.strptime(from_date, '%Y_%m_%d')[0:5]).date()
+        to_date = datetime.datetime(*time.strptime(to_date, '%Y_%m_%d')[0:5]).date()
+    except ValueError:
+            raise Http404
+    rows = supply_demand_rows(from_date, to_date)
+    count = len(rows)
+    try:
+        range = request.META["HTTP_RANGE"]
+        range = range.split("=")[1]
+        range = range.split("-")
+        range_start = int(range[0])
+        range_end = int(range[1])
+    except KeyError:
+        range_start = 0
+        range_end = count
+    if count < range_end:
+        range_end = count
+    rows = rows[range_start:range_end + 1]
+    data = simplejson.dumps(rows)
+    response = HttpResponse(data, mimetype="text/json-comment-filtered")
+    response['Cache-Control'] = 'no-cache'
+    response['Content-Range'] = "".join(["items ", str(range_start),
+        "-", str(range_end), "/", str(count + 1)])
+    return response
+
+@login_required
+def dojo_supply_and_demand_week(request, tabs, week_date):
+    try:
+        week_date = datetime.datetime(*time.strptime(week_date, '%Y_%m_%d')[0:5]).date()
+    except ValueError:
+            raise Http404
+    sdtable = dojo_supply_demand_weekly_table(week_date)
+    columns = sdtable.columns
+    tabnav = "distribution/tabnav.html"
+    if tabs == "P":
+        tabnav = "producer/producer_tabnav.html"
+    return render_to_response('distribution/dojo_supply_demand_week.html', 
+        {
+            'week_date': week_date,
+            'columns': columns,
+            'column_count': len(columns),
+            'tabnav': tabnav,
+        }, context_instance=RequestContext(request))
+
+@login_required
+def dojo_income(request, from_date, to_date):
+    from_datestring = from_date
+    to_datestring = to_date
+    try:
+        from_date = datetime.datetime(*time.strptime(from_date, '%Y_%m_%d')[0:5]).date()
+        to_date = datetime.datetime(*time.strptime(to_date, '%Y_%m_%d')[0:5]).date()
+    except ValueError:
+            raise Http404
+    member = get_producer(request)
+    income_table = producer_suppliable_demand(from_date, to_date, member)
+    total_gross =  sum(row[len(row)-1] for row in income_table.rows)
+    columns = sd_columns(from_date, to_date)
+    return render_to_response('producer/dojo_income.html', 
+        {
+            'from_date': from_date,
+            'to_date': to_date,
+            'member': member,
+            'from_datestring': from_datestring,
+            'to_datestring': to_datestring,
+            'total_gross': total_gross,
+            'columns': columns,
+            'column_count': len(columns) + 2,
+            'tabnav': "producer/producer_tabnav.html",
+            'tabs': 'P',
+        }, context_instance=RequestContext(request))
+
+@login_required
+def json_income(request, from_date, to_date):
+    try:
+        from_date = datetime.datetime(*time.strptime(from_date, '%Y_%m_%d')[0:5]).date()
+        to_date = datetime.datetime(*time.strptime(to_date, '%Y_%m_%d')[0:5]).date()
+    except ValueError:
+            raise Http404
+    producer = get_producer(request)
+    rows = producer_json_income_rows(from_date, to_date, producer)
+    count = len(rows)
+    try:
+        range = request.META["HTTP_RANGE"]
+        range = range.split("=")[1]
+        range = range.split("-")
+        range_start = int(range[0])
+        range_end = int(range[1])
+    except KeyError:
+        range_start = 0
+        range_end = count
+    if count < range_end:
+        range_end = count
+    rows = rows[range_start:range_end + 1]
+    data = simplejson.dumps(rows)
+    response = HttpResponse(data, mimetype="text/json-comment-filtered")
+    response['Cache-Control'] = 'no-cache'
+    response['Content-Range'] = "".join(["items ", str(range_start),
+        "-", str(range_end), "/", str(count + 1)])
+    return response
+
+
 
 @login_required
 def supply_and_demand(request, from_date, to_date):

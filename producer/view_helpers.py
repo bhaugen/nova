@@ -167,6 +167,139 @@ def producer_suppliable_demand(from_date, to_date, producer):
     sdtable = SupplyDemandTable(columns, income_rows)
     return sdtable
 
+def producer_json_income_rows(from_date, to_date, producer):
+    #import pdb; pdb.set_trace()
+    customer_plans = ProductPlan.objects.filter(role="consumer")
+    producer_plans = ProductPlan.objects.filter(member=producer)
+    rows = {}
+    pps = []
+    for plan in producer_plans:
+        wkdate = from_date
+        row = {}
+        while wkdate <= to_date:
+            row[wkdate.strftime('%Y_%m_%d')] = SuppliableDemandCell(Decimal("0"), Decimal("0"))
+            wkdate = wkdate + datetime.timedelta(days=7)
+        product = plan.product.supply_demand_product()
+        if not product.id in pps:
+            pps.append(product.id)
+        row["product"] =  product.long_name
+        row["id"] = product.id
+        row["price"] = product.price
+        rows.setdefault(product, row)
+        wkdate = from_date
+        while wkdate <= to_date:
+            key = wkdate.strftime('%Y_%m_%d')
+            if plan.from_date <= wkdate and plan.to_date >= wkdate:
+                rows[product][key].supply += plan.quantity
+            wkdate = wkdate + datetime.timedelta(days=7)
+    #pps = ProducerProduct.objects.filter(producer=producer).values_list("product_id")
+    #pps = set(id[0] for id in pps)
+    for plan in customer_plans:
+        wkdate = from_date
+        product = plan.product.supply_demand_product()
+        if product.id in pps:
+            while wkdate <= to_date:
+                key = wkdate.strftime('%Y_%m_%d')
+                if plan.from_date <= wkdate and plan.to_date >= wkdate:
+                    rows[product][key].demand += plan.quantity
+                wkdate = wkdate + datetime.timedelta(days=7)
+    rows = rows.values()
+    fee = producer_fee()
+    for row in rows:
+        wkdate = from_date
+        while wkdate <= to_date:
+            key = wkdate.strftime('%Y_%m_%d')
+            sd = row[key].suppliable()
+            if sd >= 0:
+                income = sd * row['price']
+                row[key] = income - (income * fee)
+            else:
+                row[key] = Decimal("0")
+            wkdate = wkdate + datetime.timedelta(days=7)
+    income_rows = []
+    for row in rows:
+        total = Decimal("0")
+        wkdate = from_date
+        while wkdate <= to_date:
+            key = wkdate.strftime('%Y_%m_%d')
+            total += row[key]
+            row[key] = str(row[key].quantize(Decimal('.1'), rounding=ROUND_UP))
+            wkdate = wkdate + datetime.timedelta(days=7)
+        if total:
+            total = total.quantize(Decimal('1.'), rounding=ROUND_UP)
+            row['total']=str(total)
+            row["price"] = str(row["price"])
+            income_rows.append(row)
+    income_rows.sort(lambda x, y: cmp(x["product"], y["product"]))
+    return income_rows
+
+#todo: does not use contants (NIPs)
+#or correct logic for storage items
+def json_income_rows(from_date, to_date, member=None):
+    #import pdb; pdb.set_trace()
+    plans = ProductPlan.objects.all()
+    if member:
+        plans = plans.filter(member=member)
+    rows = {}    
+    for plan in plans:
+        wkdate = from_date
+        row = {}
+        while wkdate <= to_date:
+            row[wkdate.strftime('%Y_%m_%d')] = SuppliableDemandCell(Decimal("0"), Decimal("0"))
+            wkdate = wkdate + datetime.timedelta(days=7)
+        product = plan.product.supply_demand_product()
+        row["product"] =  product.long_name
+        row["id"] = product.id
+        row["price"] = product.price
+        rows.setdefault(product, row)
+        wkdate = from_date
+        while wkdate <= to_date:
+            key = wkdate.strftime('%Y_%m_%d')
+            if plan.from_date <= wkdate and plan.to_date >= wkdate:
+                if plan.role == "producer":
+                    rows[product][key].supply += plan.quantity
+                else:
+                    rows[product][key].demand += plan.quantity
+            wkdate = wkdate + datetime.timedelta(days=7)
+    rows = rows.values()
+    cust_fee = customer_fee()
+    #import pdb; pdb.set_trace()
+    for row in rows:
+        wkdate = from_date
+        while wkdate <= to_date:
+            key = wkdate.strftime('%Y_%m_%d')
+            sd = row[key].suppliable()
+            if sd > 0:
+                income = sd * row["price"]
+                row[key] = income
+            else:
+                row[key] = Decimal("0")
+            wkdate = wkdate + datetime.timedelta(days=7)
+    income_rows = []
+    for row in rows:
+        base = Decimal("0")
+        total = Decimal("0")
+        wkdate = from_date
+        while wkdate <= to_date:
+            key = wkdate.strftime('%Y_%m_%d')
+            cell = row[key]
+            base += cell
+            cell += cell * cust_fee
+            total += cell
+            row[key] = str(cell.quantize(Decimal('.1'), rounding=ROUND_UP))
+            wkdate = wkdate + datetime.timedelta(days=7)
+        if total:
+            net = base * cust_fee + (base * producer_fee())
+            net = net.quantize(Decimal('1.'), rounding=ROUND_UP)
+            total = total.quantize(Decimal('1.'), rounding=ROUND_UP)
+            row["total"] = str(total)
+            row["net"] = str(net)
+            row["price"] = str(row["price"])
+            income_rows.append(row)
+    income_rows.sort(lambda x, y: cmp(x["product"], y["product"]))
+    return income_rows
+
+
 def producer_plans_table(from_date, to_date, producer):
     plans = ProductPlan.objects.filter(member=producer)
     rows = {}    

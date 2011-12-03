@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+
+{% block title %}
+     {{ producer }} Profile - Edit
+{% endblock %}
+
+{% block header %}
+
+<style type="text/css">
+	p
+	{
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+	h4
+	{
+		margin-top: 2px; 
+		margin-bottom: 0;"
+	}
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="profile">
+
+	{% include "producer/producer_tabnav.html" %}
+	
+	<h3 style="padding-top: 0; margin-top: 0; margin-bottom: 1em;" >{{ producer.long_name }} Profile</h3>
+
+
+	<form action="." method="POST" >{% csrf_token %}
+
+		<div style="width: 80%; margin-bottom: 1em;" >
+			<input style="display: block; margin-left: auto; margin-right: auto; " type="submit" name="submit-profile" value='{% trans "Save Profile changes" %}' />
+		</div>
+
+		<div style="float: left; margin-left: 1em; width: 40%;" >
+
+		<table style="margin-top: 4px;" >
+			<tr>
+				<th style="text-align: right; " >Name:</th>
+				<td> {{ form.long_name }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Phone:</th>
+				<td> {{ form.phone }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Fax:</th>
+				<td> {{ form.fax }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Email:</th>
+				<td> {{ form.email_address }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Website:</th>
+				<td> {{ form.website }} </td>
+			</tr>
+		</table>
+		<h4>Address</h4>
+		<p>{{ form.address }}</p>
+
+
+		<h4>Description</h4>
+		<p>{{ form.description }}</p>
+
+		<h4 >Philosophy</h4>
+		<p>{{ form.philosophy }}</p>
+
+		<h4>Storage capacity</h4>
+		<p>{{ form.storage_capacity }}</p>
+
+		<input type="submit" name="submit-profile" value='{% trans "Save Profile changes" %}' />
+
+	</div>
+	<div style="float: left; margin-left: 2em; width: 40%;" >
+
+		<h4>Contacts</h4>
+			<p>
+	        	</p>
+			<table >
+				<thead>
+					<th>Name</th>
+					<th>Phone</th>
+					{% comment %}
+					<th>Cell</th>
+					{% endcomment %}
+					<th>Email</th>
+                			<th>Delete</th>
+				</thead>
+				<tbody>
+			    		{{ formset.management_form }}
+    					{% for form in formset.forms %}
+
+        					<tr>
+							<td>{{ form.name }}</td>
+							<td>{{ form.phone }}</td>
+							{% comment %}
+							<td>{{ form.cell }}</td>
+							{% endcomment %}
+							<td>{{ form.email }}</td>
+							<td>{{ form.DELETE }}</td>
+        					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% comment %}
+			<p style="margin-top: 2em;">
+		            <input type="submit" name="submit-contacts" value="Save Profile changes" />
+			</p>
+			{% endcomment %}
+		</form>
+
+	</div>
+	<div style="clear: both; " ></div>
+
+
+	
+</div>
+{% endblock %}
+
+
+

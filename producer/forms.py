@@ -5,6 +5,41 @@ import datetime
 
 from distribution.models import *
 
+class ProducerProfileForm(forms.ModelForm):
+    long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    phone = forms.CharField(required=False)
+    fax = forms.CharField(required=False)
+    email_address = forms.CharField(required=False,
+        widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    #email_address = forms.CharField(required=False, widget=forms.EmailField)
+    website = forms.CharField(required=False,
+        widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    #website = forms.CharField(required=False, widget=forms.URLField)
+    address = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'rows': '4','value': ''}))
+    description = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+    philosophy = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+    storage_capacity = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+
+
+    class Meta:
+        model = Producer
+        exclude = ('member_id', 'short_name', 'delivers')
+
+
+class ProducerContactForm(forms.ModelForm): 
+    name = forms.CharField(widget=forms.TextInput(attrs={'size': '16', 'value': ''}))
+    phone = forms.CharField(widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
+    cell = forms.CharField(widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
+    email = forms.CharField(widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
+
+    class Meta:
+        model = ProducerContact
+        exclude = ('login_user', 'cell')
+
 
 class InventoryItemForm(forms.ModelForm):
     prod_id = forms.CharField(widget=forms.HiddenInput)

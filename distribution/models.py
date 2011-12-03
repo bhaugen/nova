@@ -14,9 +14,13 @@ from django.utils.translation import ugettext_lazy as _
 from notification.models import NoticeType
 
 def food_network():
-    try:
-        return FoodNetwork.objects.all()[0]
-    except IndexError:
+    #try:
+    #    return FoodNetwork.objects.all()[0]
+    #except IndexError:
+    fns = FoodNetwork.objects.all()
+    if fns:
+        return fns[0]
+    else:
         raise FoodNetwork.DoesNotExist()
 
 def customer_fee():
@@ -56,6 +60,7 @@ def use_plans_for_ordering():
     return answer
 
 def default_product_expiration_days():
+#    return 6
     try:
         answer = food_network().default_product_expiration_days
     except FoodNetwork.DoesNotExist:
@@ -63,11 +68,18 @@ def default_product_expiration_days():
     return answer
 
 def customer_terms():
-    return food_network().customer_terms
-
+    try:
+        answer = food_network().customer_terms
+    except FoodNetwork.DoesNotExist:
+        answer = 0
+    return answer
 
 def member_terms():
-    return food_network().member_terms
+    try:
+        answer = food_network().member_terms
+    except FoodNetwork.DoesNotExist:
+        answer = 0
+    return answer
 
 class ProductAndProducers(object):
      def __init__(self, product, qty, price, producers):
@@ -263,6 +275,7 @@ class Party(models.Model):
     email_address = models.EmailField(_('email address'), max_length=96, blank=True, null=True)
     description = models.TextField(_('description'), blank=True)
     storage_capacity = models.TextField(_('storage capacity'), blank=True)
+    website = models.CharField(_('website'), max_length=255, blank=True)
     content_type = models.ForeignKey(ContentType,editable=False,null=True)
     
     objects = models.Manager()
@@ -713,8 +726,39 @@ class ProducerManager(models.Manager):
 
 
 class Producer(Party):
+    philosophy = models.TextField(_('philosophy'), blank=True)
     delivers = models.BooleanField(_('delivers'), default=False,
         help_text=_('Delivers products directly to customers?'))
+
+    def available_now(self):
+        pps = self.producer_products.all()
+        lots = []
+        thisdate = datetime.date.today()
+        for pp in pps:
+            for lot in pp.product.avail_items_today(thisdate):
+                if lot.producer.id == self.id:
+                    lots.append(lot)
+        products = {}
+        for lot in lots:
+            if not lot.product.id in products:
+                products[lot.product.id] = ProductQuantity(lot.product,
+                    Decimal("0"))
+            products[lot.product.id].qty += lot.remaining
+        avail = products.values()
+        for item in avail:
+            item.qty -= item.product.total_unfilled(thisdate)
+        avail.sort(lambda x, y: cmp(x.product.short_name,
+                                    y.product.short_name))
+        return avail
+
+    def planned_available(self, weeks=4):
+        start = datetime.date.today()
+        end = start + datetime.timedelta(weeks=weeks)
+        avail = []
+        for plan in self.product_plans.all():
+            if plan.from_date >= start and plan.from_date <= end:
+                avail.append(plan)
+        return avail
 
 
 class Processor(Party):
@@ -902,7 +946,8 @@ class Product(models.Model):
         help_text=_('If checked, the Food Network pays the producer for issues, deliveries and damages of this product.'))
     pay_producer_on_terms = models.BooleanField(_('pay producer on terms'), default=False,
         help_text=_('If checked, producer paid on member terms. If not, producers paid based on customer order payments. Note: Issues always paid on member terms.'))
-    expiration_days = models.IntegerField(_('expiration days'), default=default_product_expiration_days,
+    expiration_days = models.IntegerField(_('expiration days'),
+        default=default_product_expiration_days,
         help_text=_('Inventory Items (Lots) of this product will expire in this many days.'))
 
     def __unicode__(self):
@@ -924,6 +969,9 @@ class Product(models.Model):
             special = specials[0]
             up = special.price
         return up
+
+    def unit_price_now(self):
+        return self.formatted_unit_price_for_date(datetime.date.today())
 
     # suspect but used
     #shd be based on delivery cycle

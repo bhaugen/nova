@@ -27,6 +27,7 @@ display: inline;
 }
 
 div.producer-dashboard li.producer-dashboard, 
+div.profile li.profile,
 div.avail li.avail,
 div.process li.process,
 div.statements li.statements,
@@ -40,6 +41,7 @@ div.product-lists li.product-lists
 }
 
 div.producer-dashboard li.producer-dashboard a, 
+div.profile li.profile a,
 div.avail li.avail a,
 div.process li.process a,
 div.statements li.statements a,
@@ -57,7 +59,7 @@ div.product-lists li.product-lists a
 
 ul#tabnav li a 
 { /* settings for all tab links */
-	padding: 3px 4px; /* set padding (tab size) as desired; FIRST number must change with respect to padding-top (X) above */
+	padding: 4px 4px; /* set padding (tab size) as desired; FIRST number must change with respect to padding-top (X) above */
 	border: 1px solid #006699; /* set border COLOR as desired; usually matches border color specified in #tabnav */
 	background-color: #D0D0D0; /* set unselected tab background color as desired */
 	color: #666; /* set unselected tab link color as desired */
@@ -78,6 +80,7 @@ ul#tabnav a:hover
 <div style="float: left;">
 	<ul id="tabnav" class="do-not-print" >
 		<li class="producer-dashboard" ><a title="Home page" href="/producer/producerdashboard">Dashboard</a> </li>
+		<li class="profile" ><a title="My Profile" href="/producer/profile">{% trans "Profile" %}</a></li>
 		<li class="avail" ><a title="Update available products" href="/producer/inventoryselection">{% trans "Avail" %}</a></li>
 		<li class="process" ><a title="Create or update processes" href="/producer/processselection">{% trans "Process" %}</a></li>
 		{% comment %}

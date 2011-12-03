@@ -15,7 +15,7 @@ from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.mail import send_mail
-from django.forms.models import inlineformset_factory
+from django.forms.models import inlineformset_factory, modelformset_factory
 from django.db.models import Q
 from django.contrib.sites.models import Site
 from django.utils import simplejson
@@ -41,12 +41,41 @@ def get_producer(request):
 
 def producer_dashboard(request):
     fn = food_network()
-    #todo: all uses of the next statement shd be changed
     producer = get_producer(request)
     return render_to_response('producer/producer_dashboard.html', 
         {'producer': producer,
          'food_network': fn,
          }, context_instance=RequestContext(request))
+
+def producer_profile(request):
+    producer = get_producer(request)
+    start = datetime.date.today()
+    end = (start + datetime.timedelta(weeks=4)).strftime('%Y_%m_%d')
+    start = start.strftime('%Y_%m_%d')
+    return render_to_response('producer/profile.html', 
+        {'producer': producer,
+         'date': datetime.date.today(),
+         'start': start,
+         'end': end,
+         }, context_instance=RequestContext(request))
+
+def edit_producer_profile(request):
+    producer = get_producer(request)
+    form = ProducerProfileForm(instance=producer)
+    #ContactFormSet = modelformset_factory(ProducerContact, 
+    #    exclude=('producer', 'login_user'),
+    #    extra=2)
+    ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
+        form=ProducerContactForm,
+        extra=2)
+    #formset = ContactFormSet(queryset=ProducerContact.objects.filter(producer=producer))
+    formset = ContactFormSet(data=request.POST or None, instance=producer)
+    return render_to_response('producer/profile_edit.html', 
+        {'producer': producer,
+         'form': form,
+         'formset': formset,
+         }, context_instance=RequestContext(request))
+
 
 @login_required
 def inventory_selection(request):

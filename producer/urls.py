@@ -5,6 +5,11 @@ from django.views.generic.simple import direct_to_template
 urlpatterns = patterns('',
     url(r'^producerdashboard/$', "producer.views.producer_dashboard", name="producer_dashboard"),
 
+    # profile
+    url(r'^profile/$', "producer.views.producer_profile", name="producer_profile"),
+    url(r'^editprofile/$', "producer.views.edit_producer_profile",
+        name="edit_producer_profile"),
+
     # avail
     url(r'^inventoryselection/$', "producer.views.inventory_selection", name="producer_inventory_selection"),
     url(r'^inventoryupdate/(?P<prod_id>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',

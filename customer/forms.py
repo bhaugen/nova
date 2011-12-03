@@ -6,6 +6,15 @@ import datetime
 from distribution.models import *
 
 
+class CustomerProfileForm(forms.ModelForm):
+    name = forms.CharField(widget=forms.TextInput(attrs={'size': '64', 'value': ''}))
+
+    class Meta:
+        model = Producer
+        exclude = ('member_id', 'short_name', 'long_name', 
+                   'customer_transportation_fee', 'apply_transportation_fee')
+
+
 class NewOrderSelectionForm(forms.Form):
     #order_date = forms.DateField(
     #    widget=forms.TextInput(attrs={"dojoType": "dijit.form.DateTextBox", "constraints": "{datePattern:'yyyy-MM-dd'}"}))

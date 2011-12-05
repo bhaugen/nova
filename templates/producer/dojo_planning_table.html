@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load url from future %}
+
 {% load i18n %}
 
 {% block title %}
@@ -66,9 +66,9 @@ dojo.require("dojo.window");
 		dojo.byId("saveMessage").innerHTML = "Changes saved";
 		dojo.fadeOut({ node:"saveMessage", duration:3000  }).play();
 		{% if next %}		
-		window.location = "{% url next %}";
+		window.location = "{% url producer_profile %}";
 		{% else %}
-		window.location = "{% url 'producer_dojo_member_plans' from_date=from_datestring to_date=to_datestring member_id=member.id %}";
+		window.location = "{% url producer_dojo_member_plans from_date=from_datestring to_date=to_datestring member_id=member.id %}";
 		{% endif %}
 	}
 
@@ -126,7 +126,7 @@ dojo.require("dojo.window");
 
 <div 
 	dojoType="dojox.data.JsonRestStore" 
-	target="{% url 'producer_json_planning_table' member_id=member.id list_type=list_type from_date=from_datestring to_date=to_datestring %}" 
+	target="{% url producer_json_planning_table member_id=member.id list_type=list_type from_date=from_datestring to_date=to_datestring %}" 
 	idAttribute="id" 
 	jsId="jsonStore">
 </div>

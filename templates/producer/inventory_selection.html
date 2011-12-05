@@ -58,7 +58,7 @@
     <form action="." method="POST" >{% csrf_token %}
         <table>
             <tr>
-                <th style="text-align: right; " >{% trans "Week of" %}:</th>
+                <th style="text-align: right; " >{% trans "Available date" %}:</th>
                 <td>{{ form.next_delivery_date}}</td>
 				{% if form.next_delivery_date.errors %}
 					<td style="color: red; " >
@@ -68,9 +68,38 @@
             </tr>
         </table>
         <p>
-            <input type="submit" value="{% trans 'Submit' %}" />
+            <input type="submit" value="{% trans 'Add or change available items' %}" />
         </p>
-    </form>
+	</form>
+
+	<h3>What's Available Now</h3>
+
+
+	<table class="ga-event-table" style="font-size: 80%;" >
+		<tr>
+			<th>{% trans "Product" %}</th>
+			<th>{% trans "Lot" %}</th>
+			<th>{% trans "Inventory Date" %}</th>
+			<th>{% trans "Expiration Date" %}</th>
+			<th>{% trans "Where" %}</th>		
+	        	<th>{% trans "Avail" %}</th>
+			<th>{% trans "Shipped" %}</th>
+			<th>{% trans "Buyers" %}</th>
+		</tr>
+		{% for lot in available %}
+		<tr>
+			<td>{{ lot.product }}</td>
+			<td>{{ lot.lot_id }}</td>
+			<td>{{ lot.inventory_date }}</td>
+			<td>{{ lot.expiration_date }}</td>
+			<td>{{ lot.where }}</td>
+			<td style="text-align: right;" >{{ lot.avail_qty }}</td>
+			<td style="text-align: right;" >{{ lot.delivered_qty }}</td>
+			<td>{{ lot.customers }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
 </div>
 {% endblock %}
 

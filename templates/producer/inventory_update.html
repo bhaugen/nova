@@ -118,8 +118,10 @@
 			<th>{% trans "Lot Id" %}</th>
             		<th>{% trans "Field" %}</th>
 			<th>{% trans "Custodian" %}</th>
-			<th>{% trans "Date" %}</th>
-            		<th>{% trans "Ready Qty" %}</th>
+			<th>{% trans "Available Date" %}</th>
+			<th>{% trans "Availability Ends" %}</th>
+			<th>{% trans "Quantity" %}</th>
+			<th>{% trans "Ordered" %}</th>
 			<th>{% trans "Notes" %}</th>
             </tr>
             {% for item_form in item_forms %}
@@ -129,7 +131,9 @@
 			 <td> {{ item_form.field_id }} </td>
 			<td> {{ item_form.custodian }} </td>
 			<td> {{ item_form.inventory_date }} </td>
-			<td> {{ item_form.planned }} </td>
+			<td> {{ item_form.expiration_date }} </td>
+			<td> {{ item_form.remaining }} </td>
+			<td class="read-only-td" style="text-align: right;" > {{ item_form.ordered }} </td>
 			<td> {{ item_form.notes }} </td>
 			{{ item_form.item_id }}
 			{{ item_form.prod_id }}

@@ -32,9 +32,9 @@ class ProducerProfileForm(forms.ModelForm):
 
 class ProducerContactForm(forms.ModelForm): 
     name = forms.CharField(widget=forms.TextInput(attrs={'size': '16', 'value': ''}))
-    phone = forms.CharField(widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
-    cell = forms.CharField(widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
-    email = forms.CharField(widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
+    phone = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
+    #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
+    email = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
 
     class Meta:
         model = ProducerContact
@@ -48,7 +48,8 @@ class InventoryItemForm(forms.ModelForm):
     field_id = forms.CharField(required=False,
                                widget=forms.TextInput(attrs={'size': '5', 'value': ''}))
     inventory_date = forms.DateField(widget=forms.TextInput(attrs={'size': '10'}))
-    planned = forms.DecimalField(widget=forms.TextInput(attrs={'class':
+    expiration_date = forms.DateField(widget=forms.TextInput(attrs={'size': '10'}))
+    remaining = forms.DecimalField(widget=forms.TextInput(attrs={'class':
                                                                'quantity-field',
                                                                'size': '6'}))
     notes = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
@@ -56,7 +57,7 @@ class InventoryItemForm(forms.ModelForm):
 
     class Meta:
         model = InventoryItem
-        exclude = ('producer', 'product', 'received', 'onhand', 'remaining', 'expiration_date')
+        exclude = ('producer', 'product', 'planned', 'received', 'onhand',)
         
     def __init__(self, *args, **kwargs):
         super(InventoryItemForm, self).__init__(*args, **kwargs)

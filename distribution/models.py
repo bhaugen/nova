@@ -752,7 +752,7 @@ class Producer(Party):
         return avail
 
     def planned_available(self, weeks=4):
-        start = datetime.date.today()
+        start = datetime.date.today() + datetime.timedelta(weeks=1)
         end = start + datetime.timedelta(weeks=weeks)
         avail = []
         for plan in self.product_plans.all():
@@ -1090,6 +1090,11 @@ class Product(models.Model):
     def total_ordered_for_timespan(self, from_date, to_date):
         return sum(order.unfilled_quantity() for order in
             self.current_orders_for_timespan(from_date, to_date))
+
+    def total_ordered_now(self):
+        from_date = datetime.date.today()
+        to_date = from_date + datetime.timedelta(weeks=1)
+        return self.total_ordered_for_timespan(from_date, to_date) | 0
 
     # deprecated - used a little
     def current_orders(self, thisdate):

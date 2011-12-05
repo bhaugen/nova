@@ -17,43 +17,56 @@ def create_inventory_item_forms(producer, avail_date, data=None):
     monday = avail_date - datetime.timedelta(days=datetime.date.weekday(avail_date))
     saturday = monday + datetime.timedelta(days=5)
     items = InventoryItem.objects.filter(
-        producer=producer, 
+        producer=producer,
         remaining__gt=0,
-        inventory_date__range=(monday, saturday))
+        inventory_date__lte=avail_date,
+        expiration_date__gt=avail_date)
+    #import pdb; pdb.set_trace()
     item_dict = {}
+    plan_dict = {}
     for item in items:
         item_dict[item.product.id] = item
     plans = ProductPlan.objects.filter(
         member=producer, 
         from_date__lte=avail_date, 
         to_date__gte=saturday)
-    form_list = []
     for plan in plans:
-        custodian_id = ""
+        plan_dict[plan.product.id] = plan
+    form_list = []
+    for item in items:
         try:
-            item = item_dict[plan.product.id]
-            if item.custodian:
-                custodian_id = item.custodian.id
+            plan = plan_dict[item.product.id]
+            plan_qty = plan.quantity        
         except KeyError:
-            item = False
-        if item:
-            the_form = InventoryItemForm(data, prefix=item.product.id, initial={
-                'item_id': item.id,
-                'prod_id': item.product.id,
-                'freeform_lot_id': item.freeform_lot_id,
-                'field_id': item.field_id,
-                'custodian': custodian_id,
-                'inventory_date': item.inventory_date,
-                'planned': item.planned,
-                'notes': item.notes})
-        else:
-            the_form = InventoryItemForm(data, prefix=plan.product.id, initial={
+            planned = 0
+        #todo: ordered and remainder logic here does not work correctly
+        #needs to be adjusted for ordering by producer - even then, cd be wrong
+        ordered = item.product.total_ordered_for_timespan(avail_date, saturday)
+        the_form = InventoryItemForm(data, prefix=item.id, initial={
+            'item_id': item.id,
+            'prod_id': item.product.id,
+            'freeform_lot_id': item.freeform_lot_id,
+            'field_id': item.field_id,
+            'custodian': item.custodian,
+            'inventory_date': item.inventory_date,
+            'expiration_date': item.expiration_date,
+            'remaining': item.remaining,
+            'notes': item.notes})
+        the_form.description = item.product.long_name
+        the_form.ordered = ordered
+        form_list.append(the_form)
+    for plan in plans:
+        if not plan.product in items:
+            expiration_date = avail_date + datetime.timedelta(days=plan.product.expiration_days)
+            the_form = InventoryItemForm(data, prefix=plan.id, initial={
                 'prod_id': plan.product.id, 
                 'inventory_date': avail_date,
-                'planned': 0,
+                'expiration_date': expiration_date,
+                'remaining': 0,
                 'notes': ''})
-        the_form.description = plan.product.long_name
-        form_list.append(the_form) 
+            the_form.description = plan.product.long_name
+            the_form.ordered = 0
+            form_list.append(the_form) 
     return form_list 
 
 def supply_demand_table(from_date, to_date, member):

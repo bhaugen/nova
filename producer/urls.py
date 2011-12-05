@@ -14,6 +14,8 @@ urlpatterns = patterns('',
     url(r'^inventoryselection/$', "producer.views.inventory_selection", name="producer_inventory_selection"),
     url(r'^inventoryupdate/(?P<prod_id>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
         "producer.views.inventory_update", name="producer_inventory_update"),
+    url(r'^inventoryupdate/(?P<prod_id>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<next>\w+)/$',
+        "producer.views.inventory_update", name="producer_inventory_update"),
     url(r'^produceravail/(?P<prod_id>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
         "producer.views.produceravail", name="producer_avail"),
 
@@ -53,6 +55,8 @@ urlpatterns = patterns('',
 
     # dojo
     url(r'^dojoplanningtable/(?P<member_id>\d+)/(?P<list_type>\w{1})/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$', 
+        "producer.views.dojo_planning_table", name='producer_dojo_planning_table'),
+    url(r'^dojoplanningtable/(?P<member_id>\d+)/(?P<list_type>\w{1})/(?P<from_date>\w{10})/(?P<to_date>\w{10})/(?P<next>\w+)/$', 
         "producer.views.dojo_planning_table", name='producer_dojo_planning_table'),
     url(r'^jsonplanningtable/(?P<member_id>\d+)/(?P<list_type>\w{1})/(?P<from_date>\w{10})/(?P<to_date>\w{10})/$', 
         "producer.views.json_planning_table", name='producer_json_planning_table'),

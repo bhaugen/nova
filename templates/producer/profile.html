@@ -100,19 +100,21 @@
 		<table>
 			<tr>
 				<th>Product</th>
-				<th>Price</th>
+				<th>Pay Price</th>
+				<th>Selling Price</th>
 			</tr>
 			{% for product in producer.producer_products.all %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td>{{ product.product.long_name }}</td>
 				<td style="text-align: right; ">${{ product.product.unit_price_now }}</td>
+				<td style="text-align: right; ">${{ product.product.unit_price_now }}</td>
 			</tr>
 			{% endfor %}
 		</table>
 
-		<h4>
+		<h4 style="margin-top: 1em;" >
 			What we have available now: &nbsp;&nbsp;&nbsp;
-			<a href="{% url producer_inventory_update prod_id=producer.id year=date.year month=date.month day=date.day %}">
+			<a href="{% url producer_inventory_update prod_id=producer.id year=date.year month=date.month day=date.day next="profile" %}">
 				Change availability
 			</a>
 		</h4>
@@ -120,19 +122,21 @@
 			<tr>
 				<th>Product</th>
 				<th>Quantity</th>
+				<th>Ordered</th>
 			</tr>
 			{% for item in producer.available_now %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td>{{ item.product }}</td>
 				<td style="text-align: right; ">{{ item.qty }}</td>
+				<td style="text-align: right; ">{{ item.product.total_ordered_now }}</td>
 			</tr>
 			{% endfor %}
 		</table>
 		
 
-		<h4>
+		<h4 style="margin-top: 1em;" >
 			Our 4 week harvest plan: &nbsp;&nbsp;&nbsp;
-			<a href="{% url producer_dojo_planning_table member_id=producer.id list_type='M' from_date=start to_date=end %}">
+			<a href="{% url producer_dojo_planning_table member_id=producer.id list_type='M' from_date=start to_date=end next="producer_profile" %}">
 				Change plans
 			</a>
 		</h4>

@@ -49,7 +49,7 @@ def producer_dashboard(request):
 
 def producer_profile(request):
     producer = get_producer(request)
-    start = datetime.date.today()
+    start = datetime.date.today() + datetime.timedelta(weeks=1)
     end = (start + datetime.timedelta(weeks=4)).strftime('%Y_%m_%d')
     start = start.strftime('%Y_%m_%d')
     return render_to_response('producer/profile.html', 
@@ -61,15 +61,18 @@ def producer_profile(request):
 
 def edit_producer_profile(request):
     producer = get_producer(request)
-    form = ProducerProfileForm(instance=producer)
-    #ContactFormSet = modelformset_factory(ProducerContact, 
-    #    exclude=('producer', 'login_user'),
-    #    extra=2)
+    form = ProducerProfileForm(data=request.POST or None, instance=producer)
     ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
         form=ProducerContactForm,
         extra=2)
-    #formset = ContactFormSet(queryset=ProducerContact.objects.filter(producer=producer))
     formset = ContactFormSet(data=request.POST or None, instance=producer)
+    if request.method == "POST":
+        #import pdb; pdb.set_trace()
+        if form.is_valid():
+            form.save()
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/producer/profile")
     return render_to_response('producer/profile_edit.html', 
         {'producer': producer,
          'form': form,
@@ -79,9 +82,16 @@ def edit_producer_profile(request):
 
 @login_required
 def inventory_selection(request):
-    init = {"next_delivery_date": next_delivery_date(),}
+    #avail_date = next_delivery_date()
+    avail_date = datetime.date.today()
+    init = {"next_delivery_date": avail_date,}
     producer = get_producer(request)
     form = DeliveryDateForm(data=request.POST or None, initial=init)
+    avail = InventoryItem.objects.filter(
+        producer=producer,
+        remaining__gt=0,
+        inventory_date__lte=avail_date,
+        expiration_date__gt=avail_date)
     if request.method == "POST":
         if form.is_valid():
             data = form.cleaned_data
@@ -89,10 +99,13 @@ def inventory_selection(request):
             return HttpResponseRedirect('/%s/%s/%s/%s/%s/'
                % ('producer/inventoryupdate', producer.id, inv_date.year, inv_date.month, inv_date.day))
     return render_to_response('producer/inventory_selection.html', {
-        'form': form}, context_instance=RequestContext(request))
+        'form': form,
+        'available': avail,
+    }, context_instance=RequestContext(request))
 
 @login_required
-def inventory_update(request, prod_id, year, month, day):
+def inventory_update(request, prod_id, year, month, day,
+            next=None):
     availdate = datetime.date(int(year), int(month), int(day))
     try:
         producer = Party.objects.get(pk=prod_id)
@@ -111,7 +124,8 @@ def inventory_update(request, prod_id, year, month, day):
                 item_id = data['item_id']
                 custodian = data['custodian']
                 inventory_date = data['inventory_date']
-                planned = data['planned']
+                expiration_date = data['expiration_date']
+                remaining = data['remaining']
                 notes = data['notes']
                 field_id = data['field_id']
                 freeform_lot_id = data['freeform_lot_id']
@@ -120,27 +134,36 @@ def inventory_update(request, prod_id, year, month, day):
                     item = InventoryItem.objects.get(pk=item_id)
                     item.custodian = custodian
                     item.inventory_date = inventory_date
-                    rem_change = planned - item.planned
-                    item.planned = planned
-                    item.remaining = item.remaining + rem_change
+                    item.expiration_date = expiration_date
+                    rem_change = remaining - item.remaining
+                    item.remaining = remaining
+                    if not item.deliveries():
+                        item.planned = item.planned + rem_change
                     item.notes = notes
                     item.field_id = field_id
                     item.freeform_lot_id = freeform_lot_id
                     item.save()
                 else:
-                    if planned > 0:
+                    if remaining > 0:
                         prod_id = data['prod_id']
                         product = Product.objects.get(pk=prod_id)
                         item = itemform.save(commit=False)
                         item.producer = producer
-                        #item.custodian = custodian
-                        #item.inventory_date = inventory_date
+                        item.custodian = custodian
+                        item.inventory_date = inventory_date
+                        item.expiration_date = expiration_date
                         item.product = product
-                        item.remaining = planned
-                        #item.notes = notes
+                        item.planned = remaining
+                        item.notes = notes
+                        item.field_id = field_id
+                        item.freeform_lot_id = freeform_lot_id
                         item.save()
-            return HttpResponseRedirect('/%s/%s/%s/%s/%s/'
-               % ('producer/produceravail', producer_id, year, month, day))
+            if next:
+                next = next = "".join(["/producer/", next, "/"])
+                return HttpResponseRedirect(next)
+            else:
+                return HttpResponseRedirect('/%s/%s/%s/%s/%s/'
+                    % ('producer/produceravail', producer_id, year, month, day))
     else:
         itemforms = create_inventory_item_forms(producer, availdate)
     return render_to_response('producer/inventory_update.html', {
@@ -153,21 +176,26 @@ def inventory_update(request, prod_id, year, month, day):
 @login_required
 def produceravail(request, prod_id, year, month, day):
     availdate = datetime.date(int(year), int(month), int(day))
-    availdate = availdate - datetime.timedelta(days=datetime.date.weekday(availdate)) + datetime.timedelta(days=2)
-    weekstart = availdate - datetime.timedelta(days=datetime.date.weekday(availdate))
+    #availdate = availdate - datetime.timedelta(days=datetime.date.weekday(availdate)) + datetime.timedelta(days=2)
+    #weekstart = availdate - datetime.timedelta(days=datetime.date.weekday(availdate))
     try:
         producer = Party.objects.get(pk=prod_id)
+        #inventory = InventoryItem.objects.filter(
+        #    producer=producer,
+        #    inventory_date__range=(weekstart, availdate)
+        #)
         inventory = InventoryItem.objects.filter(
             producer=producer,
-            inventory_date__range=(weekstart, availdate)
-        )
+            remaining__gt=0,
+            inventory_date__lte=availdate,
+            expiration_date__gt=availdate)
             #Q(producer=producer) &
             #(Q(onhand__gt=0) | Q(inventory_date__range=(weekstart, availdate))))
     except Party.DoesNotExist:
         raise Http404
     return render_to_response('producer/producer_avail.html', 
         {'producer': producer, 
-         'avail_date': weekstart, 
+         'avail_date': availdate, 
          'inventory': inventory }, context_instance=RequestContext(request))
 
 @login_required
@@ -632,7 +660,8 @@ def planning_table(request, member_id, list_type, from_date, to_date):
         }, context_instance=RequestContext(request))
 
 @login_required
-def dojo_planning_table(request, member_id, list_type, from_date, to_date):
+def dojo_planning_table(request, member_id, list_type, from_date, to_date,
+        next=None):
     try:
         member = Party.objects.get(pk=member_id)
     except Party.DoesNotExist:
@@ -674,6 +703,7 @@ def dojo_planning_table(request, member_id, list_type, from_date, to_date):
             'plan_type': plan_type,
             'member': member,
             'list_type': list_type,
+            'next': next,
             'tabnav': "producer/producer_tabnav.html",
         }, context_instance=RequestContext(request))
 

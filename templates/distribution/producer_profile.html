@@ -40,65 +40,74 @@
 
 {% block content %}
 
-<div class="profile">
+<div class="{{ div_class }}">
 
-	{% include "producer/producer_tabnav.html" %}
+	{% include tabnav %}
 	
 	<h3 style="padding-top: 0; margin-top: 0; " >
-		{{ producer.long_name }} Profile &nbsp;&nbsp;&nbsp;
-		<a href="{% url edit_producer_profile %}">Change profile</a>
+		{{ producer.long_name }} Profile
 	</h3>
-	<p style="margin-left: 30em;" >
-		<a href="{% url public_producer_profile producer_id=producer.id tabs='P' tab='profile' %}">How customers will see our profile</a>
-	</p>
 
 	<div style="float: left; margin-left: 1em; width: 40%;" >
 		<table>
-			<tr>
-				<th style="text-align: right; " >Name:</th>
-				<td> {{ producer.long_name }} </td>
-			</tr>
+			{% if producer.phone %}
 			<tr>
 				<th style="text-align: right; " >Phone:</th>
 				<td> {{ producer.phone }} </td>
 			</tr>
+			{% endif %}
+			{% if producer.fax %}
 			<tr>
 				<th style="text-align: right; " >Fax:</th>
 				<td> {{ producer.fax }} </td>
 			</tr>
+			{% endif %}
+			{% if producer.email %}
 			<tr>
 				<th style="text-align: right; " >Email:</th>
 				<td> {{ producer.email_address }} </td>
 			</tr>
+			{% endif %}
+			{% if producer.website %}
 			<tr>
 				<th style="text-align: right; " >Website:</th>
 				<td> {{ producer.website|urlize }} </td>
 			</tr>
+			{% endif %}
 		</table>
+		{% if producer.address %}
 		<h4>Address</h4>
 		<p>{{ producer.address|linebreaksbr }}</p>
+		{% endif %}
 
+		{% if producer.contacts.all %}
 		<h4>Contacts</h4>
 		<p>
 		{% for contact in producer.contacts.all %}
 			{{ contact.name }} {{contact.phone }} {{ contact.email|urlize }}</br>
 		{% endfor %}
 		</p>
+		{% endif %}
 
+		{% if producer.description %}
 		<h4>Description</h4>
 		<p>{{ producer.description|linebreaksbr }}</p>
+		{% endif %}
 
+		{% if producer.philosophy %}
 		<h4 >Philosophy</h4>
 		<p>{{ producer.philosophy|linebreaksbr }}</p>
+		{% endif %}
 
+		{% if producer.storage_capacity %}
 		<h4>Storage capacity</h4>
 		<p>{{ producer.storage_capacity|linebreaksbr }}</p>
+		{% endif %}
 	</div>
 
 	<div style="float: left; margin-left: 1em; width: 40%;" >
 		<h4 style="margin-top: 0; " >
-			Today's prices: &nbsp;&nbsp;&nbsp;
-			<a href="">Change products and prices</a>
+			Today's prices:
 		</h4>
 		<table>
 			<tr>
@@ -115,11 +124,9 @@
 			{% endfor %}
 		</table>
 
+		{% if producer.available_now %}
 		<h4 style="margin-top: 1em;" >
-			What we have available now: &nbsp;&nbsp;&nbsp;
-			<a href="{% url producer_inventory_update prod_id=producer.id year=date.year month=date.month day=date.day next="profile" %}">
-				Change availability
-			</a>
+			What we have available now:
 		</h4>
 		<table>
 			<tr>
@@ -135,13 +142,11 @@
 			</tr>
 			{% endfor %}
 		</table>
-		
+		{% endif %}
 
+		{% if producer.planned_available %}
 		<h4 style="margin-top: 1em;" >
-			Our 4 week harvest plan: &nbsp;&nbsp;&nbsp;
-			<a href="{% url producer_dojo_planning_table member_id=producer.id list_type='M' from_date=start to_date=end next="producer_profile" %}">
-				Change plans
-			</a>
+			Our 4 week harvest plan:
 		</h4>
 		<table>
 			<tr>
@@ -157,6 +162,7 @@
 			</tr>
 			{% endfor %}
 		</table>
+		{% endif %}
 
 	</div>
 

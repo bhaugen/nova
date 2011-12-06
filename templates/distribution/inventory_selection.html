@@ -55,7 +55,7 @@
 	{% include "distribution/tabnav.html" %}
 
 	<div style="float: left; border: 2px solid grey; width: 33%; padding-left: 1em; padding-top: 4px; margin-right: 1em; ">
-		<h4 style="margin-top: 0;" >Planned</h4>
+		<h4 style="margin-top: 0;" >Planned:</h4>
 
     <form action="." method="POST" >{% csrf_token %}
         <table>
@@ -96,7 +96,7 @@
 	</div>
 
 	<div style="float: left; border: 2px solid grey; padding-left: 1em; padding-right: 1em; " >
-		<h4 style="margin-top: 0;" >Unplanned</h4>
+		<h4 style="margin-top: 0;" >Unplanned:</h4>
 
 		<form action="." method="POST" >{% csrf_token %}
 			<table>
@@ -247,7 +247,11 @@
 		</tr>
 		{% for lot in available %}
 		<tr>
-			<td>{{ lot.producer }}</td>
+			<td>
+				<a href="{% url public_producer_profile producer_id=lot.producer.id tabs='D' tab='inventory-update' %}">
+					{{ lot.producer }}
+				</a>
+			</td>
 			<td>{{ lot.product }}</td>
 			<td>{{ lot.lot_id }}</td>
 			<td>{{ lot.inventory_date }}</td>

@@ -1276,7 +1276,7 @@ class ProducerProduct(models.Model):
         default=Decimal('0'), verbose_name=_('Default available qty'),
         help_text = _("Used only if this producer-product is not inventoried"))
     inventoried = models.BooleanField(_('inventoried'), default=True,
-        help_text=_("If not inventoried, an Inventory Item using the default available qty will be created automatically every week "))
+        help_text=_("If not inventoried, an Inventory Item using the default available qty will be created automatically every delivery cycle"))
     planned = models.BooleanField(_('planned'), default=True,
         help_text=_('Should this product appear in Plan forms?'))
     distributor = models.ForeignKey(Party, related_name="producer_distributors", 

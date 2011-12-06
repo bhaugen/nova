@@ -2368,7 +2368,27 @@ def reset_date(request):
                         
         except FoodNetwork.DoesNotExist:
             pass
-    return HttpResponseRedirect("/distribution/dashboard/")   
+    return HttpResponseRedirect("/distribution/dashboard/") 
+
+def public_producer_profile(request, producer_id, tabs, tab):
+    producer = get_object_or_404(Producer, pk=producer_id)
+    start = datetime.date.today() + datetime.timedelta(weeks=1)
+    end = (start + datetime.timedelta(weeks=4)).strftime('%Y_%m_%d')
+    start = start.strftime('%Y_%m_%d')
+    tabnav = 'distribution/tabnav.html'
+    if tabs == 'P':
+        tabnav = 'producer/producer_tabnav.html'
+    elif tabs == 'C':
+        tabnav = 'customer/customer_tabnav.html'
+    tab = tab
+    return render_to_response('distribution/producer_profile.html', 
+        {'producer': producer,
+         'date': datetime.date.today(),
+         'start': start,
+         'end': end,
+         'tabnav': tabnav,
+         'div_class': tab,
+         }, context_instance=RequestContext(request))
 
 @login_required
 def all_orders(request):

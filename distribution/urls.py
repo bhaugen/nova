@@ -122,6 +122,10 @@ urlpatterns = patterns('',
     url(r'^orderedvsavailable/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
         ordered_vs_available, name="ordered_vs_available"),
 
+    # profiles
+    #todo: tab regex only allows one /-
+    url(r'^publicproducerprofile/(?P<producer_id>\d+)/(?P<tabs>\w{1})/(?P<tab>\w+\-?\w+)/$', public_producer_profile, name="public_producer_profile"),
+
     # emails
     url(r'^emailselection/$', email_selection, name="email_selection"),
     url(r'^availemailprep/(?P<cycles>\w+)/$', avail_email_prep, name="avail_email_prep"),

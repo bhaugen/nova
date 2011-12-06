@@ -196,7 +196,11 @@
 					<td>{{ item.category }}</td>
 					<td>{{ item.product.long_name }}</td>
 					<td>{{ item.product.growing_method }}</td>
-					<td>{{ item.producer }}</td>
+					<td>
+						<a href="{% url public_producer_profile producer_id=item.producer.id tabs='D' tab='dashboard' %}">
+							{{ item.producer }}
+						</a>
+					</td>
 					<td style="text-align: right;">{{ item.avail_qty }}</td>
 				</tr>
 				{% endfor %}

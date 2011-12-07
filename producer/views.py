@@ -79,6 +79,23 @@ def edit_producer_profile(request):
          'formset': formset,
          }, context_instance=RequestContext(request))
 
+def edit_producer_products(request):
+    producer = get_producer(request)
+    ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
+        form=ProducerContactForm,
+        extra=2)
+    formset = ContactFormSet(data=request.POST or None, instance=producer)
+    if request.method == "POST":
+        #import pdb; pdb.set_trace()
+        if formset.is_valid():
+            formset.save()
+            return HttpResponseRedirect("/producer/profile")
+    return render_to_response('producer/products_edit.html', 
+        {'producer': producer,
+         'formset': formset,
+         }, context_instance=RequestContext(request))
+
+
 
 @login_required
 def inventory_selection(request):

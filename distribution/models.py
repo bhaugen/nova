@@ -14,9 +14,6 @@ from django.utils.translation import ugettext_lazy as _
 from notification.models import NoticeType
 
 def food_network():
-    #try:
-    #    return FoodNetwork.objects.all()[0]
-    #except IndexError:
     fns = FoodNetwork.objects.all()
     if fns:
         return fns[0]
@@ -60,12 +57,13 @@ def use_plans_for_ordering():
     return answer
 
 def default_product_expiration_days():
-#    return 6
-    try:
-        answer = food_network().default_product_expiration_days
-    except FoodNetwork.DoesNotExist:
-        answer = 6
-    return answer
+    # return 6 is needed for schemamigration
+    return 6
+#    try:
+#        answer = food_network().default_product_expiration_days
+#    except FoodNetwork.DoesNotExist:
+#        answer = 6
+#    return answer
 
 def customer_terms():
     try:
@@ -363,12 +361,18 @@ class FoodNetwork(Party):
         help_text=_('Net number of days for customer to pay invoice'))
     member_terms = models.IntegerField(_('member terms'), blank=True, null=True,
         help_text=_('Net number of days for network to pay member'))
-    customer_fee = models.DecimalField(_('customer fee'), max_digits=3, decimal_places=2, default=Decimal("0"),
-        help_text=_('Customer Fee is a decimal fraction, not a percentage - for example, .05 instead of 5%. It is a markup, added to the price of an order as a separate line item on invoices'))
-    producer_fee = models.DecimalField(_('producer fee'), max_digits=3, decimal_places=2, default=Decimal("0"),
-        help_text=_('Producer Fee is a decimal fraction, not a percentage. It is a margin, subtracted from the price, giving the pay price to the producer.'))
+    customer_fee = models.DecimalField(_('customer fee'), max_digits=4, decimal_places=2, default=Decimal("0"),
+        help_text=_('Customer Fee is a percentage. It is a markup, added to the total price of an order as a separate line item on invoices'))
+    customer_fee_label = models.CharField(_('customer fee label'),
+        max_length=64, default="Delivery Cost", 
+        help_text=_('This label appears on invoices to customers'))
+    producer_fee = models.DecimalField(_('producer fee'), max_digits=4, decimal_places=2, default=Decimal("0"),
+        help_text=_('Producer Fee is a percentage. It is a margin, subtracted from the producer price, giving the pay price to the producer.'))
+    producer_fee_label = models.CharField(_('producer fee label'),
+        max_length=64, default="Marketing Cost", 
+        help_text=_('This label appears on statements to producers'))
     transportation_fee = models.DecimalField(_('transportation fee'), max_digits=8, decimal_places=2, default=Decimal("0"),
-        help_text=_('This fee will be added to all orders unless overridden on the Customer'))
+        help_text=_('This fee is a dollar amount that will be added to orders.'))
     next_delivery_date = models.DateField(_('next delivery date'), default=datetime.date.today, 
         help_text=_('Next delivery date for availability and orders'))
     order_by_lot = models.BooleanField(_('order by lot'), default=False, 
@@ -430,7 +434,7 @@ class FoodNetwork(Party):
             if not qty:
                 qty = item.planned
             money = qty * item.product.price
-            money -= money * producer_fee()
+            money -= money * producer_fee()/100
             if item.inventory_date >= week_start:
                 pras.receipts_qty_week += qty
                 pras.receipts_money_week += money
@@ -1745,16 +1749,16 @@ class Order(models.Model):
     
     def coop_fee(self):
         total = self.total_price()
-        # todo: shd consider customer_fee_override?
+        # todo: shd consider product.customer_fee_overrides?
         fee = customer_fee()
-        answer = total * fee
+        answer = total * fee/100
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
 
     def customer_fee(self):
         total = self.total_price()
-        # todo: shd consider customer_fee_override?
+        # todo: shd consider product.customer_fee_overrides?
         fee = customer_fee()
-        answer = total * fee
+        answer = total * fee/100
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def grand_total(self):
@@ -1768,8 +1772,9 @@ class Order(models.Model):
         return self.transportation_fee().quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def customer_fee_label(self):
-        fee = int(customer_fee() * 100)
-        return "".join([str(fee), "% Administration Fee"])
+        fn = food_network()
+        fee = "".join([str(fn.customer_fee), "%"])
+        return " ".join([fee, fn.customer_fee_label])
 
     def short_items(self):
         shorts = []
@@ -1858,8 +1863,8 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, verbose_name=_('product'))
     quantity = models.DecimalField(_('quantity'), max_digits=8, decimal_places=2)
     unit_price = models.DecimalField(_('unit price'), max_digits=8, decimal_places=2)
-    fee = models.DecimalField(_('fee'), max_digits=3, decimal_places=2, default=Decimal('0'),
-        help_text=_('Fee is a decimal fraction, not a percentage - for example, .05 instead of 5%'))
+    fee = models.DecimalField(_('customer fee'), max_digits=4, decimal_places=2, default=Decimal('0'),
+        help_text=_('Fee is a percentage added to the extended price.'))
     notes = models.CharField(_('notes'), max_length=64, blank=True)
 
     def __unicode__(self):
@@ -1869,7 +1874,7 @@ class OrderItem(models.Model):
             str(self.quantity)])
     
     def delete(self):
-        #todo: is this necessary? shd be cascaded, no?
+        #todo: is this necessary? shd be cascaded automatically, no?
         deliveries = self.inventorytransaction_set.all()
         for delivery in deliveries:
             delivery.delete()
@@ -1996,7 +2001,7 @@ class OrderItem(models.Model):
         return producer_fee()
     
     def extended_producer_fee(self):
-        answer = self.quantity * self.unit_price * producer_fee()
+        answer = self.quantity * self.unit_price * producer_fee()/100
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def formatted_unit_price(self):
@@ -2293,7 +2298,7 @@ class InventoryTransaction(EconomicEvent):
         if not self.inventory_item.product.pay_producer:
             return Decimal(0)
         
-        fee = producer_fee()
+        fee = producer_fee()/100
         #unit_price = self.unit_price
         return (self.unit_price * self.amount * (1 - fee)).quantize(Decimal('.01'), rounding=ROUND_UP)
 
@@ -2330,7 +2335,7 @@ class InventoryTransaction(EconomicEvent):
         price = self.unit_price
         if self.order_item:
             price = self.order_item.unit_price
-        answer = self.amount * price * producer_fee()
+        answer = self.amount * price * producer_fee()/100
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def service_cost(self):

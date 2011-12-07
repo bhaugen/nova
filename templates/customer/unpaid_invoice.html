@@ -98,6 +98,10 @@
 			{% endfor %}
 		</table>
 		<table style="page-break-before: avoid; margin-top: 1em; margin-left: 53%; " >
+			<tr>
+				<th style="text-align: right;" >{% trans "Total Price" %}:</th>
+				<td style="text-align: right; width: 8em; " >${{ order.total_price }}</td>
+			</tr>
 			{% if order.transportation_fee %}
 				<tr>
 					<th style="text-align: right; " >Transportation fee:</th>
@@ -111,7 +115,7 @@
 				</tr>
 			{% endif %}
 			<tr>
-				<th style="text-align: right;" >Total:</th>
+				<th style="text-align: right;" >Total Due:</th>
 				<td style="text-align: right; font-weight: bold; " >${{ order.grand_total }}</td>
 			</tr>
 		</table>

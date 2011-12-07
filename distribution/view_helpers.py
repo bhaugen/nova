@@ -345,7 +345,7 @@ def suppliable_demand(from_date, to_date, member=None):
             wkdate = wkdate + datetime.timedelta(days=7)
             week += 1
     rows = rows.values()
-    cust_fee = customer_fee()
+    cust_fee = customer_fee()/100
     for row in rows:
         for x in range(1, len(row)):
             sd = row[x].suppliable()
@@ -365,7 +365,7 @@ def suppliable_demand(from_date, to_date, member=None):
             total += cell
             row[x] = cell.quantize(Decimal('.1'), rounding=ROUND_UP)            
         if total:
-            net = base * cust_fee + (base * producer_fee())
+            net = base * cust_fee + (base * producer_fee()/100)
             net = net.quantize(Decimal('1.'), rounding=ROUND_UP)
             total = total.quantize(Decimal('1.'), rounding=ROUND_UP)
             row.append(total)
@@ -412,7 +412,7 @@ def json_income_rows(from_date, to_date, member=None):
                     rows[product][key].demand += plan.quantity
             wkdate = wkdate + datetime.timedelta(days=7)
     rows = rows.values()
-    cust_fee = customer_fee()
+    cust_fee = customer_fee()/100
     #import pdb; pdb.set_trace()
     for row in rows:
         wkdate = from_date
@@ -439,7 +439,7 @@ def json_income_rows(from_date, to_date, member=None):
             row[key] = str(cell.quantize(Decimal('.1'), rounding=ROUND_UP))
             wkdate = wkdate + datetime.timedelta(days=7)
         if total:
-            net = base * cust_fee + (base * producer_fee())
+            net = base * cust_fee + (base * producer_fee()/100)
             net = net.quantize(Decimal('1.'), rounding=ROUND_UP)
             total = total.quantize(Decimal('1.'), rounding=ROUND_UP)
             row["total"] = str(total)

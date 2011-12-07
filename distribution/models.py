@@ -57,7 +57,8 @@ def use_plans_for_ordering():
     return answer
 
 def default_product_expiration_days():
-    # return 6 is needed for schemamigration
+    #todo: resolve this schemamigration problem somehow
+    # return 6 is a workaround for a bug or feature in schemamigrations
     return 6
 #    try:
 #        answer = food_network().default_product_expiration_days
@@ -943,7 +944,14 @@ class Product(models.Model):
         help_text=_('Should this product be stored as Inventory Items?'))
     is_parent = models.BooleanField(_('is parent'), default=False,
         help_text=_('Should this product appear in parent selections?'))
-    price = models.DecimalField(_('price'), max_digits=8, decimal_places=2, default=Decimal(0))
+    producer_price_minimum = models.DecimalField(_('set price minimum'), 
+        max_digits=8, decimal_places=2, default=Decimal(0),
+        help_text=_('Minimum and maximum are the allowed range for producer-set prices'))
+    producer_price_maximum = models.DecimalField(_('set price maximum'),
+        max_digits=8, decimal_places=2, default=Decimal(0),
+        help_text=_('If maximum is zero, there is no maximum for producer-set prices'))
+    producer_price = models.DecimalField(_('set price'), max_digits=8, decimal_places=2, default=Decimal(0))
+    selling_price = models.DecimalField(_('selling price'), max_digits=8, decimal_places=2, default=Decimal(0))
     customer_fee_override = models.DecimalField(_('customer fee override'), max_digits=3, decimal_places=2, blank=True, null=True, 
         help_text=_('Enter override as a decimal fraction, not a percentage - for example, .05 instead of 5%. Note: you cannot override to zero here, only on Order Items.'))
     pay_producer = models.BooleanField(_('pay producer'), default=True,

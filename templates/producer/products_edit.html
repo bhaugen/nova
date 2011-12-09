@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+
+{% block title %}
+     {{ producer }} Products - Edit
+{% endblock %}
+
+{% block header %}
+
+<style type="text/css">
+	p
+	{
+		margin-top: 1em;
+		margin-bottom: 0;
+	}
+	h4
+	{
+		margin-top: 1em; 
+		margin-bottom: 0;
+	}
+	th, td
+	{
+		padding-left:5px;
+	}
+	th
+	{
+		font-weight:bold;
+	}
+	tr.even td 
+	{
+		color:#000000;
+		background-color:#EAF2D3;
+	}
+	.errorlist
+	{
+		color: red;
+	}
+	.errorlist ul
+	{
+		list-style-type:none;
+	}
+
+</style>
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript" >
+
+		function cleanNumericInput(value)
+		{
+			var cleanNumber = value.replace( /[^\-.0-9]/g, '');
+			var firstPos = cleanNumber.indexOf(".");
+			var lastPos = cleanNumber.lastIndexOf(".");
+			while(firstPos!=lastPos)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				firstPos = cleanNumber.indexOf(".");
+				lastPos = cleanNumber.lastIndexOf(".");
+			}
+			var lastPos = cleanNumber.lastIndexOf("-");
+			while(lastPos>0)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				lastPos = cleanNumber.lastIndexOf("-");
+			}
+			return cleanNumber;
+		}
+
+		function validateNumber(evt, functionToCall)
+		{
+			var isValid = true;
+			var candidate = evt.target.value;
+			var strippedNumber = cleanNumericInput(candidate);
+			strippedNumber = strippedNumber || 0;
+			if(isNaN(candidate))
+			{
+				dojo.byId("submit").disabled = true;
+				evt.target.style.color = "red";
+				evt.target.value = "Not number";
+				isValid = false;
+				var anim1 = dojo.animateProperty({
+						node: evt.target, delay: 1000,
+						properties:{
+							opacity: { end: 0 }
+						}
+					}); 
+				var anim2 = dojo.animateProperty
+				({
+					node: evt.target, delay: 1000,
+					properties:
+					{
+						opacity: { end: 1 }, color: { end: 'black'}
+					},
+					onEnd: function()
+					{
+						evt.target.value = strippedNumber;
+						dojo.byId("submit").disabled = false;
+						//functionToCall(evt);
+    					}
+				}); 
+				anim1.play();
+				anim2.play();
+			}
+			else
+			{
+				evt.target.value = strippedNumber;
+				dojo.byId("submit").disabled = false;
+				//functionToCall(evt);
+			}
+			return isValid;
+		}
+
+		dojo.addOnLoad(function()
+		{
+			var queryNodes = dojo.query(".quantity-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i]
+				dojo.connect(node, "onblur", "validateNumber");
+			}
+		});
+
+    </script>
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="profile">
+
+	{% include "producer/producer_tabnav.html" %}
+
+	<h4>Our products and prices</h4>
+
+	<div style="float: left; margin-left: 1em; " >
+
+	<form action="." method="POST" >{% csrf_token %}
+		<table >
+			<thead>
+				<th>Product</th>
+				<th>Set Price</th>
+				{% comment %}
+				<th>Selling Price</th>
+				{% endcomment %}
+				<th>Qty Per Year</th>
+        			<th>Delete</th>
+			</thead>
+			<tbody>
+				
+		    		{{ formset.management_form }}
+				{% for form in formset.forms %}
+				
+				{% comment %}
+				{% for form in forms %}
+				{% endcomment %}
+					{{ form.id }}
+        				<tr>
+						<td>{{ form.product }}</td>
+						<td>{{ form.producer_price }}</td>
+						{% comment %}
+						<td style="text-align: right; " >{{ form.selling_price }}</td>
+						{% endcomment %}
+						<td>{{ form.qty_per_year }}</td>
+						<td>{{ form.DELETE }}</td>
+						{% if form.non_field_errors %}
+						<td class="errorlist">{{ form.non_field_errors }}</td>
+						{% else %}
+						{% if form.errors %}
+						<td class="errorlist">{{ form.errors }}</td>
+						{% endif %}
+						{% endif %}
+        				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		<p style="margin-top: 2px;">
+	            <input type="submit" id="submit" value="Save product changes" />
+		</p>
+	</form>
+	</div>
+
+	<div style="float: left; margin-left: 3em; margin-right: 2em; " >
+		{% if comparative_prices %}
+		<h4>Comparative prices from {{ fn.long_name }}</h4>
+		<table>
+			<thead>
+				<th>Product</th>
+				<th>Set By</th>
+				<th>Price</th>
+			</thead>
+			<tbody>
+				{% for price in comparative_prices %}
+				<tr class="{% cycle 'odd' 'even' %}" >
+					<td>{{ price.product.long_name }}</td>
+					<td>{{ price.producer.long_name }}</td>
+					<td style="text-align: right; " >{{ price.price }}</td>
+					<td>{{ price.price_range }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% endif %}
+
+		<h4 style="margin-top: 1em; " >External price comparisons</h4>
+		<p>
+		<a href="http://www.gov.ns.ca/agri/marketing/wmreport/index.shtml" target="_blank">
+			Nova Scotia Weekly Agriculture Market Price Reports
+		</a></br>
+		<i>Nova Scotia data taken from Ag Canada</i>
+		</p>
+		<p>
+		<a href="http://www4.agr.gc.ca/AAFC-AAC/display-afficher.do?id=1184695160057&lang=eng" target="_blank">
+			Ag Canada Weekly Price Reports
+		</a></br>
+		<i>Nova Scotia data from flyers of anonymous suppliers/brokers</i>
+		</p>
+		<p>
+		<a href="http://www.rodaleinstitute.org/Organic-Price-Report" target="_blank">
+			Rodale Organic Fruit and Vegetable Price Reports
+		</a></br>
+		<i>Prices from large wholesale distributors that specialize in organic fruits and vegetables</i>
+		</p>
+		<p>
+		<a href="http://www.organicagcentre.ca/MarketInfo/mkt_prices_summary.asp" target="_blank">
+			Organic Agriculture Centre of Canada
+		</a></br>
+		<i>Outdated info, but may still be useful</i>
+		</p>
+	</div>
+
+	<div style="clear: both; " ></div>
+
+</div>
+
+{% endblock %}
+

@@ -1,3 +1,5 @@
+from decimal import *
+
 from django.forms.formsets import formset_factory
 from django.core.urlresolvers import reverse
 
@@ -12,6 +14,66 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+def create_producer_product_forms(producer, data=None):
+    pps = producer.producer_products.all()
+    form_list = []
+    for pp in pps:
+        form = ProducerProductForm(data, prefix=pp.id, instance=pp)
+        form.selling_price = pp.product.selling_price
+        form_list.append(form)
+    return form_list
+
+
+class ComparativePrice(object):
+    def __init__(self, product, producer, price):
+         self.product = product
+         self.producer = producer
+         self.price = price
+
+
+def comparative_prices(producer):
+    pps = producer.producer_products.all()
+    prices = []
+    fn = food_network()
+    for pp in pps:
+        product = pp.product
+        price = product.producer_price
+        if price:
+            cp = ComparativePrice(
+                product=product,
+                producer=fn,
+                price=product.producer_price.quantize(Decimal('.01'), rounding=ROUND_UP)
+            )
+            min = ""
+            max = ""
+            min_price = product.producer_price_minimum
+            if min_price:
+                min = " ".join([
+                    "Min:",
+                    str(min_price.quantize(Decimal('.01'), rounding=ROUND_UP)),
+                ])
+            max_price = product.producer_price_maximum
+            if max_price:
+                max = " ".join([
+                    "Max:",
+                    str(max_price.quantize(Decimal('.01'), rounding=ROUND_UP)),
+                ])
+                cp.price_range = " ".join(["Range:", min, max])
+            prices.append(cp)
+        cps = ProducerProduct.objects.filter(
+            product=product).exclude(producer=producer)
+        for cp in cps:
+            price = cp.producer_price
+            if price:
+                price = price.quantize(Decimal('.01'), rounding=ROUND_UP)
+                cp = ComparativePrice(
+                    product=product,
+                    producer=cp.producer,
+                    price=price,
+                )
+                prices.append(cp)
+    return prices
 
 def create_inventory_item_forms(producer, avail_date, data=None):
     monday = avail_date - datetime.timedelta(days=datetime.date.weekday(avail_date))
@@ -120,6 +182,7 @@ def supply_demand_table(from_date, to_date, member):
 def producer_suppliable_demand(from_date, to_date, producer):
     customer_plans = ProductPlan.objects.filter(role="consumer")
     producer_plans = ProductPlan.objects.filter(member=producer)
+    fee = producer.decide_producer_fee()/100
     rows = {}    
     for plan in producer_plans:
         wkdate = from_date
@@ -142,7 +205,7 @@ def producer_suppliable_demand(from_date, to_date, producer):
     pps = set(id[0] for id in pps)
     for plan in customer_plans:
         wkdate = from_date
-        product = plan.product.supply_demand_product()
+        product = plan.product
         if product.id in pps:
             week = 0
             while wkdate <= to_date:
@@ -151,12 +214,11 @@ def producer_suppliable_demand(from_date, to_date, producer):
                 wkdate = wkdate + datetime.timedelta(days=7)
                 week += 1
     rows = rows.values()
-    fee = producer_fee()
     for row in rows:
         for x in range(1, len(row)):
             sd = row[x].suppliable()
             if sd >= 0:
-                income = sd * row[0].price
+                income = sd * row[0].producer_price
                 row[x] = income - (income * fee)
             else:
                 row[x] = Decimal("0")
@@ -184,6 +246,7 @@ def producer_json_income_rows(from_date, to_date, producer):
     #import pdb; pdb.set_trace()
     customer_plans = ProductPlan.objects.filter(role="consumer")
     producer_plans = ProductPlan.objects.filter(member=producer)
+    fee = producer.decide_producer_fee()/100
     rows = {}
     pps = []
     for plan in producer_plans:
@@ -192,12 +255,13 @@ def producer_json_income_rows(from_date, to_date, producer):
         while wkdate <= to_date:
             row[wkdate.strftime('%Y_%m_%d')] = SuppliableDemandCell(Decimal("0"), Decimal("0"))
             wkdate = wkdate + datetime.timedelta(days=7)
-        product = plan.product.supply_demand_product()
+        #product = plan.product.supply_demand_product()
+        product = plan.product
         if not product.id in pps:
             pps.append(product.id)
         row["product"] =  product.long_name
         row["id"] = product.id
-        row["price"] = product.price
+        row["price"] = product.producer_price
         rows.setdefault(product, row)
         wkdate = from_date
         while wkdate <= to_date:
@@ -217,7 +281,6 @@ def producer_json_income_rows(from_date, to_date, producer):
                     rows[product][key].demand += plan.quantity
                 wkdate = wkdate + datetime.timedelta(days=7)
     rows = rows.values()
-    fee = producer_fee()
     for row in rows:
         wkdate = from_date
         while wkdate <= to_date:

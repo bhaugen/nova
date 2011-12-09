@@ -9,6 +9,8 @@ urlpatterns = patterns('',
     url(r'^profile/$', "producer.views.producer_profile", name="producer_profile"),
     url(r'^editprofile/$', "producer.views.edit_producer_profile",
         name="edit_producer_profile"),
+    url(r'^editproducts/$', "producer.views.edit_producer_products",
+        name="edit_producer_products"),
 
     # avail
     url(r'^inventoryselection/$', "producer.views.inventory_selection", name="producer_inventory_selection"),

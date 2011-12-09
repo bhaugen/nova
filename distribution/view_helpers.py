@@ -346,11 +346,12 @@ def suppliable_demand(from_date, to_date, member=None):
             week += 1
     rows = rows.values()
     cust_fee = customer_fee()/100
+    producer_fee = default_producer_fee()/100
     for row in rows:
         for x in range(1, len(row)):
             sd = row[x].suppliable()
             if sd >= 0:
-                income = sd * row[0].price
+                income = sd * row[0].selling_price
                 row[x] = income
             else:
                 row[x] = Decimal("0")
@@ -365,7 +366,7 @@ def suppliable_demand(from_date, to_date, member=None):
             total += cell
             row[x] = cell.quantize(Decimal('.1'), rounding=ROUND_UP)            
         if total:
-            net = base * cust_fee + (base * producer_fee()/100)
+            net = base * cust_fee + (base * producer_fee)
             net = net.quantize(Decimal('1.'), rounding=ROUND_UP)
             total = total.quantize(Decimal('1.'), rounding=ROUND_UP)
             row.append(total)
@@ -400,7 +401,7 @@ def json_income_rows(from_date, to_date, member=None):
         product = plan.product.supply_demand_product()
         row["product"] =  product.long_name
         row["id"] = product.id
-        row["price"] = product.price
+        row["price"] = product.selling_price
         rows.setdefault(product, row)
         wkdate = from_date
         while wkdate <= to_date:
@@ -413,6 +414,7 @@ def json_income_rows(from_date, to_date, member=None):
             wkdate = wkdate + datetime.timedelta(days=7)
     rows = rows.values()
     cust_fee = customer_fee()/100
+    producer_fee = default_producer_fee()/100
     #import pdb; pdb.set_trace()
     for row in rows:
         wkdate = from_date
@@ -439,7 +441,7 @@ def json_income_rows(from_date, to_date, member=None):
             row[key] = str(cell.quantize(Decimal('.1'), rounding=ROUND_UP))
             wkdate = wkdate + datetime.timedelta(days=7)
         if total:
-            net = base * cust_fee + (base * producer_fee()/100)
+            net = base * cust_fee + (base * producer_fee)
             net = net.quantize(Decimal('1.'), rounding=ROUND_UP)
             total = total.quantize(Decimal('1.'), rounding=ROUND_UP)
             row["total"] = str(total)
@@ -510,13 +512,13 @@ def plans_for_dojo(member, products, from_date, to_date):
         yearly = 0
         try:
             product = pp.product
-            yearly = pp.default_quantity
+            yearly = pp.qty_per_year
         except:
             product = pp
         if not yearly:
             try:
                 pp = ProducerProduct.objects.get(producer=member, product=product)
-                yearly = pp.default_quantity
+                yearly = pp.qty_per_year
             except:
                 pass
         wkdate = from_date

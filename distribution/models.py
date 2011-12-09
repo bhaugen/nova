@@ -27,7 +27,7 @@ def customer_fee():
         answer = Decimal("0")
     return answer
 
-def producer_fee():
+def default_producer_fee():
     try:
         answer = food_network().producer_fee
     except FoodNetwork.DoesNotExist:
@@ -435,7 +435,7 @@ class FoodNetwork(Party):
             if not qty:
                 qty = item.planned
             money = qty * item.product.price
-            money -= money * producer_fee()/100
+            money -= money * item.producer_fee()/100
             if item.inventory_date >= week_start:
                 pras.receipts_qty_week += qty
                 pras.receipts_money_week += money
@@ -731,9 +731,15 @@ class ProducerManager(models.Manager):
 
 
 class Producer(Party):
+    producer_fee = models.DecimalField(_('producer fee'), 
+        max_digits=4, decimal_places=2, default=Decimal("0"),
+        help_text=_('If non-zero, this overrides the Food Network default producer fee.'))
     philosophy = models.TextField(_('philosophy'), blank=True)
     delivers = models.BooleanField(_('delivers'), default=False,
         help_text=_('Delivers products directly to customers?'))
+
+    def decide_producer_fee(self):
+        return self.producer_fee or default_producer_fee()
 
     def available_now(self):
         pps = self.producer_products.all()
@@ -964,6 +970,10 @@ class Product(models.Model):
 
     def __unicode__(self):
         return self.long_name
+
+    @property
+    def price(self):
+        return self.selling_price
 
     def formatted_unit_price(self):
         return self.price.quantize(Decimal('.01'), rounding=ROUND_UP)
@@ -1211,7 +1221,7 @@ class Product(models.Model):
         return stockables
 
     def producer_totals(self):
-        return sum(producer.default_quantity for producer in self.product_producers.all())
+        return sum(producer.qty_per_year for producer in self.product_producers.all())
 
     class Meta:
         ordering = ('short_name',)
@@ -1281,8 +1291,17 @@ class ProducerProduct(models.Model):
         related_name="producer_products", verbose_name=_('producer')) 
     product = models.ForeignKey(Product, 
         related_name="product_producers", verbose_name=_('product'))
-    #todo: maybe default_quantity shd be renamed qty_per_year
-    default_quantity = models.DecimalField(max_digits=8, decimal_places=2,
+    producer_price = models.DecimalField(_('set price'), 
+        max_digits=8, decimal_places=2, default=Decimal(0),
+        help_text=_('If non-zero, this overrides the Product set price'))
+    price_change_delivery_date = models.DateTimeField(_('price change delivery date'), 
+        blank=True, null=True)
+    price_changed_by = models.ForeignKey(User, verbose_name=_('price changed by'),
+        related_name='producer_products_changed', blank=True, null=True)
+    producer_fee = models.DecimalField(_('producer fee'), 
+        max_digits=4, decimal_places=2, default=Decimal("0"),
+        help_text=_('If non-zero, this overrides the Food Network default producer fee.'))
+    qty_per_year = models.DecimalField(max_digits=8, decimal_places=2,
         default=Decimal('0'), verbose_name=_('Qty per year'))
     default_avail_qty = models.DecimalField(max_digits=8, decimal_places=2,
         default=Decimal('0'), verbose_name=_('Default available qty'),
@@ -1302,6 +1321,12 @@ class ProducerProduct(models.Model):
     class Meta:
         unique_together = ('producer', 'product')
         ordering = ('producer', 'product')
+
+    def decide_producer_fee(self):
+        return self.producer_fee or self.product.decide_producer_fee()
+
+    def unit_price_now(self):
+        return self.producer_price or self.product.unit_price_now()
 
 
 class MemberProductList(models.Model):
@@ -2006,10 +2031,10 @@ class OrderItem(models.Model):
         return self.quantity - self.delivered_quantity()
         
     def producer_fee(self):
-        return producer_fee()
+        return default_producer_fee()
     
     def extended_producer_fee(self):
-        answer = self.quantity * self.unit_price * producer_fee()/100
+        answer = self.quantity * self.unit_price * self.producer_fee()/100
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def formatted_unit_price(self):
@@ -2297,6 +2322,15 @@ class InventoryTransaction(EconomicEvent):
     def producer(self):
         return self.inventory_item.producer
     
+    def producer_fee(self):
+        try:
+            pp = ProducerProduct.get(
+                producer=self.producer,
+                product=self.product)
+            return pp.decide_producer_fee()
+        except ProducerProduct.DoesNotExist:
+            return default_producer_fee()
+
     def inventory_date(self):
         return self.inventory_item.inventory_date
     
@@ -2306,7 +2340,7 @@ class InventoryTransaction(EconomicEvent):
         if not self.inventory_item.product.pay_producer:
             return Decimal(0)
         
-        fee = producer_fee()/100
+        fee = self.producer_fee()/100
         #unit_price = self.unit_price
         return (self.unit_price * self.amount * (1 - fee)).quantize(Decimal('.01'), rounding=ROUND_UP)
 
@@ -2343,7 +2377,7 @@ class InventoryTransaction(EconomicEvent):
         price = self.unit_price
         if self.order_item:
             price = self.order_item.unit_price
-        answer = self.amount * price * producer_fee()/100
+        answer = self.amount * price * self.producer_fee()/100
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def service_cost(self):

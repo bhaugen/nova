@@ -19,7 +19,7 @@ class ProducerContactInline(admin.TabularInline):
 
 class ProducerAdmin(admin.ModelAdmin):
     form = ProducerForm
-    list_display = ('short_name', 'member_id', 'long_name','delivers')
+    list_display = ('short_name', 'member_id', 'long_name', 'producer_fee', 'delivers')
     inlines = [ ProducerContactInline,]
     
 admin.site.register(Producer, ProducerAdmin)
@@ -59,7 +59,8 @@ class ProducerProductInline(admin.TabularInline):
     model = ProducerProduct
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('short_name', 'long_name', 'growing_method', 'parent', 'price',
+    list_display = ('short_name', 'long_name', 'growing_method', 'parent',
+        'selling_price', 'producer_price',
         'expiration_days', 'pay_producer', 'sellable', 'plannable', 'stockable', 
         'producer_totals')
     list_editable = ['expiration_days',]
@@ -80,8 +81,8 @@ admin.site.register(ProductPlan, ProductPlanAdmin)
 
 
 class ProducerProductAdmin(admin.ModelAdmin):
-    list_display = ('producer', 'product', 'default_quantity',
-                    'default_avail_qty',
+    list_display = ('producer', 'product', 'producer_price', 'producer_fee',
+                    'qty_per_year', 'default_avail_qty',
                     'inventoried', 'planned', 'distributor')
     list_filter = ['inventoried', 'producer', 'product']
     ordering = ('product',)

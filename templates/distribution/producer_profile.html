@@ -112,14 +112,12 @@
 		<table>
 			<tr>
 				<th>Product</th>
-				<th>Pay Price</th>
-				<th>Selling Price</th>
+				<th>Unit Price</th>
 			</tr>
 			{% for product in producer.producer_products.all %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td>{{ product.product.long_name }}</td>
-				<td style="text-align: right; ">${{ product.product.unit_price_now }}</td>
-				<td style="text-align: right; ">${{ product.product.unit_price_now }}</td>
+				<td style="text-align: right; ">${{ product.unit_price_now }}</td>
 			</tr>
 			{% endfor %}
 		</table>

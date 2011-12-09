@@ -1,9 +1,21 @@
 from django import forms
 from django.db.models.query import QuerySet
+from django.forms.util import ErrorList
+
 
 import datetime
 
 from distribution.models import *
+
+
+class TdErrorList(ErrorList):
+    def __unicode__(self):
+        return self.as_tds()
+    
+    def as_divs(self):
+        if not self:
+            return u''
+        return u'<td class="errorlist">%s</td>' % ''.join([u'<div class="error">%s</div>' % e for e in self])
 
 class ProducerProfileForm(forms.ModelForm):
     long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
@@ -39,6 +51,45 @@ class ProducerContactForm(forms.ModelForm):
     class Meta:
         model = ProducerContact
         exclude = ('login_user', 'cell')
+
+
+class ProducerProductForm(forms.ModelForm):
+    error_css_class = 'error'
+    required_css_class = 'required'
+    producer_price = forms.DecimalField(widget=forms.TextInput(attrs={'class':
+                                                               'quantity-field',
+                                                               'size': '6'}))
+    qty_per_year = forms.DecimalField(widget=forms.TextInput(attrs={'class':
+                                                               'quantity-field',
+                                                               'size': '6'}))
+
+    class Meta:
+        model = ProducerProduct
+        fields = ('producer', 'product', 'producer_price',
+                   'qty_per_year',)
+
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        if self.errors:
+            return cleaned_data
+        product = cleaned_data.get("product")
+        producer_price = cleaned_data.get("producer_price")
+        min = product.producer_price_minimum
+        max = product.producer_price_maximum
+
+        msg = None
+        if min:
+            if producer_price < min:
+                msg = u" ".join(["Set price is less than minimum of", str(min)])
+        if max:
+            if producer_price > max:
+                msg = u" ".join(["Set price is more than maximum of", str(max)])
+        if msg:
+            #self._errors["producer_price"] = self.error_class([msg])
+            del cleaned_data["producer_price"]
+            raise forms.ValidationError(msg)
+        return cleaned_data
 
 
 class InventoryItemForm(forms.ModelForm):

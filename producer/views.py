@@ -81,10 +81,16 @@ def edit_producer_profile(request):
 
 def edit_producer_products(request):
     producer = get_producer(request)
-    ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
-        form=ProducerContactForm,
+    fn = food_network()
+    ProducerProductFormSet = inlineformset_factory(Producer, ProducerProduct, 
+        fk_name="producer",
+        form=ProducerProductForm,
         extra=2)
-    formset = ContactFormSet(data=request.POST or None, instance=producer)
+    formset = ProducerProductFormSet(
+        data=request.POST or None,
+        instance=producer)
+    other_prices = comparative_prices(producer)
+    #forms = create_producer_product_forms(producer, data=request.POST or None)
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if formset.is_valid():
@@ -93,6 +99,9 @@ def edit_producer_products(request):
     return render_to_response('producer/products_edit.html', 
         {'producer': producer,
          'formset': formset,
+         'comparative_prices': other_prices,
+         'fn': fn,
+         #'forms': forms,
          }, context_instance=RequestContext(request))
 
 

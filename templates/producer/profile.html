@@ -12,7 +12,7 @@
 	h4
 	{
 		margin-top: 2px; 
-		margin-bottom: 0;"
+		margin-bottom: 0;
 	}
 	th, td
 	{
@@ -98,19 +98,17 @@
 	<div style="float: left; margin-left: 1em; width: 40%;" >
 		<h4 style="margin-top: 0; " >
 			Today's prices: &nbsp;&nbsp;&nbsp;
-			<a href="">Change products and prices</a>
+			<a href="{% url edit_producer_products %}">Change products and prices</a>
 		</h4>
 		<table>
 			<tr>
 				<th>Product</th>
-				<th>Pay Price</th>
-				<th>Selling Price</th>
+				<th>Unit Price</th>
 			</tr>
 			{% for product in producer.producer_products.all %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td>{{ product.product.long_name }}</td>
-				<td style="text-align: right; ">${{ product.product.unit_price_now }}</td>
-				<td style="text-align: right; ">${{ product.product.unit_price_now }}</td>
+				<td style="text-align: right; ">${{ product.unit_price_now }}</td>
 			</tr>
 			{% endfor %}
 		</table>

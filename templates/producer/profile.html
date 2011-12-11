@@ -108,7 +108,7 @@
 			{% for product in producer.producer_products.all %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td>{{ product.product.long_name }}</td>
-				<td style="text-align: right; ">${{ product.unit_price_now }}</td>
+				<td style="text-align: right; ">${{ product.formatted_unit_price_now }}</td>
 			</tr>
 			{% endfor %}
 		</table>
@@ -119,6 +119,7 @@
 				Change availability
 			</a>
 		</h4>
+		<p style="margin-left: 1em; margin-bottom: 0; ">Next inventory closing: {{ inventory_closing }}</p>
 		<table>
 			<tr>
 				<th>Product</th>

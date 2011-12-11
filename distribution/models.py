@@ -416,6 +416,19 @@ class FoodNetwork(Party):
         else:
             return self.email_address
 
+    def next_delivery_date_using_inventory_closing(self):
+        td = datetime.date.today()
+        dcs = DeliveryCycle.objects.all()
+        ndc = None
+        id = td
+        for dc in dcs:
+            dd = dc.next_delivery_date_using_inventory_closing()
+            if dd > td:
+                ndc = dc
+                id = dd
+                break
+        return id
+
     def receipts_sales(self, thisdate):
         month_start = datetime.date(thisdate.year, thisdate.month, 1)
         week_start = thisdate - datetime.timedelta(days=datetime.date.weekday(thisdate))
@@ -982,7 +995,7 @@ class Product(models.Model):
         return self.unit_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def unit_price_for_date(self, date):
-        up = self.price
+        up = self.producer_price
         specials = Special.objects.filter(
             product=self,
             from_date__lte=date,
@@ -993,6 +1006,9 @@ class Product(models.Model):
         return up
 
     def unit_price_now(self):
+        return self.unit_price_for_date(datetime.date.today())
+
+    def formatted_unit_price_now(self):
         return self.formatted_unit_price_for_date(datetime.date.today())
 
     # suspect but used
@@ -1294,8 +1310,8 @@ class ProducerProduct(models.Model):
     producer_price = models.DecimalField(_('set price'), 
         max_digits=8, decimal_places=2, default=Decimal(0),
         help_text=_('If non-zero, this overrides the Product set price'))
-    price_change_delivery_date = models.DateTimeField(_('price change delivery date'), 
-        blank=True, null=True)
+    price_change_delivery_date = models.DateField(_('price change delivery date'), 
+        default=datetime.date.today)
     price_changed_by = models.ForeignKey(User, verbose_name=_('price changed by'),
         related_name='producer_products_changed', blank=True, null=True)
     producer_fee = models.DecimalField(_('producer fee'), 
@@ -1325,8 +1341,51 @@ class ProducerProduct(models.Model):
     def decide_producer_fee(self):
         return self.producer_fee or self.product.decide_producer_fee()
 
+    def producer_price_now(self):
+        td = datetime.date.today()
+        #fn = food_network()
+        price = self.producer_price
+        #dd = fn.next_delivery_date_using_inventory_closing()
+        if self.price_change_delivery_date > td:
+            ppcs = self.price_changes.all()
+            for ppc in ppcs:
+                if ppc.price_change_delivery_date <= td:
+                    price = ppc.producer_price
+        return price
+
     def unit_price_now(self):
-        return self.producer_price or self.product.unit_price_now()
+        return self.producer_price_now() or self.product.unit_price_now()
+
+    def formatted_unit_price_now(self):
+        return self.unit_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
+
+
+class ProducerPriceChange(models.Model):
+    producer_product = models.ForeignKey(ProducerProduct, 
+        related_name="price_changes", verbose_name=_('producer product'))
+    producer_price = models.DecimalField(_('set price'), 
+        max_digits=8, decimal_places=2, default=Decimal(0))
+    price_change_delivery_date = models.DateField(_('price change delivery date'))
+    when_changed = models.DateTimeField(_('when changed'), auto_now_add=True)
+    changed_by = models.ForeignKey(User, verbose_name=_('changed by'),
+        related_name='producer_prices_changed', blank=True, null=True)
+
+
+    class Meta:
+        ordering = ('-when_changed',)
+
+    def __unicode__(self):
+        return " ".join([
+            self.producer_product.producer.short_name,
+            self.producer_product.product.short_name,
+            str(self.producer_price),
+            "changed from",
+            str(self.producer_product.producer_price),
+            "on",
+            self.when_changed.strftime('%Y-%m-%d'),
+        ])
+
+
 
 
 class MemberProductList(models.Model):
@@ -2520,8 +2579,13 @@ DAY_CHOICES =  (
 class DeliveryCycle(models.Model):
     delivery_day = models.PositiveSmallIntegerField(_('delivery day'), max_length="1", choices=DAY_CHOICES)
     route = models.CharField(_('route'), max_length=255)
+    inventory_closing_day = models.PositiveSmallIntegerField(_('inventory closing day'), 
+        max_length="1", choices=DAY_CHOICES, default=1,
+        help_text=_('Inventory closing is also the deadline for producer price changes'))
+    inventory_closing_time = models.TimeField(_('inventory closing time'),
+        default=datetime.time(12,0))
     order_closing_day = models.PositiveSmallIntegerField(_('order closing day'), max_length="1", choices=DAY_CHOICES)
-    order_closing_time = models.TimeField()
+    order_closing_time = models.TimeField(_('order closing time'))
     customers = models.ManyToManyField(Customer,
         through="CustomerDeliveryCycle", verbose_name=_('customers'))
 
@@ -2564,6 +2628,26 @@ class DeliveryCycle(models.Model):
         offset = dd - ocd
         closing_date = delivery_date - datetime.timedelta(days=offset)
         return datetime.datetime.combine(closing_date, self.order_closing_time)
+
+    def next_delivery_date_using_inventory_closing(self, date_and_time=None):
+        if not date_and_time:
+            date_and_time = datetime.datetime.now()
+        #import pdb; pdb.set_trace()
+        dd = self.next_delivery_date(date_and_time.date())
+        while date_and_time > self.inventory_closing(dd):
+            dd = dd + datetime.timedelta(days=1)
+            dd = self.next_delivery_date(dd)
+        return dd
+
+    def inventory_closing(self, delivery_date):
+        dd = self.delivery_day
+        ocd = self.inventory_closing_day
+        if dd < ocd:
+            dd = dd + 7
+        offset = dd - ocd
+        closing_date = delivery_date - datetime.timedelta(days=offset)
+        return datetime.datetime.combine(closing_date, self.inventory_closing_time)
+
 
 
 class CustomerDeliveryCycle(models.Model):

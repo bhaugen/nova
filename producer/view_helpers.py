@@ -430,13 +430,13 @@ def plans_for_dojo(member, products, from_date, to_date):
         yearly = 0
         try:
             product = pp.product
-            yearly = pp.default_quantity
+            yearly = pp.qty_per_year
         except:
             product = pp
         if not yearly:
             try:
                 pp = ProducerProduct.objects.get(producer=member, product=product)
-                yearly = pp.default_quantity
+                yearly = pp.qty_per_year
             except:
                 pass
         wkdate = from_date

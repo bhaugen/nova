@@ -49,14 +49,26 @@ def producer_dashboard(request):
 
 def producer_profile(request):
     producer = get_producer(request)
-    start = datetime.date.today() + datetime.timedelta(weeks=1)
+    td = datetime.date.today()
+    start = td + datetime.timedelta(weeks=1)
     end = (start + datetime.timedelta(weeks=4)).strftime('%Y_%m_%d')
     start = start.strftime('%Y_%m_%d')
+    dcs = DeliveryCycle.objects.all()
+    ndc = None
+    inventory_closing = td
+    for dc in dcs:
+        dd = dc.next_delivery_date_using_inventory_closing()
+        if dd > td:
+            ndc = dc
+            break
+    if ndc:
+        inventory_closing = ndc.inventory_closing(dd)
     return render_to_response('producer/profile.html', 
         {'producer': producer,
          'date': datetime.date.today(),
          'start': start,
          'end': end,
+         'inventory_closing': inventory_closing,
          }, context_instance=RequestContext(request))
 
 def edit_producer_profile(request):
@@ -90,21 +102,52 @@ def edit_producer_products(request):
         data=request.POST or None,
         instance=producer)
     other_prices = comparative_prices(producer)
+    price_change_date = fn.next_delivery_date_using_inventory_closing()
+    td = datetime.date.today()
+    #dcs = DeliveryCycle.objects.all()
+    #ndc = None
+    #price_change_date = td
+    #for dc in dcs:
+    #    dd = dc.next_delivery_date_using_inventory_closing()
+    #    if dd > td:
+    #        ndc = dc
+    #        price_change_date = dd
+    #        break
     #forms = create_producer_product_forms(producer, data=request.POST or None)
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if formset.is_valid():
-            formset.save()
+            saved_pps = formset.save(commit=False)
+            for pp in saved_pps:
+                id = pp.id
+                price = pp.producer_price
+                if id:
+                    prev = ProducerProduct.objects.get(id=id)
+                    prev_price = prev.producer_price
+                    if price != prev_price:
+                        pp.price_change_delivery_date = price_change_date
+                        pp.price_changed_by = request.user
+                        ppc = ProducerPriceChange(
+                            producer_product=pp,
+                            producer_price=prev_price,
+                            price_change_delivery_date=prev.price_change_delivery_date,
+                            changed_by=request.user,
+                            when_changed=datetime.datetime.now(),
+                        )
+                        ppc.save()
+                else:
+                    pp.price_change_delivery_date = td
+                    pp.price_changed_by = request.user
+                pp.save()
             return HttpResponseRedirect("/producer/profile")
     return render_to_response('producer/products_edit.html', 
         {'producer': producer,
          'formset': formset,
          'comparative_prices': other_prices,
          'fn': fn,
+         'price_change_date': price_change_date,
          #'forms': forms,
          }, context_instance=RequestContext(request))
-
-
 
 @login_required
 def inventory_selection(request):

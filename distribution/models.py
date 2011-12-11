@@ -1346,7 +1346,8 @@ class ProducerProduct(models.Model):
         #fn = food_network()
         price = self.producer_price
         #dd = fn.next_delivery_date_using_inventory_closing()
-        if self.price_change_delivery_date > td:
+        pcdd = self.price_change_delivery_date or td
+        if  pcdd > td:
             ppcs = self.price_changes.all()
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= td:

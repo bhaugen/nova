@@ -1439,6 +1439,8 @@ class InventoryItem(models.Model):
         limit_choices_to = {'stockable': True}, verbose_name=_('product'))
     inventory_date = models.DateField(_('inventory date'))
     expiration_date = models.DateField(_('expiration date'))
+    unit_price = models.DecimalField(_('unit price'), max_digits=8,
+        decimal_places=2, default=Decimal("0"))
     planned = models.DecimalField(_("Ready"), max_digits=8, decimal_places=2, default=Decimal('0'))
     remaining = models.DecimalField(_('remaining'), max_digits=8, decimal_places=2, default=Decimal('0'),
         help_text=_('If you change Ready here, you most likely should also change Remaining. The Avail Update page changes Remaining automatically when you enter Ready, but this Admin form does not.'))

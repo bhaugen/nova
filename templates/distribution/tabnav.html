@@ -38,6 +38,7 @@ div.reports li.reports,
 div.invoices li.invoices, 
 div.help li.help, 
 div.plans li.plans, 
+div.pricing li.pricing,
 div.statements li.statements, 
 div.process li.process
 { /* settings for selected tab */
@@ -56,7 +57,8 @@ div.payments li.payments a,
 div.reports li.reports a, 
 div.invoices li.invoices a, 
 div.help li.help a, 
-div.plans li.plans a, 
+div.plans li.plans a,
+div.pricing li.pricing a,
 div.statements li.statements a, 
 div.process li.process a
 { /* settings for selected tab link */
@@ -108,6 +110,9 @@ ul#tabnav a:hover
 		<li class="reports" ><a title="View or print business reports" href="/distribution/reportselection">{% trans "Reports" %}</a> </li>
 		<li class="statements" ><a title="Print payment statements" href="/distribution/statementselection">{% trans "Statements" %}</a> </li>
 		<li class="plans" ><a title="Create or update plans for producers" href="/distribution/planselection">{% trans "Plan" %}</a> </li>
+		{% if user.is_superuser %}
+			<li class="pricing" ><a title="Override prices" href="/distribution/pricingselection">{% trans "Pricing" %}</a> </li>
+		{% endif %}
 		<li class="admin" ><a title="Maintain Producers, Products and Customers" href="/admin">{% trans "Admin" %}</a> </li>
 		<li class="help" ><a title="Food Distribution System documentation" href="/help">{% trans "Help" %}</a> </li>
 	</ul>

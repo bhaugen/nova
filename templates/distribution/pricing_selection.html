@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Pricing Selection" %}
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="pricing">
+
+	{% include "distribution/tabnav.html" %}
+
+	<div style="float: left; border: 2px solid grey; padding: 1em;">
+
+	<h4> {% trans "Override Prices for a Product" %}</h4>
+
+    <form action="." method="POST" >{% csrf_token %}
+        <table>
+                <th style="text-align: right; " >{% trans "Product" %}:</th>
+                <td>{{ product_form.product}}</td>
+				{% if product_form.product.errors %}
+					<td style="color: red; " >
+						{{ product_form.product.errors }}
+					</td>
+				{% endif %}
+            </tr>
+    </table>
+    <center>
+    <input name="submit-product" type="submit" value="{% trans 'Submit' %}" />
+    </center>
+
+	</div>
+
+</form>
+
+</div>
+<div style="clear: both;"></div>
+</div>
+{% endblock %}
+
+

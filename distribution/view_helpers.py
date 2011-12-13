@@ -21,6 +21,43 @@ def is_number(s):
     except ValueError:
         return False
 
+def create_producer_product_price_forms(product, data=None):
+    pps = product.product_producers.all()
+    form_list = []
+    for pp in pps:
+        prefix = "-".join(["PP", str(pp.id)])
+        form = ProducerProductPriceForm(data, prefix=prefix, instance=pp)
+        form.producer = pp.producer.short_name
+        form_list.append(form)
+    return form_list
+
+def create_order_item_price_forms(product, data=None):
+    items = OrderItem.objects.filter(
+        product=product,
+    ).exclude(order__state__contains="Paid").exclude(order__state="Unsubmitted")
+    form_list = []
+    for item in items:
+        prefix = "-".join(["OI", str(item.id)])
+        form = OrderItemPriceForm(data, prefix=prefix, instance=item)
+        form.order = item.order
+        form.producers = item.producers()
+        form_list.append(form)
+    return form_list
+
+def create_inventory_item_price_forms(product, data=None):
+    items = InventoryItem.objects.filter(
+        product=product,
+        remaining__gt=0,
+    )
+    form_list = []
+    for item in items:
+        prefix = "-".join(["II", str(item.id)])
+        form = InventoryItemPriceForm(data, prefix=prefix, instance=item)
+        form.lot = item.lot_id
+        form_list.append(form)
+    return form_list
+
+
 def weekly_production_plans(week_date):
     monday = week_date - datetime.timedelta(days=datetime.date.weekday(week_date))
     saturday = monday + datetime.timedelta(days=5)

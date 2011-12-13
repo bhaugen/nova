@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+{% trans "Pricing for" %}{{ product }}
+{% endblock %}
+
+{% block header %}
+
+<style type="text/css">
+	p
+	{
+		margin-top: 1em;
+		margin-bottom: 0;
+	}
+	h4
+	{
+		margin-top: 1em; 
+		margin-bottom: 0;
+	}
+	th, td
+	{
+		padding-left:5px;
+	}
+	th
+	{
+		font-weight:bold;
+	}
+	tr.even td 
+	{
+		color:#000000;
+		background-color:#EAF2D3;
+	}
+	.errorlist
+	{
+		color: red;
+	}
+	.errorlist ul
+	{
+		list-style-type:none;
+	}
+
+</style>
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript" >
+
+		function cleanNumericInput(value)
+		{
+			var cleanNumber = value.replace( /[^\-.0-9]/g, '');
+			var firstPos = cleanNumber.indexOf(".");
+			var lastPos = cleanNumber.lastIndexOf(".");
+			while(firstPos!=lastPos)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				firstPos = cleanNumber.indexOf(".");
+				lastPos = cleanNumber.lastIndexOf(".");
+			}
+			var lastPos = cleanNumber.lastIndexOf("-");
+			while(lastPos>0)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				lastPos = cleanNumber.lastIndexOf("-");
+			}
+			return cleanNumber;
+		}
+
+		function validateNumber(evt, functionToCall)
+		{
+			var isValid = true;
+			var candidate = evt.target.value;
+			var strippedNumber = cleanNumericInput(candidate);
+			strippedNumber = strippedNumber || 0;
+			if(isNaN(candidate))
+			{
+				dojo.byId("submit").disabled = true;
+				evt.target.style.color = "red";
+				evt.target.value = "Not number";
+				isValid = false;
+				var anim1 = dojo.animateProperty({
+						node: evt.target, delay: 1000,
+						properties:{
+							opacity: { end: 0 }
+						}
+					}); 
+				var anim2 = dojo.animateProperty
+				({
+					node: evt.target, delay: 1000,
+					properties:
+					{
+						opacity: { end: 1 }, color: { end: 'black'}
+					},
+					onEnd: function()
+					{
+						evt.target.value = strippedNumber;
+						dojo.byId("submit").disabled = false;
+						//functionToCall(evt);
+    					}
+				}); 
+				anim1.play();
+				anim2.play();
+			}
+			else
+			{
+				evt.target.value = strippedNumber;
+				dojo.byId("submit").disabled = false;
+				//functionToCall(evt);
+			}
+			return isValid;
+		}
+
+		dojo.addOnLoad(function()
+		{
+			var queryNodes = dojo.query(".quantity-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i]
+				dojo.connect(node, "onblur", "validateNumber");
+			}
+		});
+
+    </script>
+
+
+
+{% endblock %}
+
+{% block content %}
+
+<div class="pricing">
+
+	{% include "distribution/tabnav.html" %}
+
+	<h4>{% trans "Product" %} {{ product }}</h4>
+
+	<form action="." method="POST" >{% csrf_token %}	
+		<p style="margin-left: 20em;" >
+		<input type="submit" id="submit" value="Save changes" />
+		</p>
+	{{ product_form.id }}
+	<p>
+	Product Set price: {{ product_form.producer_price }} Min: {{ product_form.producer_price_minimum }} Max: {{ product_form.producer_price_maximum }}
+	</p>
+	<div style="margin-left: 2em;" >
+
+	<h4>Producer Prices</h4>
+		<table>
+			<thead>
+				<th>Producer</th>
+				<th>Set Price</th>
+			</thead>
+			<tbody>
+				{% comment %}
+		    		{{ producer_product_formset.management_form }}
+				{% for form in producer_product_formset.forms %}
+				{% endcomment %}
+				{% for form in producer_product_forms %}
+				
+					{{ form.id }}
+        				<tr class="{% cycle 'odd' 'even' %}" >
+						<td>{{ form.producer }}</td>
+						<td>{{ form.producer_price }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		
+	</div>
+
+	{% if order_item_forms %}
+	<div style="margin-left: 4em;" >
+
+	<h4>Order Item Prices</h4>
+		<table>
+			<thead>
+				<th>Order</th>
+				<th>Producers</th>
+				<th>Unit Price</th>
+			</thead>
+			<tbody>
+				{% for form in order_item_forms %}
+				
+					{{ form.id }}
+        				<tr class="{% cycle 'odd' 'even' %}" >
+						<td>{{ form.order }}</td>
+						<td>{{ form.producers }}</td>
+						<td>{{ form.unit_price }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+
+	{% endif %}
+
+	{% if inventory_item_forms %}
+	<div style="margin-left: 6em;" >
+
+	<h4>Inventory Item Prices</h4>
+		<table>
+			<thead>
+				<th>Lot</th>
+				<th>Unit Price</th>
+			</thead>
+			<tbody>
+				{% for form in inventory_item_forms %}
+				
+					{{ form.id }}
+        				<tr class="{% cycle 'odd' 'even' %}" >
+						<td>{{ form.lot }}</td>
+						<td>{{ form.unit_price }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+
+	{% endif %}
+
+	</form>
+
+
+</div>    
+{% endblock %} 
+
+

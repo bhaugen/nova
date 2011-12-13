@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.mail import send_mail
 from django.utils import simplejson
+from django.forms.models import formset_factory, modelformset_factory
 
 from models import *
 from forms import *
@@ -3356,6 +3357,63 @@ def send_order_emails(request, cust_id, year, month, day):
             })
             request.user.message_set.create(message="Order emails have been sent")
         return HttpResponseRedirect(next)
+
+
+@login_required
+def pricing_selection(request):
+    product_form = ProductSelectionForm(data=request.POST or None)
+    if request.method == "POST":
+        if product_form.is_valid():
+            data = product_form.cleaned_data
+            product_id = data['product']
+            return HttpResponseRedirect('/%s/%s/'
+               % ('distribution/pricing', product_id))
+    return render_to_response('distribution/pricing_selection.html', 
+        {'product_form': product_form,
+        }, context_instance=RequestContext(request))
+
+def pricing(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product_form = ProductPriceForm(data=request.POST or None, instance=product)
+    producer_product_forms = create_producer_product_price_forms(
+        product, data=request.POST or None)
+    order_item_forms = create_order_item_price_forms(
+        product, data=request.POST or None)
+    inventory_item_forms = create_inventory_item_price_forms(
+        product, data=request.POST or None)
+    #ProducerProductFormSet = modelformset_factory(
+    #    ProducerProduct,
+    #    form=ProducerProductPriceForm,
+    #    extra=0)
+    #producer_product_formset = ProducerProductFormSet(
+    #    data=request.POST or None, 
+    #    prefix="pp",
+    #    queryset=ProducerProduct.objects.filter(product=product),
+    #)
+    #import pdb; pdb.set_trace()
+    if request.method == "POST":
+        if product_form.is_valid():
+            if all([form.is_valid() for form in producer_product_forms]):
+                if all([form.is_valid() for form in order_item_forms]):
+                    if all([form.is_valid() for form in inventory_item_forms]):
+                        product_form.save()
+                        for form in producer_product_forms:
+                            form.save()
+                        for form in order_item_forms:
+                            form.save()
+                        for form in inventory_item_forms:
+                            form.save()
+                        return HttpResponseRedirect("/distribution/pricingselection/")
+
+    return render_to_response('distribution/pricing.html', 
+        {'product': product,
+         'product_form': product_form,
+         'producer_product_forms': producer_product_forms,
+         'order_item_forms': order_item_forms,
+         'inventory_item_forms': inventory_item_forms,
+         #'producer_product_formset': producer_product_formset,
+        }, context_instance=RequestContext(request))
+
 
 # todo: replace with new Processes
 def create_meat_item_forms(producer, avail_date, data=None):

@@ -332,7 +332,7 @@ def new_process(request, process_type_id):
     initial_data = []
     for x in range(steps):
         initial_data.append({"from_whom": process_manager.id})
-    print "initial_data", initial_data
+    #print "initial_data", initial_data
     service_formset = ServiceFormSet(
         data=request.POST or None, 
         prefix="service",

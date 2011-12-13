@@ -149,6 +149,56 @@ class CustomerPaymentForm(forms.ModelForm):
         exclude = ('from_whom', 'to_whom', 'notes')
 
 
+class ProductSelectionForm(forms.Form):
+    product = forms.ChoiceField()
+    def __init__(self, *args, **kwargs):
+        super(ProductSelectionForm, self).__init__(*args, **kwargs)
+        self.fields['product'].choices = [(prod.id, prod.long_name) for prod in Product.objects.filter(
+            sellable=True)]
+
+
+class ProductPriceForm(forms.ModelForm):
+    id = forms.CharField(widget=forms.HiddenInput)
+    producer_price = forms.DecimalField(widget=forms.TextInput(attrs={'class': 'quantity-field', 'size': '10'}))
+    producer_price_minimum = forms.DecimalField(widget=forms.TextInput(attrs={'class': 'quantity-field', 'size': '10'}))
+    producer_price_maximum = forms.DecimalField(widget=forms.TextInput(attrs={'class': 'quantity-field', 'size': '10'}))
+
+    class Meta:
+        model = Product
+        fields = ('id', 'producer_price', 'producer_price_minimum',
+                  'producer_price_maximum',)
+
+
+class ProducerProductPriceForm(forms.ModelForm):
+    id = forms.CharField(widget=forms.HiddenInput)
+    producer_price = forms.DecimalField(widget=forms.TextInput(attrs={
+        'class':'quantity-field', 'size': '8'}))
+
+    class Meta:
+        model = ProducerProduct
+        fields = ('id', 'producer_price',)
+
+
+class OrderItemPriceForm(forms.ModelForm):
+    id = forms.CharField(widget=forms.HiddenInput)
+    unit_price = forms.DecimalField(widget=forms.TextInput(attrs={
+        'class':'quantity-field', 'size': '8'}))
+
+    class Meta:
+        model = OrderItem
+        fields = ('id', 'unit_price',)
+
+
+class InventoryItemPriceForm(forms.ModelForm):
+    id = forms.CharField(widget=forms.HiddenInput)
+    unit_price = forms.DecimalField(widget=forms.TextInput(attrs={
+        'class':'quantity-field', 'size': '8'}))
+
+    class Meta:
+        model = InventoryItem
+        fields = ('id', 'unit_price',)
+
+
 class CustomerPaymentTransactionForm(forms.Form):
     order_id = forms.CharField(widget=forms.HiddenInput)
     amount_due=forms.DecimalField(widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input', 'size': '8'}))

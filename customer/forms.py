@@ -50,22 +50,14 @@ class OrderForm(forms.ModelForm):
 
 
 class OrderItemForm(forms.ModelForm):
-     #parents = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input', 'size': '12'}))
-     prod_id = forms.CharField(widget=forms.HiddenInput)
-     #description = forms.CharField(widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input'}))
-     #producers = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input', 'size': '12'}))
+     product_id = forms.CharField(widget=forms.HiddenInput)
+     producer_id = forms.CharField(widget=forms.HiddenInput)
      avail = forms.DecimalField(widget=forms.TextInput(attrs={
          'readonly':'true', 
          'class': 'read-only-input', 
          'size': '5', 
          'style': 'text-align: right;',
      }))
-     #ordered = forms.DecimalField(widget=forms.TextInput(attrs={
-     #    'readonly':'true', 
-     #    'class': 'read-only-input total-ordered', 
-     #    'size': '5', 
-     #    'style': 'text-align: right;',
-     #}))
      quantity = forms.DecimalField(widget=forms.TextInput(attrs={
          'class': 'quantity-field', 
          'size': '5'
@@ -75,7 +67,6 @@ class OrderItemForm(forms.ModelForm):
          'size': '5',
          'style': 'text-align: right;',
      }))
-     #fee = forms.DecimalField(widget=forms.TextInput(attrs={'class': 'fee-field', 'size': '5'}))
      notes = forms.CharField(required=False, widget=forms.TextInput(attrs={
          'size': '32', 
          'value': '',
@@ -83,7 +74,7 @@ class OrderItemForm(forms.ModelForm):
 
      class Meta:
          model = OrderItem
-         exclude = ('order', 'product', 'fee')
+         exclude = ('order', 'product','producer', 'fee')
 
 class MemberPlanSelectionForm(forms.Form):
     plan_from_date = forms.DateField(

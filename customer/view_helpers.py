@@ -112,6 +112,76 @@ def create_order_item_forms(order, product_list, availdate, data=None):
             form_list.append(oiform)
     return form_list
 
+def create_order_item_forms_by_producer(order, product_list, availdate, data=None):
+    form_list = []
+    item_dict = {}
+    items = []
+    fn = food_network()
+    avail = fn.customer_availability_by_producer(availdate)
+    if order:
+        items = order.orderitem_set.all()
+        for item in items:
+            key = "-".join([str(item.product.id), str(item.producer.id)])
+            item_dict[key] = item
+    avail_keys = [prod.key for prod in avail]
+    for item in items:
+        key = "-".join([str(item.product.id), str(item.producer.id)])
+        if not key in avail_keys:
+            item.category = item.product.parent_string()
+            item.qty = item.product.total_avail_today(availdate)
+            avail.append(item)
+    avail = sorted(avail, key=attrgetter('category'))
+    if product_list:
+        listed_products = CustomerProduct.objects.filter(
+            product_list=product_list).values_list("product_id")
+        listed_products = set(id[0] for id in listed_products)
+    prods = []
+    for prod in avail:
+        ok = True
+        if product_list:
+            if not prod.product.id in listed_products:
+                ok = False
+        if ok:
+            prods.append(prod)
+    for prod in prods:
+        key = "-".join([str(prod.product.id), str(prod.producer.id)])
+        try:
+            item = item_dict[key]
+        except KeyError:
+            item = False
+        if item:
+            initial_data = {
+                'product_id': prod.product.id,
+                'producer_id': prod.producer.id,
+                'avail': prod.qty,
+                'unit_price': item.formatted_unit_price(),
+            }
+            prefix = "".join([str(item.product.id), str(item.producer.id)])
+            oiform = OrderItemForm(data, prefix=prefix, instance=item,
+                                   initial=initial_data)
+            #import pdb; pdb.set_trace()
+            oiform.producer = prod.producer.short_name
+            oiform.description = prod.product.long_name
+            oiform.parents = prod.category
+            oiform.growing_method = prod.product.growing_method
+            form_list.append(oiform)
+        else:
+            producers = prod.product.avail_producers(availdate)
+            prefix = "".join([str(prod.product.id), str(prod.producer.id)])
+            oiform = OrderItemForm(data, prefix=prefix, initial={
+                'product_id': prod.product.id,
+                'producer_id': prod.producer.id,
+                'avail': prod.qty, 
+                'unit_price': prod.price, 
+                'quantity': 0})
+            oiform.description = prod.product.long_name
+            oiform.producer = prod.producer.short_name
+            oiform.parents = prod.category
+            oiform.growing_method = prod.product.growing_method
+            form_list.append(oiform)
+    return form_list
+
+
 class DisplayTable(object):
     def __init__(self, columns, rows):
         self.columns = columns

@@ -427,7 +427,7 @@ def new_order(request, cust_id, year, month, day, list_id=None):
     if request.method == "POST":
         ordform = OrderForm(data=request.POST)
         #import pdb; pdb.set_trace()
-        itemforms = create_order_item_forms(order, product_list, availdate, request.POST)     
+        itemforms = create_order_item_forms_by_producer(order, product_list, availdate, request.POST)     
         if ordform.is_valid() and all([itemform.is_valid() for itemform in itemforms]):
             the_order = ordform.save(commit=False)
             the_order.customer = customer
@@ -445,7 +445,7 @@ def new_order(request, cust_id, year, month, day, list_id=None):
             'order_date': datetime.date.today(),
             'delivery_date': delivery_date,
         })
-        itemforms = create_order_item_forms(order, product_list, availdate)
+        itemforms = create_order_item_forms_by_producer(order, product_list, availdate)
     return render_to_response('customer/order_update.html', 
         {'customer': customer, 
          'order': order, 
@@ -467,7 +467,7 @@ def edit_order(request, order_id):
     if request.method == "POST":
         ordform = OrderForm(data=request.POST)
         #import pdb; pdb.set_trace()
-        itemforms = create_order_item_forms(order, product_list, availdate, request.POST)     
+        itemforms = create_order_item_forms_by_producer(order, product_list, availdate, request.POST)     
         if ordform.is_valid() and all([itemform.is_valid() for itemform in itemforms]):
             order.changed_by = request.user
             order.save()
@@ -477,7 +477,7 @@ def edit_order(request, order_id):
                % ('customer/orderconfirmation', order.id))
     else:
         ordform = OrderForm(instance=order)
-        itemforms = create_order_item_forms(order, product_list, availdate)
+        itemforms = create_order_item_forms_by_producer(order, product_list, availdate)
     return render_to_response('customer/order_update.html', 
         {'customer': customer, 
          'order': order, 
@@ -597,11 +597,14 @@ def update_order(order, itemforms, is_change):
             else:
                 # added
                 if qty > 0:
-                    prod_id = data['prod_id']
-                    product = Product.objects.get(id=prod_id)
+                    product_id = data['product_id']
+                    product = Product.objects.get(id=product_id)
+                    producer_id = data['producer_id']
+                    producer = Producer.objects.get(id=producer_id)
                     oi = itemform.save(commit=False)
                     oi.order = order
                     oi.product = product
+                    oi.producer = producer
                     oi.save()
                     oic = OrderItemChange(
                         action=1,
@@ -626,11 +629,14 @@ def update_order(order, itemforms, is_change):
                     itemform.instance.delete()
             else:
                 if qty > 0:
-                    prod_id = data['prod_id']
-                    product = Product.objects.get(id=prod_id)
+                    product_id = data['product_id']
+                    product = Product.objects.get(id=product_id)
+                    producer_id = data['producer_id']
+                    producer = Producer.objects.get(id=producer_id)
                     oi = itemform.save(commit=False)
                     oi.order = order
                     oi.product = product
+                    oi.producer = producer
                     oi.save()
     return True
 

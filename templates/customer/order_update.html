@@ -231,9 +231,9 @@
         <table class="ga-event-table" style="font-size: 70%;" >
 	     <tr>
 		<th>Category</th>
-                <th>Product</th>
+		<th>Product</th>
+		<th>Producer</th>
                 <th>Growing Method</th>
-                <th>Producers</th>
                 <th>Available</th>
                 <th>Unit Price</th>
                 <th>Order Qty</th>
@@ -243,15 +243,16 @@
             {% for item_form in item_forms %}
                  <tr>
 					 <td class="read-only-td" > {{ item_form.parents }} </td>
-					<td class="read-only-td"  > {{ item_form.description }} </td>
+					 <td class="read-only-td"  > {{ item_form.description }} </td>
+					 <td class="read-only-td" > {{ item_form.producer }} </td>
 					<td class="read-only-td" > {{ item_form.growing_method }} </td>
-					<td class="read-only-td" > {{ item_form.producers }} </td>
 					<td class="read-only-td" > {{ item_form.avail }} </td>
 					<td class="read-only-td" > {{ item_form.unit_price }} </td>
 					<td> {{ item_form.quantity }} </td>
 					<td id="id_{{ item_form.prefix }}-ext_price" class="read-only-td ext-price" style="text-align: right" ></td>
 					<td> {{ item_form.notes }} </td>
-					{{ item_form.prod_id }}
+					{{ item_form.product_id }}
+					{{ item_form.producer_id }}
                 </tr>
            {% endfor %} 
         </table>

@@ -141,6 +141,17 @@ class CustomerProductAvailability(object):
          self.expiration_date = expiration_date
 
 
+class ProducerProductAvailability(object):
+     def __init__(self, key, product, producer, price, qty, inventory_date, expiration_date):
+         self.key = key
+         self.product = product
+         self.producer = producer
+         self.price = price
+         self.qty = qty
+         self.inventory_date = inventory_date
+         self.expiration_date = expiration_date
+
+
 class CategoryProductAvailability(object):
     def __init__(self, category, products):
          self.category = category
@@ -671,6 +682,38 @@ class FoodNetwork(Party):
         avail = sorted(avail, key=attrgetter('category', 'product_name'))
         return avail
 
+    def customer_availability_by_producer(self, delivery_date):
+        avail = []
+        products = {}
+        items = self.avail_items_for_customer(delivery_date)
+        #import pdb; pdb.set_trace()
+        for item in items:
+            key = "-".join([str(item.product.id), str(item.producer.id)])
+            if key not in products:
+                products[key] = ProducerProductAvailability(
+                    key, item.product, item.producer,
+                    Decimal("0"), Decimal("0"), item.inventory_date, item.expiration_date)
+            pa = products[key]
+            pa.qty += item.avail_qty()
+            if pa.inventory_date < item.inventory_date:
+                pa.inventory_date = item.inventory_date
+            if pa.expiration_date > item.expiration_date:
+                pa.expiration_date = item.expiration_date
+        for pa in products.values():
+            pa.qty -= pa.product.total_ordered_for_timespan(
+                pa.inventory_date, pa.expiration_date)
+            if pa.qty > 0:
+                pa.category = pa.product.parent_string()
+                pa.product_name = pa.product.short_name
+                pa.producer_name = pa.producer.short_name
+                pp = ProducerProduct.objects.get(producer=pa.producer,
+                                                 product=pa.product)
+                pa.price = pp.unit_price_for_date(delivery_date).quantize(Decimal('.01'), rounding=ROUND_UP)
+                avail.append(pa)
+        avail = sorted(avail, key=attrgetter('category', 'product_name',
+            'producer_name'))
+        return avail
+
     def email_availability(self, delivery_date):
         avail = self.customer_availability(delivery_date)
         cats = {}
@@ -986,7 +1029,7 @@ class Product(models.Model):
 
     @property
     def price(self):
-        return self.selling_price
+        return self.producer_price
 
     def formatted_unit_price(self):
         return self.price.quantize(Decimal('.01'), rounding=ROUND_UP)
@@ -1341,18 +1384,35 @@ class ProducerProduct(models.Model):
     def decide_producer_fee(self):
         return self.producer_fee or self.product.decide_producer_fee()
 
-    def producer_price_now(self):
-        td = datetime.date.today()
-        #fn = food_network()
+    def unit_price_for_date(self, date):
         price = self.producer_price
-        #dd = fn.next_delivery_date_using_inventory_closing()
-        pcdd = self.price_change_delivery_date or td
-        if  pcdd > td:
+        #todo: need ProducerProductSpecials
+        #specials = Special.objects.filter(
+        #    product=self,
+        #    from_date__lte=date,
+        #    to_date__gte=date)
+        #if specials:
+        #    special = specials[0]
+        #    price = special.price
+        pcdd = self.price_change_delivery_date or date
+        if  pcdd > date:
             ppcs = self.price_changes.all()
             for ppc in ppcs:
-                if ppc.price_change_delivery_date <= td:
+                if ppc.price_change_delivery_date <= date:
                     price = ppc.producer_price
         return price
+
+    def producer_price_now(self):
+        td = datetime.date.today()
+        return self.unit_price_for_date(td)
+        #price = self.producer_price
+        #pcdd = self.price_change_delivery_date or td
+        #if  pcdd > td:
+        #    ppcs = self.price_changes.all()
+        #    for ppc in ppcs:
+        #        if ppc.price_change_delivery_date <= td:
+        #            price = ppc.producer_price
+        #return price
 
     def unit_price_now(self):
         return self.producer_price_now() or self.product.unit_price_now()
@@ -1956,6 +2016,8 @@ def shorts_for_week():
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=_('order'))
     product = models.ForeignKey(Product, verbose_name=_('product'))
+    producer = models.ForeignKey(Producer, verbose_name=_('producer'),
+        related_name='order_items', blank=True, null=True)
     quantity = models.DecimalField(_('quantity'), max_digits=8, decimal_places=2)
     unit_price = models.DecimalField(_('unit price'), max_digits=8, decimal_places=2)
     fee = models.DecimalField(_('customer fee'), max_digits=4, decimal_places=2, default=Decimal('0'),
@@ -1966,6 +2028,7 @@ class OrderItem(models.Model):
         return ' '.join([
             str(self.order),
             self.product.short_name,
+            #self.producer.short_name,
             str(self.quantity)])
     
     def delete(self):

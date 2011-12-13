@@ -39,7 +39,9 @@ def comparative_prices(producer):
     for pp in pps:
         product = pp.product
         price = product.producer_price
-        if price:
+        min_price = product.producer_price_minimum
+        max_price = product.producer_price_maximum
+        if price + min_price + max_price:
             cp = ComparativePrice(
                 product=product,
                 producer=fn,
@@ -47,13 +49,11 @@ def comparative_prices(producer):
             )
             min = ""
             max = ""
-            min_price = product.producer_price_minimum
             if min_price:
                 min = " ".join([
                     "Min:",
                     str(min_price.quantize(Decimal('.01'), rounding=ROUND_UP)),
                 ])
-            max_price = product.producer_price_maximum
             if max_price:
                 max = " ".join([
                     "Max:",

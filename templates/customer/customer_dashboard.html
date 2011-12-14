@@ -42,6 +42,7 @@
 		<thead>
 		<tr>
 			<th style="text-align:left;" >Product</th>
+			<th style="text-align:left;" >Producer</th>
 			<th>Growing Method</th>
 			<th style="text-align: right:" >Quantity</th>
 			<th style="text-align: right;" >Price</th>
@@ -52,6 +53,7 @@
 		{% for row in avail_rows %}
 			<tr>
 				<th style="text-align:left;" >{{ row.product }}</th>
+				<th style="text-align:left;" >{{ row.producer }}</th>
 				<td>{{ row.product.growing_method }}</td>
 				<td style="text-align: right;" >{{ row.qty|intcomma }}</td>
 				<td style="text-align: right;" >{{ row.price}}</td>

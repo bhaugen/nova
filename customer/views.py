@@ -64,7 +64,7 @@ def customer_dashboard(request):
         return render_to_response('account/no_permissions.html')
     cycle = customer.next_delivery_cycle()
     dd = customer.next_delivery_date()
-    avail_rows = fn.customer_availability(dd)
+    avail_rows = fn.customer_availability_by_producer(dd)
     specials = Special.objects.filter(
         from_date__lte=dd,
         to_date__gte=dd)

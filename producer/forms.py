@@ -108,7 +108,8 @@ class InventoryItemForm(forms.ModelForm):
 
     class Meta:
         model = InventoryItem
-        exclude = ('producer', 'product', 'planned', 'received', 'onhand',)
+        exclude = ('producer', 'product', 'planned', 'received', 'onhand',
+                   'unit_price')
         
     def __init__(self, *args, **kwargs):
         super(InventoryItemForm, self).__init__(*args, **kwargs)

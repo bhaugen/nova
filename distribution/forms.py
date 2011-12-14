@@ -536,7 +536,7 @@ class InventoryItemForm(forms.ModelForm):
 
     class Meta:
         model = InventoryItem
-        exclude = ('producer', 'product', 'onhand', 'remaining')
+        exclude = ('producer', 'product', 'onhand', 'remaining', 'unit_price')
         
     def __init__(self, *args, **kwargs):
         super(InventoryItemForm, self).__init__(*args, **kwargs)
@@ -563,7 +563,7 @@ class AllInventoryItemForm(forms.ModelForm):
 
     class Meta:
         model = InventoryItem
-        exclude = ('producer', 'product', 'onhand', 'remaining')
+        exclude = ('producer', 'product', 'onhand', 'remaining', 'unit_price')
         
     def __init__(self, *args, **kwargs):
         super(AllInventoryItemForm, self).__init__(*args, **kwargs)

@@ -104,7 +104,8 @@ def create_inventory_item_forms(producer, avail_date, data=None):
         #todo: ordered and remainder logic here does not work correctly
         #needs to be adjusted for ordering by producer - even then, cd be wrong
         ordered = item.product.total_ordered_for_timespan(avail_date, saturday)
-        the_form = InventoryItemForm(data, prefix=item.id, initial={
+        prefix = "".join(["item", str(item.id)])
+        the_form = InventoryItemForm(data, prefix=prefix, initial={
             'item_id': item.id,
             'prod_id': item.product.id,
             'freeform_lot_id': item.freeform_lot_id,
@@ -118,9 +119,11 @@ def create_inventory_item_forms(producer, avail_date, data=None):
         the_form.ordered = ordered
         form_list.append(the_form)
     for plan in plans:
-        if not plan.product in items:
+        #import pdb; pdb.set_trace()
+        if not plan.product.id in item_dict:
             expiration_date = avail_date + datetime.timedelta(days=plan.product.expiration_days)
-            the_form = InventoryItemForm(data, prefix=plan.id, initial={
+            prefix = "".join(["plan", str(plan.id)])
+            the_form = InventoryItemForm(data, prefix=prefix, initial={
                 'prod_id': plan.product.id, 
                 'inventory_date': avail_date,
                 'expiration_date': expiration_date,
@@ -128,7 +131,21 @@ def create_inventory_item_forms(producer, avail_date, data=None):
                 'notes': ''})
             the_form.description = plan.product.long_name
             the_form.ordered = 0
-            form_list.append(the_form) 
+            form_list.append(the_form)
+    pps = producer.producer_products.all()
+    for pp in pps:
+        if not pp.product.id in plan_dict:
+            expiration_date = avail_date + datetime.timedelta(days=plan.product.expiration_days)
+            prefix = "".join(["pp", str(pp.id)])
+            the_form = InventoryItemForm(data, prefix=prefix, initial={
+                'prod_id': pp.product.id, 
+                'inventory_date': avail_date,
+                'expiration_date': expiration_date,
+                'remaining': 0,
+                'notes': ''})
+            the_form.description = pp.product.long_name
+            the_form.ordered = 0
+            form_list.append(the_form)        
     return form_list 
 
 def supply_demand_table(from_date, to_date, member):

@@ -832,3 +832,24 @@ def customer_plans(request, from_date, to_date, member_id):
             'plan_type': plan_type,
             'tabnav': "customer/customer_tabnav.html", 
         }, context_instance=RequestContext(request))
+
+def producer_profile_for_customer(request, producer_id, tabs, tab):
+    producer = get_object_or_404(Producer, pk=producer_id)
+    customer = get_customer(request)
+    cycle = customer.next_delivery_cycle()
+    dd = customer.next_delivery_date()
+    available = producer.available_for_date(dd)
+    #import pdb; pdb.set_trace()
+    tabnav = 'customer/tabnav.html'
+    if tabs == 'P':
+        tabnav = 'producer/producer_tabnav.html'
+    elif tabs == 'C':
+        tabnav = 'customer/customer_tabnav.html'
+    tab = tab
+    return render_to_response('customer/producer_profile.html', 
+        {'producer': producer,
+         'tabnav': tabnav,
+         'div_class': tab,
+         'available': available,
+         }, context_instance=RequestContext(request))
+

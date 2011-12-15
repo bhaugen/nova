@@ -102,6 +102,13 @@ class ProductQuantity(object):
          self.qty = qty
 
 
+class ProductQuantityPrice(object):
+     def __init__(self, product, qty, price):
+         self.product = product
+         self.qty = qty
+         self.price = price
+
+
 class ProductOrderedAndAvailable(object):
      def __init__(self, product, ordered, lots):
          self.product = product
@@ -797,26 +804,32 @@ class Producer(Party):
     def decide_producer_fee(self):
         return self.producer_fee or default_producer_fee()
 
-    def available_now(self):
+    def available_for_date(self, thisdate):
         pps = self.producer_products.all()
         lots = []
-        thisdate = datetime.date.today()
         for pp in pps:
             for lot in pp.product.avail_items_today(thisdate):
                 if lot.producer.id == self.id:
+                    lot.price = pp.formatted_unit_price_for_date(thisdate)
                     lots.append(lot)
         products = {}
         for lot in lots:
             if not lot.product.id in products:
-                products[lot.product.id] = ProductQuantity(lot.product,
-                    Decimal("0"))
+                products[lot.product.id] = ProductQuantityPrice(lot.product,
+                    Decimal("0"), lot.price)
             products[lot.product.id].qty += lot.remaining
-        avail = products.values()
-        for item in avail:
+        candidates = products.values()
+        avail = []
+        for item in candidates:
             item.qty -= item.product.total_unfilled(thisdate)
+            if item.qty > 0:
+                avail.append(item)
         avail.sort(lambda x, y: cmp(x.product.short_name,
                                     y.product.short_name))
         return avail
+
+    def available_now(self):
+        return self.available_for_date(datetime.date.today())
 
     def planned_available(self, weeks=4):
         start = datetime.date.today() + datetime.timedelta(weeks=1)
@@ -1401,6 +1414,9 @@ class ProducerProduct(models.Model):
                 if ppc.price_change_delivery_date <= date:
                     price = ppc.producer_price
         return price
+
+    def formatted_unit_price_for_date(self, date):
+        return self.unit_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
 
     def producer_price_now(self):
         td = datetime.date.today()

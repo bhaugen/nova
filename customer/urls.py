@@ -53,5 +53,10 @@ urlpatterns = patterns('',
     #availability
     url(r'^availability/(?P<cycle_id>\d+)/$', "customer.views.availability",
          name="customer_availability"),
+
+    # profiles
+    #todo: tab regex only allows one /-
+    url(r'^publicproducerprofile/(?P<producer_id>\d+)/(?P<tabs>\w{1})/(?P<tab>\w+\-?\w+)/$', 
+        "customer.views.producer_profile_for_customer", name="producer_profile_for_customer"),
 )
 

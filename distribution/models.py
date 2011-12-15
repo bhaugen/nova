@@ -700,14 +700,14 @@ class FoodNetwork(Party):
             if pa.expiration_date > item.expiration_date:
                 pa.expiration_date = item.expiration_date
         for pa in products.values():
-            pa.qty -= pa.product.total_ordered_for_timespan(
+            pp = ProducerProduct.objects.get(producer=pa.producer,
+                                                 product=pa.product)
+            pa.qty -= pp.total_ordered_for_timespan(
                 pa.inventory_date, pa.expiration_date)
             if pa.qty > 0:
                 pa.category = pa.product.parent_string()
                 pa.product_name = pa.product.short_name
                 pa.producer_name = pa.producer.short_name
-                pp = ProducerProduct.objects.get(producer=pa.producer,
-                                                 product=pa.product)
                 pa.price = pp.unit_price_for_date(delivery_date).quantize(Decimal('.01'), rounding=ROUND_UP)
                 avail.append(pa)
         avail = sorted(avail, key=attrgetter('category', 'product_name',
@@ -1175,7 +1175,7 @@ class Product(models.Model):
     def total_ordered_now(self):
         from_date = datetime.date.today()
         to_date = from_date + datetime.timedelta(weeks=1)
-        return self.total_ordered_for_timespan(from_date, to_date) | 0
+        return self.total_ordered_for_timespan(from_date, to_date) or Decimal("0")
 
     # deprecated - used a little
     def current_orders(self, thisdate):
@@ -1419,6 +1419,21 @@ class ProducerProduct(models.Model):
 
     def formatted_unit_price_now(self):
         return self.unit_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    def current_orders_for_timespan(self, from_date, to_date):
+        return OrderItem.objects.filter(
+            product=self.product,
+            producer=self.producer,
+            order__delivery_date__range=(from_date, to_date))
+    
+    def total_ordered_for_timespan(self, from_date, to_date):
+        return sum(order.unfilled_quantity() for order in
+            self.current_orders_for_timespan(from_date, to_date))
+
+    def total_ordered_now(self):
+        from_date = datetime.date.today()
+        to_date = from_date + datetime.timedelta(weeks=1)
+        return self.total_ordered_for_timespan(from_date, to_date) or Decimal("0")
 
 
 class ProducerPriceChange(models.Model):

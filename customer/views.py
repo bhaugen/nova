@@ -36,7 +36,7 @@ def availability(request, cycle_id):
     cycle = DeliveryCycle.objects.get(pk=int(cycle_id))
     delivery_date = cycle.next_delivery_date_using_closing()
     order_closing = cycle.order_closing(delivery_date)
-    avail_rows = fn.customer_availability(delivery_date)
+    avail_rows = fn.customer_availability_by_producer(delivery_date)
     specials = Special.objects.filter(
         from_date__lte=delivery_date,
         to_date__gte=delivery_date)

@@ -40,7 +40,7 @@ def create_order_item_price_forms(product, data=None):
         prefix = "-".join(["OI", str(item.id)])
         form = OrderItemPriceForm(data, prefix=prefix, instance=item)
         form.order = item.order
-        form.producers = item.producers()
+        form.producer = item.producer
         form_list.append(form)
     return form_list
 

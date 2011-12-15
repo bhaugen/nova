@@ -3379,8 +3379,8 @@ def pricing(request, product_id):
         product, data=request.POST or None)
     order_item_forms = create_order_item_price_forms(
         product, data=request.POST or None)
-    inventory_item_forms = create_inventory_item_price_forms(
-        product, data=request.POST or None)
+    #inventory_item_forms = create_inventory_item_price_forms(
+    #    product, data=request.POST or None)
     #ProducerProductFormSet = modelformset_factory(
     #    ProducerProduct,
     #    form=ProducerProductPriceForm,
@@ -3401,8 +3401,8 @@ def pricing(request, product_id):
                             form.save()
                         for form in order_item_forms:
                             form.save()
-                        for form in inventory_item_forms:
-                            form.save()
+                        #for form in inventory_item_forms:
+                        #    form.save()
                         return HttpResponseRedirect("/distribution/pricingselection/")
 
     return render_to_response('distribution/pricing.html', 
@@ -3410,7 +3410,7 @@ def pricing(request, product_id):
          'product_form': product_form,
          'producer_product_forms': producer_product_forms,
          'order_item_forms': order_item_forms,
-         'inventory_item_forms': inventory_item_forms,
+         #'inventory_item_forms': inventory_item_forms,
          #'producer_product_formset': producer_product_formset,
         }, context_instance=RequestContext(request))
 

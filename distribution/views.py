@@ -890,7 +890,7 @@ def order_selection(request):
     delivery_date = next_delivery_date()
     changeable_orders = Order.objects.filter(
         state="Submitted",
-        delivery_date__lte=delivery_date,
+        delivery_date__gte=datetime.date.today(),
     ).order_by('-delivery_date')
 
     unpaid_orders = Order.objects.exclude(state__contains="Paid").exclude(state="Unsubmitted")
@@ -1068,7 +1068,7 @@ def new_order(request, cust_id, year, month, day):
     if request.method == "POST":
         ordform = OrderForm(data=request.POST)
         #import pdb; pdb.set_trace()
-        itemforms = create_order_item_forms(order, availdate, request.POST)     
+        itemforms = create_order_item_forms_by_producer(order, availdate, request.POST)     
         if ordform.is_valid() and all([itemform.is_valid() for itemform in itemforms]):
             the_order = ordform.save(commit=False)
             the_order.customer = customer
@@ -1097,7 +1097,7 @@ def new_order(request, cust_id, year, month, day):
             'delivery_date': delivery_date,
             'transportation_fee': fn.transportation_fee,
         })
-        itemforms = create_order_item_forms(order, availdate)
+        itemforms = create_order_item_forms_by_producer(order, availdate)
     return render_to_response('distribution/order_update.html', 
         {'customer': customer, 
          'order': order, 
@@ -1119,13 +1119,14 @@ def edit_order(request, order_id):
     if request.method == "POST":
         ordform = OrderForm(data=request.POST)
         #import pdb; pdb.set_trace()
-        itemforms = create_order_item_forms(order, availdate, request.POST)     
+        itemforms = create_order_item_forms_by_producer(order, availdate, request.POST)     
         if ordform.is_valid() and all([itemform.is_valid() for itemform in itemforms]):
             data = ordform.cleaned_data
             transportation_fee = data['transportation_fee']
             distributor = data['distributor']
             order.changed_by = request.user
             order.distributor = distributor
+            order.purchase_order = data['purchase_order']
             order.save()
             if transportation_fee:
                 transportation_tx = None
@@ -1153,7 +1154,7 @@ def edit_order(request, order_id):
                % ('distribution/order', order.id))
     else:
         ordform = OrderForm(order, instance=order)
-        itemforms = create_order_item_forms(order, availdate)
+        itemforms = create_order_item_forms_by_producer(order, availdate)
     return render_to_response('distribution/order_update.html', 
         {'customer': customer, 
          'order': order, 
@@ -1243,11 +1244,14 @@ def update_order(order, itemforms, is_change):
             else:
                 # added
                 if qty > 0:
-                    prod_id = data['prod_id']
-                    product = Product.objects.get(id=prod_id)
+                    product_id = data['product_id']
+                    product = Product.objects.get(id=product_id)
+                    producer_id = data['producer_id']
+                    producer = Producer.objects.get(id=producer_id)
                     oi = itemform.save(commit=False)
                     oi.order = order
                     oi.product = product
+                    oi.producer = producer
                     oi.save()
                     oic = OrderItemChange(
                         action=1,
@@ -1272,11 +1276,14 @@ def update_order(order, itemforms, is_change):
                     itemform.instance.delete()
             else:
                 if qty > 0:
-                    prod_id = data['prod_id']
-                    product = Product.objects.get(id=prod_id)
+                    product_id = data['product_id']
+                    product = Product.objects.get(id=product_id)
+                    producer_id = data['producer_id']
+                    producer = Producer.objects.get(id=producer_id)
                     oi = itemform.save(commit=False)
                     oi.order = order
                     oi.product = product
+                    oi.producer = producer
                     oi.save()
     return True
 
@@ -1599,7 +1606,56 @@ def order_item_rows_by_product(thisdate):
     item_list.sort()
     return item_list
 
-#todo: lotsa dup code between this method and the one above
+def order_headings_by_producer(thisdate, links=True):
+    orders = Order.objects.filter(delivery_date=thisdate).exclude(state='Unsubmitted')
+    heading_list = []
+    for order in orders:
+        lines = []
+        if links:
+            lines.append("<a href='/distribution/order/" + str(order.id) + "/'>" + order.customer.short_name + "</a>")
+        else:
+            lines.append(order.customer.short_name)
+        lines.append(order.customer.contact().name)
+        lines.append(order.customer.contact().phone)
+        heading = " ".join(str(i) for i in lines)
+        heading_list.append(heading)
+    return heading_list
+
+
+def order_item_rows_by_producer(thisdate):
+    orders = Order.objects.filter(delivery_date=thisdate).exclude(state='Unsubmitted')
+    if not orders:
+        return []
+    order_list = []
+    for order in orders:
+        order_list.append(order.id)
+    order_count = len(order_list)
+    product_dict = {}
+    items = OrderItem.objects.filter(
+        order__delivery_date=thisdate).exclude(order__state='Unsubmitted')
+    #import pdb; pdb.set_trace()
+    for item in items:
+        product = item.product
+        producer = item.producer
+        pp = ProducerProduct.objects.get(
+            product=product,
+            producer=producer)
+        key = "-".join([str(product.id), str(producer.id)])
+        if not key in product_dict:
+            totavail = pp.total_avail_today(thisdate)
+            totordered = pp.total_ordered_for_date(thisdate)
+            producers = producer
+            product_dict[key] = [product.parent_string(),
+                product.long_name,  producer.short_name,  product.growing_method, totavail, totordered]
+            for x in range(order_count):
+                product_dict[key].append(' ')
+        prod_cell = order_list.index(item.order.id) + 6
+        product_dict[key][prod_cell] = item.quantity
+    item_list = product_dict.values()
+    item_list.sort()
+    return item_list
+
+#todo: lotsa dup code between this method and the ones above
 def order_item_rows(thisdate):
     orders = Order.objects.filter(delivery_date=thisdate).exclude(state='Unsubmitted')
     if not orders:
@@ -1635,12 +1691,8 @@ def order_table_selection(request):
             dsdata = dsform.cleaned_data
             ord_date = dsdata['selected_date']
             if request.POST.get('submit-order-table'):
-                if ordering_by_lot():
-                    return HttpResponseRedirect('/%s/%s/%s/%s/'
-                        % ('distribution/ordertable', ord_date.year, ord_date.month, ord_date.day))
-                else:
-                    return HttpResponseRedirect('/%s/%s/%s/%s/'
-                        % ('distribution/ordertablebyproduct', ord_date.year, ord_date.month, ord_date.day))
+                return HttpResponseRedirect('/%s/%s/%s/%s/'
+                    % ('distribution/ordertablebyproducer', ord_date.year, ord_date.month, ord_date.day))
             elif request.POST.get('submit-short-changes'):
                 return HttpResponseRedirect('/%s/%s/%s/%s/'
                     % ('distribution/shortschanges', ord_date.year, ord_date.month, ord_date.day))
@@ -1732,6 +1784,18 @@ def order_table_by_product(request, year, month, day):
          'heading_list': heading_list, 
          'item_list': item_list}, context_instance=RequestContext(request))
 
+@login_required
+def order_table_by_producer(request, year, month, day):
+    thisdate = datetime.date(int(year), int(month), int(day))
+    date_string = thisdate.strftime('%Y_%m_%d')
+    heading_list = order_headings_by_producer(thisdate)
+    item_list = order_item_rows_by_producer(thisdate)
+    return render_to_response('distribution/order_table_by_producer.html', 
+        {'date': thisdate, 
+         'datestring': date_string,
+         'heading_list': heading_list, 
+         'item_list': item_list}, context_instance=RequestContext(request))
+
 
 def order_csv(request, delivery_date):
     thisdate = datetime.datetime(*time.strptime(delivery_date, '%Y_%m_%d')[0:5]).date()
@@ -1768,6 +1832,21 @@ def order_csv_by_product(request, delivery_date):
     for item in item_list:
         writer.writerow(item)
     return response
+
+def order_csv_by_producer(request, delivery_date):
+    thisdate = datetime.datetime(*time.strptime(delivery_date, '%Y_%m_%d')[0:5]).date()
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=ordersheet.csv'
+    product_heads = ['Category', 'Product', 'Producer', 'Growing Method', 'Avail', 'Ordered']
+    order_heads = order_headings_by_producer(thisdate, links=False)
+    heading_list = product_heads + order_heads
+    item_list = order_item_rows_by_producer(thisdate)
+    writer = csv.writer(response)
+    writer.writerow(heading_list)
+    for item in item_list:
+        writer.writerow(item)
+    return response
+
 
 @login_required
 def shorts(request, year, month, day):
@@ -3861,7 +3940,7 @@ def avail_email_prep(request, cycles):
         plans = weekly_production_plans(avail_date) 
     else:
         item_forms = create_avail_item_forms(avail_date, data=request.POST or None)
-    products = fn.customer_availability(avail_date)
+    products = fn.customer_availability_by_producer(avail_date)
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if intro_form.is_valid() and all([form.is_valid() for form in item_forms]):

@@ -174,6 +174,18 @@ class StaffProductAvailability(object):
          self.expiration_date = expiration_date
 
 
+class StaffProducerProductAvailability(object):
+     def __init__(self, key, product, producer, price, avail, ordered, inventory_date, expiration_date):
+         self.key = key
+         self.product = product
+         self.producer = producer
+         self.price = price
+         self.avail = avail
+         self.ordered = ordered
+         self.inventory_date = inventory_date
+         self.expiration_date = expiration_date
+
+
 class PickupCustodian(object):
      def __init__(self, custodian, address, products):
          self.custodian = custodian
@@ -722,7 +734,7 @@ class FoodNetwork(Party):
         return avail
 
     def email_availability(self, delivery_date):
-        avail = self.customer_availability(delivery_date)
+        avail = self.customer_availability_by_producer(delivery_date)
         cats = {}
         for ap in avail:
             if ap.category not in cats:
@@ -766,6 +778,37 @@ class FoodNetwork(Party):
                 pa.price = pa.product.unit_price_for_date(delivery_date).quantize(Decimal('.01'), rounding=ROUND_UP)
                 avail.append(pa)
         avail = sorted(avail, key=attrgetter('category'))
+        return avail
+
+    def staff_availability_by_producer(self, delivery_date):
+        avail = []
+        products = {}
+        items = self.avail_items_for_customer(delivery_date)
+        for item in items:
+            key = "-".join([str(item.product.id), str(item.producer.id)])
+            if key not in products:
+                products[key] = StaffProducerProductAvailability(
+                    key, item.product, item.producer,
+                    Decimal("0"), Decimal("0"), Decimal("0"), item.inventory_date, item.expiration_date)
+            pa = products[key]
+            pa.avail += item.avail_qty()
+            if pa.inventory_date < item.inventory_date:
+                pa.inventory_date = item.inventory_date
+            if pa.expiration_date > item.expiration_date:
+                pa.expiration_date = item.expiration_date
+        for pa in products.values():
+            pp = ProducerProduct.objects.get(producer=pa.producer,
+                                                 product=pa.product)
+            pa.ordered = pp.total_ordered_for_timespan(
+                pa.inventory_date, pa.expiration_date)
+            if pa.avail > 0:
+                pa.category = pa.product.parent_string()
+                pa.product_name = pa.product.short_name
+                pa.producer_name = pa.producer.short_name
+                pa.price = pp.unit_price_for_date(delivery_date).quantize(Decimal('.01'), rounding=ROUND_UP)
+                avail.append(pa)
+        avail = sorted(avail, key=attrgetter('category', 'product_name',
+            'producer_name'))
         return avail
 
     # deprecated
@@ -1441,6 +1484,12 @@ class ProducerProduct(models.Model):
             product=self.product,
             producer=self.producer,
             order__delivery_date__range=(from_date, to_date))
+
+    def current_orders_for_date(self, date):
+        return OrderItem.objects.filter(
+            product=self.product,
+            producer=self.producer,
+            order__delivery_date=(date))
     
     def total_ordered_for_timespan(self, from_date, to_date):
         return sum(order.unfilled_quantity() for order in
@@ -1450,6 +1499,40 @@ class ProducerProduct(models.Model):
         from_date = datetime.date.today()
         to_date = from_date + datetime.timedelta(weeks=1)
         return self.total_ordered_for_timespan(from_date, to_date) or Decimal("0")
+
+    def total_ordered_for_date(self, date):
+        return sum(order.unfilled_quantity() for order in
+            self.current_orders_for_date(date))
+
+    def avail_items_today(self, thisdate):
+        """
+        means all available inventory items not reduced by orders?
+        """
+        items = InventoryItem.objects.filter(
+            product=self.product,
+            producer=self.producer,
+            inventory_date__lte=thisdate,
+            expiration_date__gt=thisdate)
+        items = items.filter(Q(remaining__gt=0) | Q(onhand__gt=0))
+        return items
+
+    def total_avail_today(self, thisdate):
+        """
+        means quantity available on this date, not reduced by orders
+        """
+        return sum(item.avail_qty() for item in self.avail_items_today(thisdate))
+
+    def available_items_today_for_customer(self, thisdate):
+        items = self.available_items_today()
+        candidates = {}
+        for item in items:
+            key = "-".join([str(item.product.id), str(item.producer.id)])
+            if not key in candidates:
+                #todo: finish
+                candidates[key]= x
+        avail = []
+        return avail
+            
 
 
 class ProducerPriceChange(models.Model):
@@ -1470,9 +1553,8 @@ class ProducerPriceChange(models.Model):
         return " ".join([
             self.producer_product.producer.short_name,
             self.producer_product.product.short_name,
-            str(self.producer_price),
             "changed from",
-            str(self.producer_product.producer_price),
+            str(self.producer_price),
             "on",
             self.when_changed.strftime('%Y-%m-%d'),
         ])
@@ -1575,7 +1657,10 @@ class InventoryItem(models.Model):
         return self.avail_qty()
         
     def ordered_qty(self):
-        return self.delivered_qty()
+        pp = ProducerProduct.objects.get(
+            producer=self.producer,
+            product=self.product)
+        return pp.total_ordered_now()
 
     def deliveries(self):
         return self.inventorytransaction_set.filter(transaction_type="Delivery")
@@ -1993,8 +2078,9 @@ class CustomerPayment(models.Model):
         
 
 class ShortOrderItems(object):
-    def __init__(self, product, total_avail, total_ordered, quantity_short, order_items):
+    def __init__(self, product, producer, total_avail, total_ordered, quantity_short, order_items):
          self.product = product
+         self.producer = producer
          self.total_avail = total_avail
          self.total_ordered = total_ordered
          self.quantity_short = quantity_short
@@ -2008,11 +2094,12 @@ def shorts_for_date(delivery_date):
     maybes = {}
     ois = OrderItem.objects.filter(order__delivery_date=delivery_date).exclude(order__state="Unsubmitted")
     for oi in ois:
-        if not oi.product in maybes:
-            maybes[oi.product] = ShortOrderItems(oi.product, 
-                oi.product.total_avail(delivery_date), Decimal("0"), Decimal("0"), [])
-        maybes[oi.product].total_ordered += (oi.quantity -oi.delivered_quantity())    
-        maybes[oi.product].order_items.append(oi)
+        pp = oi.producer_product()
+        if not pp in maybes:
+            maybes[pp] = ShortOrderItems(oi.product, oi.producer,
+                pp.total_avail_today(delivery_date), Decimal("0"), Decimal("0"), [])
+        maybes[pp].total_ordered += (oi.quantity -oi.delivered_quantity())    
+        maybes[pp].order_items.append(oi)
     for maybe in maybes:
         qty_short = maybes[maybe].total_ordered - maybes[maybe].total_avail
         if qty_short > Decimal("0"):
@@ -2031,11 +2118,12 @@ def shorts_for_week():
     maybes = {}
     ois = OrderItem.objects.filter(order__delivery_date__range=(cw, saturday)).exclude(order__state="Unsubmitted")
     for oi in ois:
-        if not oi.product in maybes:
-            maybes[oi.product] = ShortOrderItems(oi.product, 
-                oi.product.total_avail(oi.order.delivery_date), Decimal("0"), Decimal("0"), [])
-        maybes[oi.product].total_ordered += (oi.quantity -oi.delivered_quantity())    
-        maybes[oi.product].order_items.append(oi)
+        pp = oi.producer_product()
+        if not pp in maybes:
+            maybes[pp] = ShortOrderItems(oi.product, oi.producer,
+                pp.total_avail_today(oi.order.delivery_date), Decimal("0"), Decimal("0"), [])
+        maybes[pp].total_ordered += (oi.quantity -oi.delivered_quantity())    
+        maybes[pp].order_items.append(oi)
     for maybe in maybes:
         qty_short = maybes[maybe].total_ordered - maybes[maybe].total_avail
         if qty_short > Decimal("0"):
@@ -2061,6 +2149,23 @@ class OrderItem(models.Model):
             self.product.short_name,
             #self.producer.short_name,
             str(self.quantity)])
+
+    def changed(self):
+        if self.order_item_changes.all().count():
+            return True
+        else:
+            return False
+
+    def filled(self):
+        if self.inventorytransaction_set.all().count():
+            return True
+        else:
+            return False
+
+    def producer_product(self):
+        return ProducerProduct.objects.get(
+            producer=self.producer,
+            product=self.product)
     
     def delete(self):
         #todo: is this necessary? shd be cascaded automatically, no?
@@ -2238,6 +2343,16 @@ class OrderItemChange(models.Model):
         decimal_places=2, default=Decimal('0'))
     prev_notes = models.CharField(_('prev notes'), max_length=64, blank=True)
     new_notes = models.CharField(_('new notes'), max_length=64, blank=True)
+
+    def __unicode__(self):
+        return ' '.join([
+            str(self.order),
+            str(self.order_item),
+            self.get_action_display(),
+            self.get_reason_display(),
+            str(self.changed_by),
+            self.when_changed.strftime('%Y-%m-%d'),
+        ])
 
 
 class ServiceType(models.Model):

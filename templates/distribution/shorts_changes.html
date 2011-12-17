@@ -21,6 +21,7 @@
 		<tr>
 			<th>{% trans "Order" %}</th>
 			<th>{% trans "Product" %}</th>
+			<th>{% trans "Producer" %}</th>
 			<th>{% trans "Original Qty" %}</th>
 			<th>{% trans "Changed Qty" %}</th>
 		</tr>
@@ -28,6 +29,7 @@
 		<tr>
 				<td>{{ item.order }}</td>
 				<td>{{ item.product }}</td>
+				<td>{{ item.producer }}</td>
 				<td>{{ item.orig_qty }}</td>
 				<td>{{ item.quantity }}</td>
 			</tr>

@@ -700,3 +700,55 @@ def send_avail_emails(cycle):
         "food_network_name": food_network_name,
         "cycle": cycle,
     })
+
+def create_order_item_forms_by_producer(order, delivery_date, data=None):
+    form_list = []
+    item_dict = {}
+    items = []
+    if order:
+        items = order.orderitem_set.all()
+        for item in items:
+            key = "-".join([str(item.product.id), str(item.producer.id)])
+            item_dict[key] = item
+    fn = food_network()
+    avail = fn.staff_availability_by_producer(delivery_date)
+    for prod in avail:
+        totavail = prod.avail
+        totordered = prod.ordered
+        producer = prod.producer
+        key = "-".join([str(prod.product.id), str(prod.producer.id)])
+        item = item_dict.get(key)
+        if item:
+            initial_data = {
+                'product_id': prod.product.id,
+                'producer_id': prod.producer.id,
+                'avail': totavail,
+                'unit_price': item.formatted_unit_price(),
+                'ordered': totordered,
+            }
+            prefix = "".join([str(item.product.id), str(item.producer.id)])
+            oiform = OrderItemForm(data, prefix=prefix, instance=item,
+                                   initial=initial_data)
+            oiform.producer = producer
+            oiform.description = prod.product.long_name
+            oiform.parents = prod.category
+            oiform.growing_method = prod.product.growing_method
+            form_list.append(oiform)
+        else:
+            #fee = prod.decide_fee()
+            prefix = "".join([str(prod.product.id), str(prod.producer.id)])
+            oiform = OrderItemForm(data, prefix=prefix, initial={
+                'product_id': prod.product.id,
+                'producer_id': prod.producer.id, 
+                'avail': totavail, 
+                'ordered': totordered, 
+                'unit_price': prod.price, 
+                #'fee': fee,  
+                'quantity': 0})
+            oiform.description = prod.product.long_name
+            oiform.producer = producer
+            oiform.parents = prod.category
+            oiform.growing_method = prod.product.growing_method
+            form_list.append(oiform)
+    return form_list
+

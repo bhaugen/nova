@@ -116,7 +116,21 @@ dojo.require("dojo.parser");
 			{% if customer.email %}
 				{{ customer.email }}
 			{% else %}
-				<span style="color:red;">No email address</span>
+				<span style="color:red;">No main email address</span>
+			{% endif %}
+			{% if customer.contacts.all %}
+			<ul>
+				{% for contact in customer.contacts.all %}
+				<li>
+				Contact: {{ contact.name }}
+				{% if contact.email %}
+				 {{ contact.email }}</li>
+				{% else %}
+				<span style="color:red;">No contact email address</span>
+				{% endif %}
+				</li>
+				{% endfor %}
+			</ul>
 			{% endif %}
 		</li>
 		{% endfor %}
@@ -190,6 +204,7 @@ dojo.require("dojo.parser");
 			<tr>
 				<th>{% trans "Category" %}</th>
 				<th>{% trans "Product" %}</th>
+				<th>{% trans "Producer" %}</th>
 				<th>{% trans "Available" %}</th>
 				<th>{% trans "Price" %}</th>
 			</tr>
@@ -197,6 +212,7 @@ dojo.require("dojo.parser");
 			<tr>
 				<td>{{ product.category }}</td>
 				<td>{{ product.product }}</td>
+				<td>{{ product.producer }}</td>
 				<td style="text-align: right;" >{{ product.qty }}</td>
 				<td style="text-align: right;" >{{ product.price }}</td>
 			</tr>

@@ -313,8 +313,8 @@
 		<tr>
 			<th>{% trans "Category" %}</th>
 			<th>{% trans "Product" %}</th>
-			<th>{% trans "Growing Method" %}</th>
-	                <th>{% trans "Producers" %}</th>
+			<th>{% trans "Producers" %}</th>
+			<th>{% trans "Growing Method" %}</th> 
         	        <th>{% trans "Avail" %}</th>
                 	<th>{% trans "Ordered" %}</th>
 	                <th>{% trans "Unit Price" %}</th>
@@ -327,8 +327,8 @@
                  <tr>
 					 <td class="read-only-td" > {{ item_form.parents }} </td>
 					 <td class="read-only-td"  > {{ item_form.description }} </td>
+					 <td class="read-only-td" > {{ item_form.producer }} </td>
 					 <td class="read-only-td"  > {{ item_form.growing_method }} </td>
-					<td class="read-only-td" > {{ item_form.producers }} </td>
 					<td class="read-only-td" > {{ item_form.avail }} </td>
 					<td class="read-only-td" > {{ item_form.ordered }} </td>
 					<td> {{ item_form.unit_price }} </td>
@@ -336,7 +336,8 @@
 					<td> {{ item_form.quantity }} </td>
 					<td id="id_{{ item_form.prefix }}-ext_price" class="read-only-td ext-price" style="text-align: right" ></td>
 					<td> {{ item_form.notes }} </td>
-					{{ item_form.prod_id }}
+					{{ item_form.product_id }}
+					{{ item_form.producer_id }}
                 </tr>
            {% endfor %} 
         </table>

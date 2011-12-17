@@ -242,7 +242,7 @@
 			<th>{% trans "Expiration Date" %}</th>
 			<th>{% trans "Where" %}</th>		
 	        	<th>{% trans "Avail" %}</th>
-			<th>{% trans "Ordered" %}</th>
+			<th>{% trans "Shipped" %}</th>
 			<th>{% trans "Buyers" %}</th>
 		</tr>
 		{% for lot in available %}
@@ -258,7 +258,7 @@
 			<td>{{ lot.expiration_date }}</td>
 			<td>{{ lot.where }}</td>
 			<td style="text-align: right;" >{{ lot.avail_qty }}</td>
-			<td style="text-align: right;" >{{ lot.ordered_qty }}</td>
+			<td style="text-align: right;" >{{ lot.delivered_qty }}</td>
 			<td>{{ lot.customers }}</td>
 		</tr>
 		{% endfor %}

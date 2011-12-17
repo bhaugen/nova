@@ -73,12 +73,9 @@ def create_order_item_forms(order, product_list, availdate, data=None):
         listed_products = set(id[0] for id in listed_products)
     prods = []
     for prod in avail:
-        ok = True
         if product_list:
-            if not prod.product.id in listed_products:
-                ok = False
-        if ok:
-            prods.append(prod)
+            if prod.product.id in listed_products:
+                prods.append(prod)
     for prod in prods:
         try:
             item = item_dict[prod.product.id]
@@ -128,6 +125,7 @@ def create_order_item_forms_by_producer(order, product_list, availdate, data=Non
         key = "-".join([str(item.product.id), str(item.producer.id)])
         if not key in avail_keys:
             item.category = item.product.parent_string()
+            #todo: product.total_avail_today is wrong, s/b producerproduct
             item.qty = item.product.total_avail_today(availdate)
             avail.append(item)
     avail = sorted(avail, key=attrgetter('category'))
@@ -137,18 +135,12 @@ def create_order_item_forms_by_producer(order, product_list, availdate, data=Non
         listed_products = set(id[0] for id in listed_products)
     prods = []
     for prod in avail:
-        ok = True
         if product_list:
-            if not prod.product.id in listed_products:
-                ok = False
-        if ok:
-            prods.append(prod)
+            if prod.product.id in listed_products:
+                prods.append(prod)
     for prod in prods:
         key = "-".join([str(prod.product.id), str(prod.producer.id)])
-        try:
-            item = item_dict[key]
-        except KeyError:
-            item = False
+        item = item_dict.get(key)
         if item:
             initial_data = {
                 'product_id': prod.product.id,

@@ -79,6 +79,8 @@ class ProductPlanAdmin(admin.ModelAdmin):
     
 admin.site.register(ProductPlan, ProductPlanAdmin)
 
+class ProducerPriceChangeInline(admin.TabularInline):
+    model = ProducerPriceChange
 
 class ProducerProductAdmin(admin.ModelAdmin):
     list_display = ('producer', 'product', 'producer_price', 'producer_fee',
@@ -86,6 +88,7 @@ class ProducerProductAdmin(admin.ModelAdmin):
                     'inventoried', 'planned', 'distributor')
     list_filter = ['inventoried', 'producer', 'product']
     ordering = ('product',)
+    inlines = [ ProducerPriceChangeInline, ]
     
 admin.site.register(ProducerProduct, ProducerProductAdmin)
 
@@ -111,11 +114,6 @@ class SpecialAdmin(admin.ModelAdmin):
     
 admin.site.register(Special, SpecialAdmin)
 
-#class PartyUserAdmin(admin.ModelAdmin):
-#    list_display = ('user', 'party')
-    
-#admin.site.register(PartyUser, PartyUserAdmin)
-
 
 class InventoryItemAdmin(admin.ModelAdmin):
     list_display = ('product', 'producer', 'lot_id', 'field_id', 'custodian', 'inventory_date', 'expiration_date', 'planned', 'remaining', 'received', 'onhand', 'notes')
@@ -139,6 +137,28 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [ OrderItemInline, ]
   
 admin.site.register(Order, OrderAdmin)
+
+
+class OrderItemChangeInline(admin.TabularInline):
+    model = OrderItemChange
+    extra = 0
+
+
+class InventoryTransactionInline(admin.TabularInline):
+    model = InventoryTransaction
+    extra = 0
+
+
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product', 'producer', 'quantity', 'unit_price',
+                    'notes', 'filled', 'changed' )
+    ordering = ('order__order_date',)
+    list_filter = ['order__customer', 'producer', 'product']
+    search_fields = ['product__long_name', 'producer__long_name']
+    #date_hierarchy = 'order__delivery_date'
+    inlines = [ InventoryTransactionInline, OrderItemChangeInline ]
+
+admin.site.register(OrderItem, OrderItemAdmin)
 
 
 class OrderItemChangeAdmin(admin.ModelAdmin):

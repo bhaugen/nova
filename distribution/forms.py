@@ -722,8 +722,9 @@ class OrderItemShortForm(forms.ModelForm):
         fields = ('quantity', )
 
 class ShortsRow(object):
-    def __init__(self, product, total_avail, product_form, cells, item_forms):
+    def __init__(self, product, producer, total_avail, product_form, cells, item_forms):
          self.product = product
+         self.producer = producer
          self.total_avail = total_avail
          self.product_form = product_form
          self.cells = cells
@@ -743,7 +744,7 @@ def create_shorts_table(delivery_date, data=None):
         for oi in short.order_items:
             orders.append(oi.order)
     orders = list(set(orders))
-    cols = ["Product", "Avail", "Ordered", "Short"]
+    cols = ["Product", "Producer", "Avail", "Ordered", "Short"]
     #cols.extend(orders)
     for order in orders:
         cols.append(order.customer)
@@ -754,7 +755,7 @@ def create_shorts_table(delivery_date, data=None):
             "quantity_short": short.quantity_short,
         }
         product_form = ProductShortForm(data, prefix=str(short.product.id), initial=product_init)
-        row = ShortsRow(short.product, short.total_avail, product_form, [], [])
+        row = ShortsRow(short.product, short.producer, short.total_avail, product_form, [], [])
         cells = []
         for order in orders:
             cells.append("")
@@ -779,11 +780,11 @@ def create_short_forms(delivery_date):
         for oi in short.order_items:
             orders.append(oi.order)
     orders = list(set(orders))
-    cols = ["Product", "Avail", "Ordered", "Short"]
+    cols = ["Product", "Producer", "Avail", "Ordered", "Short"]
     cols.extend(orders)
     rows = []
     for short in shorts_list:
-        row = [short.product, short.total_avail, short.total_ordered, short.quantity_short]
+        row = [short.product, short.producer, short.total_avail, short.total_ordered, short.quantity_short]
         for order in orders:
             row.append("")
         for oi in short.order_items:
@@ -832,9 +833,6 @@ class DeliveryForm(forms.ModelForm):
         exclude = ('from_whom', 'to_whom', 'process', 'unit_price', 'order_item', 'transaction_type', 'transaction_date', 'notes')
 
 def create_delivery_forms(thisdate, customer, data=None):
-    # could this below all be done with inline formsets?
-    # (which were not available when this was coded...)
-    # might be doable...
     form_list = []
     if customer:
         orderitems = OrderItem.objects.filter(
@@ -847,13 +845,9 @@ def create_delivery_forms(thisdate, customer, data=None):
     for oi in orderitems:
         dtf = DeliveryItemForm(data, prefix=str(oi.id), initial=
             {'order_qty': oi.quantity, 'order_item_id': oi.id, 'product_id': oi.product.id})
-        dtf.description = ": ".join([oi.order.customer.short_name, oi.product.long_name])
-        # choices hack below was because
-        # product.avail_items used to return a chain, not a queryset
-        # does not support len(), and does not work for fields[].queryset
-        # avail_items now does return a queryset
-        # todo: maybe rethink some of this code, altho it does work
-        avail_items = oi.product.avail_items(thisdate)
+        dtf.description = "".join([oi.order.customer.short_name, ": ",
+            oi.product.long_name, ", from ", oi.producer.short_name])
+        avail_items = oi.producer_product().avail_items_today(thisdate)
         amount = 0
         if avail_items.count() == 1:
             choices = [(item.id, item.delivery_label()) for item in avail_items]
@@ -938,10 +932,8 @@ class OrderForm(forms.ModelForm):
 
 
 class OrderItemForm(forms.ModelForm):
-     #parents = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input', 'size': '12'}))
-     prod_id = forms.CharField(widget=forms.HiddenInput)
-     #description = forms.CharField(widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input'}))
-     #producers = forms.CharField(required=False, widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input', 'size': '12'}))
+     product_id = forms.CharField(widget=forms.HiddenInput)
+     producer_id = forms.CharField(widget=forms.HiddenInput)
      avail = forms.DecimalField(widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input', 'size': '6', 'style': 'text-align: right;'}))
      ordered = forms.DecimalField(widget=forms.TextInput(attrs={'readonly':'true', 'class': 'read-only-input total-ordered', 'size': '6', 'style': 'text-align: right;'}))
      quantity = forms.DecimalField(widget=forms.TextInput(attrs={'class': 'quantity-field', 'size': '8'}))
@@ -951,7 +943,7 @@ class OrderItemForm(forms.ModelForm):
 
      class Meta:
          model = OrderItem
-         exclude = ('order', 'product', 'fee')
+         exclude = ('order', 'product', 'producer', 'fee')
 
 def create_order_item_forms(order, delivery_date, data=None):
     form_list = []

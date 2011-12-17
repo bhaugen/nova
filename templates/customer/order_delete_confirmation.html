@@ -51,21 +51,19 @@
     <table class="ga-event-table" >
         <tr>
              <th>Product</th>
-             <!--<th>Description</th>-->
+             <th>Producer</th>
              <th>Quantity</th>
              <th>Unit Price</th>
              <th>Extended Price</th>
-	     <!--<th>Producer</th>-->
              <th>Notes</th>
         </tr>
         {% for orderitem in order.orderitem_set.all %}
             <tr>
-                <!--<td>{{ orderitem.product }}</td>-->
-                <td>{{ orderitem.product.long_name }}</td>
+		    <td>{{ orderitem.product.long_name }}</td>
+		    <td>{{ orderitem.producer.short_name }}</td>
                 <td style="text-align: right; ">{{ orderitem.quantity }}</td>
                 <td style="text-align: right; ">{{ orderitem.formatted_unit_price }}</td>
                 <td style="text-align: right; ">{{ orderitem.extended_price }}</td>
-		<!--<td>{{ orderitem.producers }}</td>-->
                 <td>{{ orderitem.notes }}</td>
             </tr>
         {% endfor %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Order Table" %}
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="order-table">
+
+	{% include "distribution/tabnav.html" %}
+
+    <h4>{% blocktrans %}Orders for {{ date }}{% endblocktrans %}</h4>
+
+    <p><a href="{% url order_csv_by_producer delivery_date=datestring %}">{% trans "Export table as CSV file" %}</a></p>
+    <table class="ga-event-table" >
+        <tr>
+            <th>{% trans "Category" %}</th>
+	    <th>{% trans "Product" %}</th>
+	    <th>{% trans "Producer" %}</th>
+	    <th>{% trans "Growing Method" %}</th>
+            <th>{% trans "Avail" %}</th>
+            <th>{% trans "Ordered" %}</th>
+            {% for heading in heading_list %}
+                <th style="width: 5em; " >{{ heading|safe }}</th>
+            {% endfor %}
+        </tr>
+        {% for cells in item_list %}
+            <tr>
+               {% for cell in cells %}
+			{% if forloop.counter > 4 %}
+				<td style="text-align: right;" >{{ cell }}</td>
+			{% else %}
+				<td>{{ cell }}</td>
+			{% endif %}
+		{% endfor %} 
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %} 
+

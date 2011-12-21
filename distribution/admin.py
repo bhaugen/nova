@@ -89,6 +89,7 @@ class ProducerProductAdmin(admin.ModelAdmin):
     list_filter = ['inventoried', 'producer', 'product']
     ordering = ('product',)
     inlines = [ ProducerPriceChangeInline, ]
+    actions = None
     
 admin.site.register(ProducerProduct, ProducerProductAdmin)
 

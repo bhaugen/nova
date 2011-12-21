@@ -1437,6 +1437,15 @@ class ProducerProduct(models.Model):
         unique_together = ('producer', 'product')
         ordering = ('producer', 'product')
 
+    #def delete(self):
+    #    plans = ProductPlan.objects.filter(
+    #        producer=self.producer,
+    #        product=self.product)
+    #    for plan in plans:
+    #        plan.delete()
+    #    super(ProducerProduct, self).delete()
+
+
     def decide_producer_fee(self):
         return self.producer_fee or self.product.decide_producer_fee()
 

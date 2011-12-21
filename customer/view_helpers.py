@@ -76,6 +76,7 @@ def create_order_item_forms(order, product_list, availdate, data=None):
         if product_list:
             if prod.product.id in listed_products:
                 prods.append(prod)
+    #todo: bug: if no product_list, no avails in prods
     for prod in prods:
         try:
             item = item_dict[prod.product.id]
@@ -134,10 +135,13 @@ def create_order_item_forms_by_producer(order, product_list, availdate, data=Non
             product_list=product_list).values_list("product_id")
         listed_products = set(id[0] for id in listed_products)
     prods = []
+    #import pdb; pdb.set_trace()
     for prod in avail:
         if product_list:
             if prod.product.id in listed_products:
                 prods.append(prod)
+        else:
+            prods.append(prod)
     for prod in prods:
         key = "-".join([str(prod.product.id), str(prod.producer.id)])
         item = item_dict.get(key)

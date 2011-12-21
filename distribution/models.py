@@ -1447,7 +1447,7 @@ class ProducerProduct(models.Model):
 
 
     def decide_producer_fee(self):
-        return self.producer_fee or self.product.decide_producer_fee()
+        return self.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
 
     def unit_price_for_date(self, date):
         price = self.producer_price
@@ -2604,7 +2604,7 @@ class InventoryTransaction(EconomicEvent):
     
     def producer_fee(self):
         try:
-            pp = ProducerProduct.get(
+            pp = ProducerProduct.objects.get(
                 producer=self.producer,
                 product=self.product)
             return pp.decide_producer_fee()

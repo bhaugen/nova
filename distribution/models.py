@@ -1359,47 +1359,6 @@ class Special(models.Model):
         return self.price.quantize(Decimal('.01'), rounding=ROUND_UP)
 
 
-PLAN_ROLE_CHOICES = (
-    ('consumer', _('consumer')),
-    ('producer', _('producer')),
-)
-
-
-class ProductPlan(models.Model):
-    member = models.ForeignKey(Party, 
-        related_name="product_plans", verbose_name=_('member')) 
-    product = models.ForeignKey(Product, 
-        limit_choices_to = {'plannable': True}, verbose_name=_('product'))
-    from_date = models.DateField(_('from date'), )
-    to_date = models.DateField(_('to date'), )
-    quantity = models.DecimalField(_('Qty per week'), max_digits=8, decimal_places=2,
-        default=Decimal('0'))
-    role = models.CharField(_('role'), max_length=12, choices=PLAN_ROLE_CHOICES,
-                            default="producer")
-    inventoried = models.BooleanField(_('inventoried'), default=True,
-        help_text=_("If not inventoried, the planned qty per week will be used for ordering"))
-    distributor = models.ForeignKey(Party, related_name="plan_distributors", 
-        blank=True, null=True, verbose_name=_('distributor'))
-    
-    def __unicode__(self):
-        return " ".join([
-            self.member.short_name,
-            self.product.short_name,
-            self.from_date.strftime('%Y-%m-%d'),
-            self.to_date.strftime('%Y-%m-%d'),
-            str(self.quantity)])
-        
-    class Meta:
-        ordering = ('product', 'member', 'from_date')
-
-    @property
-    def producer(self):
-        if self.role=="producer":
-            return self.member
-        else:
-            return None
-
-
 class ProducerProduct(models.Model):
     producer = models.ForeignKey(Party, 
         limit_choices_to = {"content_type__name": "producer"},
@@ -1437,14 +1396,6 @@ class ProducerProduct(models.Model):
         unique_together = ('producer', 'product')
         ordering = ('producer', 'product')
 
-    #def delete(self):
-    #    plans = ProductPlan.objects.filter(
-    #        producer=self.producer,
-    #        product=self.product)
-    #    for plan in plans:
-    #        plan.delete()
-    #    super(ProducerProduct, self).delete()
-
 
     def decide_producer_fee(self):
         return self.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
@@ -1473,14 +1424,6 @@ class ProducerProduct(models.Model):
     def producer_price_now(self):
         td = datetime.date.today()
         return self.unit_price_for_date(td)
-        #price = self.producer_price
-        #pcdd = self.price_change_delivery_date or td
-        #if  pcdd > td:
-        #    ppcs = self.price_changes.all()
-        #    for ppc in ppcs:
-        #        if ppc.price_change_delivery_date <= td:
-        #            price = ppc.producer_price
-        #return price
 
     def unit_price_now(self):
         return self.producer_price_now() or self.product.unit_price_now()
@@ -1543,7 +1486,6 @@ class ProducerProduct(models.Model):
         return avail
             
 
-
 class ProducerPriceChange(models.Model):
     producer_product = models.ForeignKey(ProducerProduct, 
         related_name="price_changes", verbose_name=_('producer product'))
@@ -1567,6 +1509,63 @@ class ProducerPriceChange(models.Model):
             "on",
             self.when_changed.strftime('%Y-%m-%d'),
         ])
+
+
+PLAN_ROLE_CHOICES = (
+    ('consumer', _('consumer')),
+    ('producer', _('producer')),
+)
+
+class ProductPlan(models.Model):
+    member = models.ForeignKey(Party, 
+        related_name="product_plans", verbose_name=_('member')) 
+    product = models.ForeignKey(Product, 
+        limit_choices_to = {'plannable': True}, verbose_name=_('product'))
+    from_date = models.DateField(_('from date'), )
+    to_date = models.DateField(_('to date'), )
+    quantity = models.DecimalField(_('Qty per week'), max_digits=8, decimal_places=2,
+        default=Decimal('0'))
+    role = models.CharField(_('role'), max_length=12, choices=PLAN_ROLE_CHOICES,
+                            default="producer")
+    inventoried = models.BooleanField(_('inventoried'), default=True,
+        help_text=_("If not inventoried, the planned qty per week will be used for ordering"))
+    distributor = models.ForeignKey(Party, related_name="plan_distributors", 
+        blank=True, null=True, verbose_name=_('distributor'))
+    producer_product = models.ForeignKey(ProducerProduct, blank=True, null=True,
+        related_name="product_plans", editable=False, on_delete=models.PROTECT)
+    
+    def __unicode__(self):
+        return " ".join([
+            self.member.short_name,
+            self.product.short_name,
+            self.from_date.strftime('%Y-%m-%d'),
+            self.to_date.strftime('%Y-%m-%d'),
+            str(self.quantity)])
+        
+    class Meta:
+        ordering = ('product', 'member', 'from_date')
+
+    def save(self, *args, **kwargs):
+        if self.role == 'producer':
+            if self.pk:
+                prev_state = ProductPlan.objects.get(pk=self.pk)
+                if prev_state.member.pk != self.member.pk:
+                    self.create_producer_product()
+            else:
+                self.create_producer_product()           
+        super(ProductPlan, self).save(*args, **kwargs)
+
+    def create_producer_product(self):
+        pp, created = ProducerProduct.objects.get_or_create(
+            product=self.product, producer=self.member)
+        self.producer_product = pp
+
+    @property
+    def producer(self):
+        if self.role=="producer":
+            return self.member
+        else:
+            return None
 
 
 
@@ -1630,6 +1629,9 @@ class InventoryItem(models.Model):
     onhand = models.DecimalField(_('onhand'), max_digits=8, decimal_places=2, default=Decimal('0'),
         help_text=_('If you change Received here, you most likely should also change Onhand. The Avail Update page changes Onhand automatically when you enter Received, but this Admin form does not.'))
     notes = models.CharField(_('notes'), max_length=64, blank=True)
+    producer_product = models.ForeignKey(ProducerProduct, blank=True, null=True,
+        related_name="inventory_items", editable=False,
+        on_delete=models.PROTECT)
     
     class Meta:
         ordering = ('product', 'producer', 'inventory_date')
@@ -1734,10 +1736,21 @@ class InventoryItem(models.Model):
             self.save()
                 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if self.pk:
+            if self.producer:
+                prev_state = InventoryItem.objects.get(pk=self.pk)
+                if prev_state.producer.pk != self.producer.pk:
+                    self.create_producer_product()
+        else:
+            self.create_producer_product()
             if not self.expiration_date:
                 self.expiration_date = self.inventory_date + datetime.timedelta(days=self.product.expiration_days)
         super(InventoryItem, self).save(*args, **kwargs)
+
+    def create_producer_product(self):
+        pp, created = ProducerProduct.objects.get_or_create(
+            product=self.product, producer=self.producer)
+        self.producer_product = pp
 
 # EconomicEventType is not ripe
 #class EconomicEventType(models.Model):
@@ -2103,7 +2116,7 @@ def shorts_for_date(delivery_date):
     maybes = {}
     ois = OrderItem.objects.filter(order__delivery_date=delivery_date).exclude(order__state="Unsubmitted")
     for oi in ois:
-        pp = oi.producer_product()
+        pp = oi.producer_product
         if not pp in maybes:
             maybes[pp] = ShortOrderItems(oi.product, oi.producer,
                 pp.total_avail_today(delivery_date), Decimal("0"), Decimal("0"), [])
@@ -2127,7 +2140,7 @@ def shorts_for_week():
     maybes = {}
     ois = OrderItem.objects.filter(order__delivery_date__range=(cw, saturday)).exclude(order__state="Unsubmitted")
     for oi in ois:
-        pp = oi.producer_product()
+        pp = oi.producer_product
         if not pp in maybes:
             maybes[pp] = ShortOrderItems(oi.product, oi.producer,
                 pp.total_avail_today(oi.order.delivery_date), Decimal("0"), Decimal("0"), [])
@@ -2151,6 +2164,8 @@ class OrderItem(models.Model):
     fee = models.DecimalField(_('customer fee'), max_digits=4, decimal_places=2, default=Decimal('0'),
         help_text=_('Fee is a percentage added to the extended price.'))
     notes = models.CharField(_('notes'), max_length=64, blank=True)
+    producer_product = models.ForeignKey(ProducerProduct, blank=True, null=True,
+        related_name="order_items", editable=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return ' '.join([
@@ -2158,6 +2173,22 @@ class OrderItem(models.Model):
             self.product.short_name,
             #self.producer.short_name,
             str(self.quantity)])
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            if self.producer:
+                prev_state = OrderItem.objects.get(pk=self.pk)
+                if prev_state.producer:
+                    if prev_state.producer.pk != self.producer.pk:
+                        self.create_producer_product()
+        else:
+            self.create_producer_product()           
+        super(OrderItem, self).save(*args, **kwargs)
+
+    def create_producer_product(self):
+        pp, created = ProducerProduct.objects.get_or_create(
+            product=self.product, producer=self.producer)
+        self.producer_product = pp
 
     def changed(self):
         if self.order_item_changes.all().count():
@@ -2171,10 +2202,10 @@ class OrderItem(models.Model):
         else:
             return False
 
-    def producer_product(self):
-        return ProducerProduct.objects.get(
-            producer=self.producer,
-            product=self.product)
+    #def producer_product(self):
+    #    return ProducerProduct.objects.get(
+    #        producer=self.producer,
+    #        product=self.product)
     
     def delete(self):
         #todo: is this necessary? shd be cascaded automatically, no?

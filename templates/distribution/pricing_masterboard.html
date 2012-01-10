@@ -139,7 +139,7 @@
 			var sp = pp + (pp * markup/100);
 			//alert("sp: " + sp);
 			rowPrices[id].sellingPrice = sp;
-			dojo.byId(row + '-selling_price').value = sp.toFixed(2);
+			dojo.byId(row + '-selling_price').value = (Math.round(sp * 100)/100).toFixed(2);
 		}
 
 		function changePayPrice(row)
@@ -149,7 +149,7 @@
 			var margin = rowPrices[id].margin;
 			var pay = pp - (pp * margin/100);
 			rowPrices[id].payPrice = pay;
-			dojo.byId(row + '-pay_price').value = pay.toFixed(2);
+			dojo.byId(row + '-pay_price').value = (Math.round(pay * 100)/100).toFixed(2);
 		}
 
 		function payPriceChanged(evt)
@@ -175,7 +175,7 @@
 			margin = (1 - (pay / pp)) * 100;
 			//alert("producerPrice: " + pp + "sellingPrice: " + sp + "markup: " + markup);
 			rowPrices[id].margin = margin;
-			dojo.byId(row + '-producer_fee').value = margin.toFixed(2);
+			dojo.byId(row + '-producer_fee').value = (Math.round(margin * 100)/100).toFixed(2);
 		}
 
 		function sellingPriceChanged(evt)
@@ -201,7 +201,7 @@
 			markup = diff / pp * 100;
 			//alert("producerPrice: " + pp + "sellingPrice: " + sp + "markup: " + markup);
 			rowPrices[id].markup = markup;
-			dojo.byId(row + '-markup_percent').value = markup.toFixed(2);
+			dojo.byId(row + '-markup_percent').value = (Math.round(markup * 100)/100).toFixed(2);
 		}
 
 		function marginChanged(evt)

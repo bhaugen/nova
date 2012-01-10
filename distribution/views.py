@@ -3494,6 +3494,17 @@ def pricing(request, product_id):
         }, context_instance=RequestContext(request))
 
 
+def pricing_masterboard(request, year, month, day):
+    delivery_date = datetime.date(int(year), int(month), int(day))
+    forms = create_pricing_masterboard_forms(
+        delivery_date,
+        data=request.POST or None)
+    return render_to_response('distribution/pricing_masterboard.html', 
+        {'delivery_date': delivery_date,
+         'forms': forms,
+        }, context_instance=RequestContext(request))
+
+
 # todo: replace with new Processes
 def create_meat_item_forms(producer, avail_date, data=None):
     monday = avail_date - datetime.timedelta(days=datetime.date.weekday(avail_date))

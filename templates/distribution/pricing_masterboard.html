@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+     {% trans "Pricing Masterboard" %}
+{% endblock %}
+
+{% block header %}
+
+<style type="text/css">
+	th, td
+	{
+		padding-left:5px;
+	}
+	th
+	{
+		font-weight:bold;
+	}
+	tr.even td 
+	{
+		color:#000000;
+		background-color:#EAF2D3;
+	}
+	.errorlist
+	{
+		color: red;
+	}
+	.errorlist ul
+	{
+		list-style-type:none;
+	}
+
+</style>
+
+{% include "dojo_include.html" %}
+
+    <script type="text/javascript" >
+
+		function cleanNumericInput(value)
+		{
+			var cleanNumber = value.replace( /[^\-.0-9]/g, '');
+			var firstPos = cleanNumber.indexOf(".");
+			var lastPos = cleanNumber.lastIndexOf(".");
+			while(firstPos!=lastPos)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				firstPos = cleanNumber.indexOf(".");
+				lastPos = cleanNumber.lastIndexOf(".");
+			}
+			var lastPos = cleanNumber.lastIndexOf("-");
+			while(lastPos>0)
+			{
+				cleanNumber=cleanNumber.substring(0,lastPos) + cleanNumber.substring(lastPos + 1);
+				lastPos = cleanNumber.lastIndexOf("-");
+			}
+			return cleanNumber;
+		}
+
+		function validateNumber(evt, functionToCall)
+		{
+			var isValid = true;
+			var candidate = evt.target.value;
+			var strippedNumber = cleanNumericInput(candidate);
+			strippedNumber = strippedNumber || 0;
+			if(isNaN(candidate))
+			{
+				evt.target.style.color = "red";
+				evt.target.value = "Not number";
+				isValid = false;
+				var anim1 = dojo.animateProperty({
+						node: evt.target, delay: 1000,
+						properties:{
+							opacity: { end: 0 }
+						}
+					}); 
+				var anim2 = dojo.animateProperty
+				({
+						node: evt.target, delay: 1000,
+						properties:
+						{
+							opacity: { end: 1 }, color: { end: 'black'}
+						},
+						onEnd: function()
+						{
+							evt.target.value = strippedNumber;
+							if(functionToCall)
+							{
+								functionToCall(evt);
+							}
+    					}
+				}); 
+				anim1.play();
+				anim2.play();
+			}
+			else
+			{
+				evt.target.value = strippedNumber;
+				if(functionToCall)
+				{
+					functionToCall(evt);
+				}
+			}
+			return isValid;
+		}
+
+
+
+		function Prices(producerPrice, margin, payPrice, markup, sellingPrice)
+		{
+			this.producerPrice = producerPrice;
+			this.margin = margin;
+			this.payPrice = payPrice;
+			this.markup = markup;
+			this.sellingPrice = sellingPrice;
+		}
+
+		rowPrices = {}
+
+		function producerPriceChanged(evt)
+		{
+			validateNumber(evt, finishChangeProducerPrice);
+		}
+
+		function finishChangeProducerPrice(evt)
+		{
+			var row = evt.target.id.split('-')[0];
+			var id = dojo.byId(row + '-id').value;
+			rowPrices[id].producerPrice = parseFloat(evt.target.value);
+			changePayPrice(row);
+			changeSellingPrice(row);
+		}
+
+
+		function changeSellingPrice(row)
+		{
+			var id = dojo.byId(row + '-id').value;
+			var pp = rowPrices[id].producerPrice;
+			var markup = rowPrices[id].markup;
+			var sp = pp + (pp * markup/100);
+			//alert("sp: " + sp);
+			rowPrices[id].sellingPrice = sp;
+			dojo.byId(row + '-selling_price').value = sp.toFixed(2);
+		}
+
+		function changePayPrice(row)
+		{
+			var id = dojo.byId(row + '-id').value;
+			var pp = rowPrices[id].producerPrice;
+			var margin = rowPrices[id].margin;
+			var pay = pp - (pp * margin/100);
+			rowPrices[id].payPrice = pay;
+			dojo.byId(row + '-pay_price').value = pay.toFixed(2);
+		}
+
+		function payPriceChanged(evt)
+		{
+			validateNumber(evt);
+		}
+
+		function sellingPriceChanged(evt)
+		{
+			validateNumber(evt, finishSellingPriceChange);
+		}
+
+		function finishSellingPriceChange(evt)
+		{
+			var row = evt.target.id.split('-')[0];
+			var id = dojo.byId(row + '-id').value;
+			rowPrices[id].sellingPrice = parseFloat(evt.target.value);
+			changeMarkup(row);
+		}
+
+
+		function changeMarkup(row)
+		{
+			var id = dojo.byId(row + '-id').value;
+			sp = rowPrices[id].sellingPrice;
+			var pp = rowPrices[id].producerPrice;
+			var sp = rowPrices[id].sellingPrice;
+			var diff = sp - pp;
+			markup = diff / pp * 100;
+			//alert("producerPrice: " + pp + "sellingPrice: " + sp + "markup: " + markup);
+			rowPrices[id].markup = markup;
+			dojo.byId(row + '-markup_percent').value = markup.toFixed(2);
+		}
+
+		function marginChanged(evt)
+		{
+			validateNumber(evt, finishMarginChanged);
+		}
+
+		function finishMarginChanged(evt)
+		{
+			var row = evt.target.id.split('-')[0];
+			var id = dojo.byId(row + '-id').value;
+			rowPrices[id].margin = parseFloat(evt.target.value);
+			changePayPrice(row);
+		}
+
+		function markupChanged(evt)
+		{
+			validateNumber(evt, finishMarkupChanged);
+		}
+
+		function finishMarkupChanged(evt)
+		{
+			var row = evt.target.id.split('-')[0];
+			var id = dojo.byId(row + '-id').value;
+			rowPrices[id].markup = parseFloat(evt.target.value);
+			changeSellingPrice(row);
+		}
+
+		dojo.addOnLoad(function()
+		{
+			var queryNodes = dojo.query(".id-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i];
+				rowPrices[node.value] = new Prices(0,0,0,0,0);
+			}
+			var queryNodes = dojo.query(".producer-price-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				dojo.connect(queryNodes[i], "onchange", "producerPriceChanged");
+				var node = queryNodes[i];
+				var row = node.id.split('-')[0];
+				var id = dojo.byId(row + '-id').value;
+				rowPrices[id].producerPrice = parseFloat(node.value);
+			}
+			var queryNodes = dojo.query(".margin-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				dojo.connect(queryNodes[i], "onchange", "marginChanged");
+				var node = queryNodes[i];
+				var row = node.id.split('-')[0];
+				var id = dojo.byId(row + '-id').value;
+				rowPrices[id].margin = parseFloat(node.value);
+
+			}
+			var queryNodes = dojo.query(".pay-price-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				dojo.connect(queryNodes[i], "onchange", "payPriceChanged");
+				var node = queryNodes[i];
+				var row = node.id.split('-')[0];
+				var id = dojo.byId(row + '-id').value;
+				rowPrices[id].payPrice = parseFloat(node.value);
+
+			}
+			var queryNodes = dojo.query(".markup-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				dojo.connect(queryNodes[i], "onchange", "markupChanged");
+				var node = queryNodes[i];
+				var row = node.id.split('-')[0];
+				var id = dojo.byId(row + '-id').value;
+				rowPrices[id].markup = parseFloat(node.value);
+
+			}
+			var queryNodes = dojo.query(".selling-price-field");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				dojo.connect(queryNodes[i], "onchange", "sellingPriceChanged");
+				var node = queryNodes[i];
+				var row = node.id.split('-')[0];
+				var id = dojo.byId(row + '-id').value;
+				rowPrices[id].sellingPrice = parseFloat(node.value);
+
+			}
+		});
+
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="pricing">
+
+	{% include "distribution/tabnav.html" %}
+
+    <form action="." method="POST" >{% csrf_token %}
+        <h3>
+            {% blocktrans %}Delivery date: {{delivery_date}}{% endblocktrans %}
+        </h3>
+        <table>
+		<tr>
+			<th>{% trans "Product" %}</th>
+			<th>{% trans "Producer" %}</th>
+			<th>{% trans "Set Price" %}</th> 
+        	        <th>{% trans "Margin" %}</th>
+                	<th>{% trans "Pay Price" %}</th>
+	                <th>{% trans "Markup" %}</th>
+                	<th>{% trans "Selling Price" %}</th>
+            </tr>
+            {% for form in forms %}
+                 <tr class="{% cycle 'odd' 'even' %}">
+			<td>
+				{% ifchanged form.product %}
+				{{ form.product }}
+				{% else %}&nbsp;
+				{% endifchanged %}
+			</td>
+			<td> {{ form.producer }} </td>
+			<td> {{ form.producer_price }} </td>
+			<td> {{ form.producer_fee }} </td>
+			<td> {{ form.pay_price }} </td>
+			<td> {{ form.markup_percent }} </td>
+			<td> {{ form.selling_price }} </td>
+			{{ form.id }}
+                </tr>
+           {% endfor %} 
+        </table>
+        <p>
+            <input type="submit" value="{% trans 'Submit Order' %}" />
+        </p>
+    </form>
+</div>
+{% endblock %}
+

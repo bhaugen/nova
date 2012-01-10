@@ -21,6 +21,21 @@ def is_number(s):
     except ValueError:
         return False
 
+def create_pricing_masterboard_forms(delivery_date, data=None):
+    fn = food_network()
+    forms = []
+    producer_products = fn.producer_products_for_date(delivery_date)
+    for pp in producer_products:
+        form = PricingMasterboardForm(
+            instance=pp,
+            prefix = str(pp.id),
+            data=data)
+        form.product = pp.product
+        form.producer = pp.producer
+        forms.append(form)
+    return forms
+
+
 def create_producer_product_price_forms(product, data=None):
     pps = product.product_producers.all()
     form_list = []

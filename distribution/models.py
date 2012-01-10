@@ -393,7 +393,7 @@ class FoodNetwork(Party):
     member_terms = models.IntegerField(_('member terms'), blank=True, null=True,
         help_text=_('Net number of days for network to pay member'))
     customer_fee = models.DecimalField(_('customer fee'), max_digits=4, decimal_places=2, default=Decimal("0"),
-        help_text=_('Customer Fee is a percentage. It is a markup, added to the total price of an order as a separate line item on invoices'))
+        help_text=_('Customer Fee is a percentage. It is a markup, added to the total price of an order as a separate line item on invoices.'))
     customer_fee_label = models.CharField(_('customer fee label'),
         max_length=64, default="Delivery Cost", 
         help_text=_('This label appears on invoices to customers'))
@@ -664,6 +664,13 @@ class FoodNetwork(Party):
                              Q(onhand__gt=0)).order_by("producer__short_name",
                                                        "product__short_name")
         return items
+
+    def producer_products_for_date(self, delivery_date):
+        items = self.avail_items_for_customer(delivery_date)
+        pps = list(set([item.producer_product for item in items]))
+        return sorted(pps, key=attrgetter('product.short_name',
+                                          'producer.short_name'))
+            
 
     def customer_availability(self, delivery_date):
         avail = []
@@ -1085,7 +1092,7 @@ class Product(models.Model):
 
     @property
     def price(self):
-        return self.producer_price
+        return self.selling_price
 
     def formatted_unit_price(self):
         return self.price.quantize(Decimal('.01'), rounding=ROUND_UP)
@@ -1094,7 +1101,7 @@ class Product(models.Model):
         return self.unit_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def unit_price_for_date(self, date):
-        up = self.producer_price
+        up = self.selling_price
         specials = Special.objects.filter(
             product=self,
             from_date__lte=date,
@@ -1368,6 +1375,11 @@ class ProducerProduct(models.Model):
     producer_price = models.DecimalField(_('set price'), 
         max_digits=8, decimal_places=2, default=Decimal(0),
         help_text=_('If non-zero, this overrides the Product set price'))
+    markup_percent = models.DecimalField(_('markup percent'), max_digits=4, decimal_places=2, default=Decimal("0"),
+        help_text=_('Added to the set price giving the selling price'),)
+    selling_price = models.DecimalField(_('selling price'), max_digits=8,
+        decimal_places=2, default=Decimal(0),
+        help_text=_('If non-zero, this overrides the automatically calculated selling price.'))
     price_change_delivery_date = models.DateField(_('price change delivery date'), 
         default=datetime.date.today)
     price_changed_by = models.ForeignKey(User, verbose_name=_('price changed by'),
@@ -1375,6 +1387,9 @@ class ProducerProduct(models.Model):
     producer_fee = models.DecimalField(_('producer fee'), 
         max_digits=4, decimal_places=2, default=Decimal("0"),
         help_text=_('If non-zero, this overrides the Food Network default producer fee.'))
+    pay_price = models.DecimalField(_('pay price'), 
+        max_digits=8, decimal_places=2, default=Decimal(0),
+        help_text=_('If non-zero, this overrides the automatically calculated pay price.'))
     qty_per_year = models.DecimalField(max_digits=8, decimal_places=2,
         default=Decimal('0'), verbose_name=_('Qty per year'))
     default_avail_qty = models.DecimalField(max_digits=8, decimal_places=2,
@@ -1401,7 +1416,7 @@ class ProducerProduct(models.Model):
         return self.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
 
     def unit_price_for_date(self, date):
-        price = self.producer_price
+        price = self.selling_price
         #todo: need ProducerProductSpecials
         #specials = Special.objects.filter(
         #    product=self,
@@ -1415,18 +1430,18 @@ class ProducerProduct(models.Model):
             ppcs = self.price_changes.all()
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= date:
-                    price = ppc.producer_price
+                    price = ppc.selling_price
         return price
 
     def formatted_unit_price_for_date(self, date):
         return self.unit_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
 
-    def producer_price_now(self):
+    def selling_price_now(self):
         td = datetime.date.today()
         return self.unit_price_for_date(td)
 
     def unit_price_now(self):
-        return self.producer_price_now() or self.product.unit_price_now()
+        return self.selling_price_now() or self.product.unit_price_now()
 
     def formatted_unit_price_now(self):
         return self.unit_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
@@ -1491,6 +1506,12 @@ class ProducerPriceChange(models.Model):
         related_name="price_changes", verbose_name=_('producer product'))
     producer_price = models.DecimalField(_('set price'), 
         max_digits=8, decimal_places=2, default=Decimal(0))
+    producer_fee = models.DecimalField(_('markup percent'), max_digits=4,
+        decimal_places=2, default=Decimal("0"))
+    pay_price = models.DecimalField(_('selling price'), max_digits=8, decimal_places=2, default=Decimal(0))
+    markup_percent = models.DecimalField(_('markup percent'), max_digits=4,
+        decimal_places=2, default=Decimal("0"))
+    selling_price = models.DecimalField(_('selling price'), max_digits=8, decimal_places=2, default=Decimal(0))
     price_change_delivery_date = models.DateField(_('price change delivery date'))
     when_changed = models.DateTimeField(_('when changed'), auto_now_add=True)
     changed_by = models.ForeignKey(User, verbose_name=_('changed by'),
@@ -1505,7 +1526,7 @@ class ProducerPriceChange(models.Model):
             self.producer_product.producer.short_name,
             self.producer_product.product.short_name,
             "changed from",
-            str(self.producer_price),
+            str(self.selling_price),
             "on",
             self.when_changed.strftime('%Y-%m-%d'),
         ])

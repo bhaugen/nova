@@ -133,6 +133,8 @@ urlpatterns = patterns('',
     # pricing
     (r'^pricingselection/$', pricing_selection),
     url(r'^pricing/(?P<product_id>\d+)/$', pricing),
+    url(r'^masterboard/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
+        pricing_masterboard, name="pricing_masterboard"),
 
     # emails
     url(r'^emailselection/$', email_selection, name="email_selection"),

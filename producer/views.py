@@ -104,15 +104,6 @@ def edit_producer_products(request):
     other_prices = comparative_prices(producer)
     price_change_date = fn.next_delivery_date_using_inventory_closing()
     td = datetime.date.today()
-    #dcs = DeliveryCycle.objects.all()
-    #ndc = None
-    #price_change_date = td
-    #for dc in dcs:
-    #    dd = dc.next_delivery_date_using_inventory_closing()
-    #    if dd > td:
-    #        ndc = dc
-    #        price_change_date = dd
-    #        break
     #forms = create_producer_product_forms(producer, data=request.POST or None)
     if request.method == "POST":
         #import pdb; pdb.set_trace()

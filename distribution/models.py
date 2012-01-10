@@ -1411,10 +1411,40 @@ class ProducerProduct(models.Model):
         unique_together = ('producer', 'product')
         ordering = ('producer', 'product')
 
+    def is_deletable(self):
+        answer = True
+        if self.inventory_items.all().count():
+            answer = False
+        if self.order_items.all().count():
+            answer = False
+        if self.product_plans.all().count():
+            answer = False
+        return answer
 
     def decide_producer_fee(self):
         return self.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
 
+    def decide_producer_price(self):
+        return self.producer_price or self.product.producer_price
+
+    def decide_markup(self):
+        return self.markup_percent or customer_fee()
+
+    def compute_pay_price(self):
+        if self.pay_price:
+            return self.pay_price
+        pp = self.decide_producer_price()
+        margin = self.decide_producer_fee()/100
+        return (pp * (1 - margin)).quantize(Decimal('.01'), rounding=ROUND_UP)
+        
+    def compute_selling_price(self):
+        if self.selling_price:
+            return self.selling_price
+        pp = self.decide_producer_price()
+        markup = self.decide_markup()/100
+        return (pp + (pp * markup)).quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    #todo: all of the pricing methods must change
     def unit_price_for_date(self, date):
         price = self.selling_price
         #todo: need ProducerProductSpecials

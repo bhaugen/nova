@@ -27,9 +27,17 @@ def create_pricing_masterboard_forms(delivery_date, data=None):
     producer_products = fn.producer_products_for_date(delivery_date)
     for pp in producer_products:
         form = PricingMasterboardForm(
-            instance=pp,
             prefix = str(pp.id),
-            data=data)
+            data=data,
+            initial={
+                'id': pp.id,
+                'producer_price': pp.decide_producer_price(),
+                'producer_fee': pp.decide_producer_fee(),
+                'pay_price': pp.compute_pay_price(),
+                'markup_percent': pp.decide_markup(),
+                'selling_price': pp.compute_selling_price(),
+            }
+        )
         form.product = pp.product
         form.producer = pp.producer
         forms.append(form)

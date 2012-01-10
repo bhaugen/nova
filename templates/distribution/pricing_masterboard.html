@@ -154,7 +154,28 @@
 
 		function payPriceChanged(evt)
 		{
-			validateNumber(evt);
+			validateNumber(evt, finishPayPriceChange);
+		}
+
+		function finishPayPriceChange(evt)
+		{
+			var row = evt.target.id.split('-')[0];
+			var id = dojo.byId(row + '-id').value;
+			rowPrices[id].payPrice = parseFloat(evt.target.value);
+			changeMargin(row);
+		}
+
+		function changeMargin(row)
+		{
+			var id = dojo.byId(row + '-id').value;
+			var pp = rowPrices[id].producerPrice;
+			var pay = rowPrices[id].payPrice;
+			//var diff = pay - pp;
+			//margin = (1 - (cost/selling))x100
+			margin = (1 - (pay / pp)) * 100;
+			//alert("producerPrice: " + pp + "sellingPrice: " + sp + "markup: " + markup);
+			rowPrices[id].margin = margin;
+			dojo.byId(row + '-producer_fee').value = margin.toFixed(2);
 		}
 
 		function sellingPriceChanged(evt)
@@ -174,7 +195,6 @@
 		function changeMarkup(row)
 		{
 			var id = dojo.byId(row + '-id').value;
-			sp = rowPrices[id].sellingPrice;
 			var pp = rowPrices[id].producerPrice;
 			var sp = rowPrices[id].sellingPrice;
 			var diff = sp - pp;
@@ -279,10 +299,12 @@
 
 	{% include "distribution/tabnav.html" %}
 
-    <form action="." method="POST" >{% csrf_token %}
-        <h3>
+	<h3>
             {% blocktrans %}Delivery date: {{delivery_date}}{% endblocktrans %}
         </h3>
+
+    <form action="." method="POST" >{% csrf_token %}
+
         <table>
 		<tr>
 			<th>{% trans "Product" %}</th>
@@ -312,7 +334,7 @@
            {% endfor %} 
         </table>
         <p>
-            <input type="submit" value="{% trans 'Submit Order' %}" />
+            <input type="submit" value="{% trans 'Save Changes' %}" />
         </p>
     </form>
 </div>

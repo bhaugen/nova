@@ -31,20 +31,22 @@
 
 	<h4> {% trans "Ordered vs Available Report" %}</h4>
 
-    <form action="." method="POST" >{% csrf_token %}
-        <table>
-                <th style="text-align: right; " >{% trans "Delivery Date" %}:</th>
-                <td>{{ dsform.selected_date}}</td>
+	<form action="." method="POST" >{% csrf_token %}
+		<table>
+			<tr>
+				<th style="text-align: right; " >{% trans "Delivery Date" %}:</th>
+				<td>{{ dsform.selected_date}}</td>
 				{% if dsform.selected_date.errors %}
 					<td style="color: red; " >
 						{{ dsform.selected_date.errors }}
 					</td>
 				{% endif %}
-            </tr>
-    </table>
-    <center>
-    <input name="submit-ordered_available" type="submit" value="{% trans 'Submit' %}" />
-    </center>
+			</tr>
+		</table>
+		<center>
+			<input name="submit-ordered_available" type="submit" value="{% trans 'Submit' %}" />
+		</center>
+	</form>
 
 	</div>
 

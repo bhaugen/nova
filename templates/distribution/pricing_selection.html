@@ -24,27 +24,49 @@
 
 	<h4> {% trans "Override Prices for a Product" %}</h4>
 
-    <form action="." method="POST" >{% csrf_token %}
-        <table>
-                <th style="text-align: right; " >{% trans "Product" %}:</th>
-                <td>{{ product_form.product}}</td>
+	<form action="." method="POST" >{% csrf_token %}
+		<table>
+			<tr>
+	                	<th style="text-align: right; " >{% trans "Product" %}:</th>
+        	        	<td>{{ product_form.product}}</td>
 				{% if product_form.product.errors %}
 					<td style="color: red; " >
 						{{ product_form.product.errors }}
 					</td>
 				{% endif %}
-            </tr>
-    </table>
-    <center>
-    <input name="submit-product" type="submit" value="{% trans 'Submit' %}" />
-    </center>
+            		</tr>
+    		</table>
+		<center>
+			<input name="submit-product" type="submit" value="{% trans 'Submit' %}" />
+		</center>
+	</form>
 
 	</div>
 
-</form>
+	<div style="float: left; border: 2px solid grey; padding: 1em;">
 
-</div>
-<div style="clear: both;"></div>
+	<h4> {% trans "Pricing Masterboard" %}</h4>
+
+	<form action="." method="POST" >{% csrf_token %}
+		<table>
+			<tr>
+				<th style="text-align: right; " >{% trans "Delivery Date" %}:</th>
+				<td>{{ board_form.selected_date}}</td>
+				{% if board_form.selected_date.errors %}
+					<td style="color: red; " >
+						{{ board_form.selected_date.errors }}
+					</td>
+				{% endif %}
+			</tr>
+		</table>
+		<center>
+			<input name="submit-masterboard" type="submit" value="{% trans 'Submit' %}" />
+		</center>
+	</form>
+
+	</div>
+
+	<div style="clear: both;"></div>
 </div>
 {% endblock %}
 

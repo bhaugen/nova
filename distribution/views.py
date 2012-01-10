@@ -3441,14 +3441,25 @@ def send_order_emails(request, cust_id, year, month, day):
 @login_required
 def pricing_selection(request):
     product_form = ProductSelectionForm(data=request.POST or None)
+    init = {"selected_date": next_delivery_date(),}
+    board_form = DateSelectionForm(data=request.POST or None, initial=init)
     if request.method == "POST":
-        if product_form.is_valid():
-            data = product_form.cleaned_data
-            product_id = data['product']
-            return HttpResponseRedirect('/%s/%s/'
-               % ('distribution/pricing', product_id))
+        if request.POST.get('submit-product'):
+            if product_form.is_valid():
+                data = product_form.cleaned_data
+                product_id = data['product']
+                return HttpResponseRedirect('/%s/%s/'
+                    % ('distribution/pricing', product_id))
+        if request.POST.get('submit-masterboard'):
+            if board_form.is_valid():
+                data = board_form.cleaned_data
+                delivery_date = data['selected_date']
+                return HttpResponseRedirect('/%s/%s/%s/%s/'
+                    % ('distribution/masterboard', delivery_date.year,
+                       delivery_date.month, delivery_date.day))
     return render_to_response('distribution/pricing_selection.html', 
         {'product_form': product_form,
+         'board_form': board_form,
         }, context_instance=RequestContext(request))
 
 def pricing(request, product_id):

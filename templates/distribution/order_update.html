@@ -220,7 +220,7 @@
 			var queryNodes = dojo.query(".quantity-field");
 			for(var i=0;i<queryNodes.length;i++)
 			{
-				var node = queryNodes[i]
+				var node = queryNodes[i];
 				dojo.connect(node, "onblur", "quantityChanged");
 				var row = node.id.split('-')[0];
 				extendPriceForRow(row);

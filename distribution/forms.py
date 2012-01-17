@@ -153,7 +153,7 @@ class ProductSelectionForm(forms.Form):
     product = forms.ChoiceField()
     def __init__(self, *args, **kwargs):
         super(ProductSelectionForm, self).__init__(*args, **kwargs)
-        self.fields['product'].choices = [(prod.id, prod.long_name) for prod in Product.objects.filter(
+        self.fields['product'].choices = [(prod.id, prod.name_with_method()) for prod in Product.objects.filter(
             sellable=True)]
 
 
@@ -847,7 +847,7 @@ def create_delivery_forms(thisdate, customer, data=None):
             {'order_qty': oi.quantity, 'order_item_id': oi.id, 'product_id': oi.product.id})
         dtf.description = "".join([oi.order.customer.short_name, ": ",
             oi.product.long_name, ", from ", oi.producer.short_name])
-        avail_items = oi.producer_product().avail_items_today(thisdate)
+        avail_items = oi.producer_product.avail_items_today(thisdate)
         amount = 0
         if avail_items.count() == 1:
             choices = [(item.id, item.delivery_label()) for item in avail_items]

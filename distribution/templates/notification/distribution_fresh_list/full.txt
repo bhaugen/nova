@@ -7,5 +7,5 @@ http://{{ domain }}{% url customer_availability cycle_id=cycle.id %}
 {% for cat in fresh_list %}
 {{ cat.category }}
 {% for item in cat.products %}
-    {{ item.product }}, Producer: {{ item.producer }}, Quantity available: {{ item.qty }}, Price: ${{ item.price }}
+    {{ item.product.name_with_method }}, Producer: {{ item.producer }}, Quantity available: {{ item.qty }}, Price: ${{ item.price }}
 {% endfor %}{% endfor %}

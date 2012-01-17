@@ -96,7 +96,10 @@
 					{
 						evt.target.value = strippedNumber;
 						dojo.byId("submit").disabled = false;
-						//functionToCall(evt);
+						if (functionToCall)
+						{
+							functionToCall(evt);
+						}
     					}
 				}); 
 				anim1.play();
@@ -106,19 +109,109 @@
 			{
 				evt.target.value = strippedNumber;
 				dojo.byId("submit").disabled = false;
-				//functionToCall(evt);
+				if (functionToCall)
+				{
+					functionToCall(evt);
+				}
 			}
 			return isValid;
 		}
 
+		function PriceRange(min, max)
+		{
+			this.min = min;
+			this.max = max;
+		}
+
+		var productPriceRange = {};
+
+		function populatePriceRange(evt)
+		{
+			var id = evt.target.value;
+			var range = productPriceRange[id];
+			var min = range.min.toFixed(2);
+			var max = range.max.toFixed(2);
+			var row = evt.target.id.split('-')[0];
+			dojo.byId(row + '-min').value = min;
+			dojo.byId(row + '-producer_price').value = min;
+			dojo.byId(row + '-max').value = max;
+		}
+
+		function producerPriceChanged(evt)
+		{
+			validateNumber(evt, finishPriceChange);
+		}
+
+		function addedProducerPriceChanged(evt)
+		{
+			validateNumber(evt, finishAddedPriceChange);
+		}
+
+function finishPriceChange(evt)
+{
+	var row = evt.target.id.split('-')[0];
+	var pfield = dojo.byId(row + '-product_id');
+	var product_id = dojo.byId(row + '-product_id').value;
+	checkPriceRange(evt, product_id);
+}
+
+function finishAddedPriceChange(evt)
+{
+	var row = evt.target.id.split('-')[0];
+	var product_id = dojo.byId(row + '-product').value;
+	checkPriceRange(evt, product_id);
+}
+
+		function checkPriceRange(evt, product_id)
+		{
+			var range = productPriceRange[product_id];
+			var price = parseFloat(evt.target.value);
+			if (range.min > 0)
+			{
+				if (price < range.min)
+				{
+					evt.target.value=range.min;
+				}
+			}
+			if (range.max > 0)
+			{
+				if (price > range.max)
+				{
+					evt.target.value=range.max;
+				}
+			}
+		}
+
 		dojo.addOnLoad(function()
 		{
+			var queryNodes = dojo.query(".producer-price");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i];
+				dojo.connect(node, "onblur", "producerPriceChanged");
+			}
+			var queryNodes = dojo.query(".added-producer-price");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i];
+				dojo.connect(node, "onblur", "addedProducerPriceChanged");
+			}
 			var queryNodes = dojo.query(".quantity-field");
 			for(var i=0;i<queryNodes.length;i++)
 			{
-				var node = queryNodes[i]
+				var node = queryNodes[i];
 				dojo.connect(node, "onblur", "validateNumber");
 			}
+			var queryNodes = dojo.query(".added_product");
+			for(var i=0;i<queryNodes.length;i++)
+			{
+				var node = queryNodes[i];
+				dojo.connect(node, "onchange", "populatePriceRange");
+			}
+			{% for product in product_list %}
+				var product = {{product}};
+				productPriceRange[product[0]] = new PriceRange(product[1], product[2]);
+			{% endfor %}
 		});
 
     </script>
@@ -145,30 +238,57 @@
 		<table >
 			<thead>
 				<th>Product</th>
+				<th style="text-align: center; " >Min</th>
 				<th>Set Price</th>
+				<th style="text-align: center; " >Max</th>
 				{% comment %}
 				<th>Selling Price</th>
 				{% endcomment %}
 				<th>Qty Per Year</th>
-        			<th>Delete</th>
+				{% if deletables %}
+				<th>Delete</th>
+				{% endif %}
 			</thead>
 			<tbody>
-				
+				{% comment %}
 		    		{{ formset.management_form }}
 				{% for form in formset.forms %}
-				
-				{% comment %}
-				{% for form in forms %}
 				{% endcomment %}
-					{{ form.id }}
+				
+				
+				{% for form in edit_forms %}
+				
+				{{ form.id }} 
+				{{ form.product_id }}
         				<tr>
 						<td>{{ form.product }}</td>
+						<td style="text-align: right; " >{{ form.min }}</td>
 						<td>{{ form.producer_price }}</td>
+						<td style="text-align: right; " >{{ form.max }}</td>
 						{% comment %}
 						<td style="text-align: right; " >{{ form.selling_price }}</td>
 						{% endcomment %}
 						<td>{{ form.qty_per_year }}</td>
-						<td>{{ form.DELETE }}</td>
+						{% if form.deletable %}
+						<td>{{ form.delete }}</td>
+						{% endif %}
+						{% if form.non_field_errors %}
+						<td class="errorlist">{{ form.non_field_errors }}</td>
+						{% else %}
+						{% if form.errors %}
+						<td class="errorlist">{{ form.errors }}</td>
+						{% endif %}
+						{% endif %}
+        				</tr>
+				{% endfor %}
+				{% for form in add_forms %}
+				
+        				<tr>
+						<td>{{ form.product }}</td>
+						<td>{{ form.min }}</td>
+						<td>{{ form.producer_price }}</td>
+						<td>{{ form.max }}</td>
+						<td>{{ form.qty_per_year }}</td>
 						{% if form.non_field_errors %}
 						<td class="errorlist">{{ form.non_field_errors }}</td>
 						{% else %}
@@ -192,6 +312,7 @@
 		<table>
 			<thead>
 				<th>Product</th>
+				<th>Growing Method</th>
 				<th>Set By</th>
 				<th>Price</th>
 			</thead>
@@ -199,6 +320,7 @@
 				{% for price in comparative_prices %}
 				<tr class="{% cycle 'odd' 'even' %}" >
 					<td>{{ price.product.long_name }}</td>
+					<td>{{ price.product.growing_method }}</td>
 					<td>{{ price.producer.long_name }}</td>
 					<td style="text-align: right; " >{{ price.price }}</td>
 					<td>{{ price.price_range }}</td>
@@ -239,5 +361,8 @@
 
 </div>
 
+<script type="text/javascript" >
+
+</script>
 {% endblock %}
 

@@ -425,6 +425,13 @@ class FoodNetwork(Party):
     def email(self):
         return self.email_address
 
+    def order_contact(self):
+        contacts = self.contacts.filter(Q(role=1)|Q(role=3))
+        if contacts:
+            return contacts[0]
+        else:
+            return None
+
     def billing_contact(self):
         contacts = self.contacts.filter(Q(role=2)|Q(role=3))
         if contacts:
@@ -860,7 +867,7 @@ class Producer(Party):
         for pp in pps:
             for lot in pp.product.avail_items_today(thisdate):
                 if lot.producer.id == self.id:
-                    lot.price = pp.formatted_unit_price_for_date(thisdate)
+                    lot.price = pp.formatted_selling_price_for_date(thisdate)
                     lots.append(lot)
         products = {}
         for lot in lots:
@@ -1057,7 +1064,7 @@ def flattened_children(node, all_nodes, to_return):
 class Product(models.Model):
     parent = models.ForeignKey('self', blank=True, null=True, related_name='children',
         limit_choices_to = {'is_parent': True}, verbose_name=_('parent'))
-    short_name = models.CharField(_('short name'), max_length=32, unique=True)
+    short_name = models.CharField(_('short name'), max_length=32)
     long_name = models.CharField(_('long name'), max_length=64)
     growing_method = models.CharField(_('growing method'), max_length=255,
         blank=True)
@@ -1087,12 +1094,26 @@ class Product(models.Model):
         default=default_product_expiration_days,
         help_text=_('Inventory Items (Lots) of this product will expire in this many days.'))
 
+    class Meta:
+        ordering = ('short_name',)
+        unique_together = ('short_name', 'growing_method')
+
     def __unicode__(self):
         return self.long_name
+
+
+    def name_with_method(self):
+        return " ".join([self.long_name, self.growing_method])
 
     @property
     def price(self):
         return self.selling_price
+
+    def formatted_min_price(self):
+        return self.producer_price_minimum.quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    def formatted_max_price(self):
+        return self.producer_price_maximum.quantize(Decimal('.01'), rounding=ROUND_UP)
 
     def formatted_unit_price(self):
         return self.price.quantize(Decimal('.01'), rounding=ROUND_UP)
@@ -1345,9 +1366,6 @@ class Product(models.Model):
     def producer_totals(self):
         return sum(producer.qty_per_year for producer in self.product_producers.all())
 
-    class Meta:
-        ordering = ('short_name',)
-
 
 class Special(models.Model):
     product = models.ForeignKey(Product, 
@@ -1367,6 +1385,7 @@ class Special(models.Model):
 
 
 class ProducerProduct(models.Model):
+    #todo: shdn't this FK be to Producer?
     producer = models.ForeignKey(Party, 
         limit_choices_to = {"content_type__name": "producer"},
         related_name="producer_products", verbose_name=_('producer')) 
@@ -1376,7 +1395,7 @@ class ProducerProduct(models.Model):
         max_digits=8, decimal_places=2, default=Decimal(0),
         help_text=_('If non-zero, this overrides the Product set price'))
     markup_percent = models.DecimalField(_('markup percent'), max_digits=4, decimal_places=2, default=Decimal("0"),
-        help_text=_('Added to the set price giving the selling price'),)
+        help_text=_('If non-zero, overrides the Food Network default customer fee.'),)
     selling_price = models.DecimalField(_('selling price'), max_digits=8,
         decimal_places=2, default=Decimal(0),
         help_text=_('If non-zero, this overrides the automatically calculated selling price.'))
@@ -1430,23 +1449,28 @@ class ProducerProduct(models.Model):
     def decide_markup(self):
         return self.markup_percent or customer_fee()
 
+    def basic_compute_pay_price(self, producer_price, margin):
+        return (producer_price * (1 - margin)).quantize(Decimal('.01'), rounding=ROUND_UP)
+
     def compute_pay_price(self):
         if self.pay_price:
             return self.pay_price
         pp = self.decide_producer_price()
         margin = self.decide_producer_fee()/100
-        return (pp * (1 - margin)).quantize(Decimal('.01'), rounding=ROUND_UP)
+        return self.basic_compute_pay_price(pp, margin)
+
+    def basic_compute_selling_price(self, producer_price, markup):
+        return (producer_price + (producer_price * markup)).quantize(Decimal('.01'), rounding=ROUND_UP)
         
     def compute_selling_price(self):
         if self.selling_price:
             return self.selling_price
         pp = self.decide_producer_price()
         markup = self.decide_markup()/100
-        return (pp + (pp * markup)).quantize(Decimal('.01'), rounding=ROUND_UP)
+        return self.basic_compute_selling_price(pp, markup)
 
-    #todo: all of the pricing methods must change
-    def unit_price_for_date(self, date):
-        price = self.selling_price
+    def selling_price_for_date(self, date):
+        price = self.compute_selling_price()
         #todo: need ProducerProductSpecials
         #specials = Special.objects.filter(
         #    product=self,
@@ -1461,20 +1485,66 @@ class ProducerProduct(models.Model):
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= date:
                     price = ppc.selling_price
+                    if not price:
+                        pp = ppc.producer_price
+                        markup = ppc.markup_percent or customer_fee()
+                        price = self.basic_compute_selling_price(pp, markup)
         return price
 
-    def formatted_unit_price_for_date(self, date):
-        return self.unit_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
+    def unit_price_for_date(self, date):
+        return self.selling_price_for_date(date)
+
+    def producer_price_for_date(self, date):
+        price = self.producer_price
+        pcdd = self.price_change_delivery_date or date
+        if  pcdd > date:
+            ppcs = self.price_changes.all()
+            for ppc in ppcs:
+                if ppc.price_change_delivery_date <= date:
+                    price = ppc.producer_price
+        return price
+
+    def pay_price_for_date(self, date):
+        price = self.compute_pay_price()
+        pcdd = self.price_change_delivery_date or date
+        if  pcdd > date:
+            ppcs = self.price_changes.all()
+            for ppc in ppcs:
+                if ppc.price_change_delivery_date <= date:
+                    pp = ppc.producer_price
+                    margin = ppc.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
+                    price = self.basic_compute_pay_price(pp, margin)
+        return price
+
+    def formatted_producer_price_for_date(self, date):
+        return self.producer_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    def formatted_selling_price_for_date(self, date):
+        return self.selling_price_for_date(date).quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    def producer_price_now(self):
+        td = datetime.date.today()
+        return self.producer_price_for_date(td)
+
+    def pay_price_now(self):
+        td = datetime.date.today()
+        return self.pay_price_for_date(td)
 
     def selling_price_now(self):
         td = datetime.date.today()
-        return self.unit_price_for_date(td)
+        return self.selling_price_for_date(td)
 
     def unit_price_now(self):
         return self.selling_price_now() or self.product.unit_price_now()
 
-    def formatted_unit_price_now(self):
-        return self.unit_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
+    def formatted_producer_price_now(self):
+        return self.producer_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    def formatted_pay_price_now(self):
+        return self.pay_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
+
+    def formatted_selling_price_now(self):
+        return self.selling_price_now().quantize(Decimal('.01'), rounding=ROUND_UP)
 
     def current_orders_for_timespan(self, from_date, to_date):
         return OrderItem.objects.filter(
@@ -1560,6 +1630,21 @@ class ProducerPriceChange(models.Model):
             "on",
             self.when_changed.strftime('%Y-%m-%d'),
         ])
+
+    @classmethod
+    def create_producer_price_change(cls, producer_product_id, changed_by):
+        pp = ProducerProduct.objects.get(id=producer_product_id)
+        ppc = cls(
+            producer_product=pp,
+            producer_price=pp.producer_price,
+            producer_fee=pp.producer_fee,
+            pay_price=pp.pay_price,
+            markup_percent=pp.markup_percent,
+            selling_price=pp.selling_price,
+            price_change_delivery_date=pp.price_change_delivery_date,
+            changed_by=changed_by,
+        )
+        ppc.save()
 
 
 PLAN_ROLE_CHOICES = (
@@ -2106,7 +2191,8 @@ class Order(models.Model):
         return answer.quantize(Decimal('.01'), rounding=ROUND_UP)
     
     def grand_total(self):
-        return self.transportation_fee() + self.total_price() + self.coop_fee()
+        #return self.transportation_fee() + self.total_price() + self.coop_fee()
+        return self.transportation_fee() + self.total_price()
     
     def payment_due_date(self):
         term_days = customer_terms()

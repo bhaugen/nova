@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}
      Invoice
@@ -107,13 +108,15 @@
 					<th style="text-align: right; " >Transportation fee:</th>
 					<td style="text-align: right; width: 8em;" >${{ order.display_transportation_fee }}</td>
 				</tr>
-			{% endif %}
+				{% endif %}
+			{% comment %}
 			{% if order.coop_fee %}
 				<tr>
 					<th style="text-align: right;" >{{ order.customer_fee_label }}:</th>
 					<td style="text-align: right; width: 8em;" >${{ order.coop_fee }}</td>
 				</tr>
-			{% endif %}
+				{% endif %}
+			{% endcomment %}
 			<tr>
 				<th style="text-align: right;" >Total Due:</th>
 				<td style="text-align: right; font-weight: bold; " >${{ order.grand_total }}</td>

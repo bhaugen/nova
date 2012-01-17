@@ -84,6 +84,7 @@ class ProducerPriceChangeInline(admin.TabularInline):
 
 class ProducerProductAdmin(admin.ModelAdmin):
     list_display = ('producer', 'product', 'producer_price', 'producer_fee',
+                    'markup_percent', 'selling_price',
                     'qty_per_year', 'default_avail_qty',
                     'inventoried', 'planned', 'distributor')
     list_filter = ['inventoried', 'producer', 'product']

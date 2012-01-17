@@ -53,20 +53,52 @@ class ProducerContactForm(forms.ModelForm):
         exclude = ('login_user', 'cell')
 
 
-class ProducerProductForm(forms.ModelForm):
+class ProducerProductEditForm(forms.ModelForm):
     error_css_class = 'error'
     required_css_class = 'required'
+    id = forms.CharField(widget=forms.HiddenInput)
+    product_id = forms.CharField(widget=forms.HiddenInput)
     producer_price = forms.DecimalField(widget=forms.TextInput(attrs={'class':
-                                                               'quantity-field',
+                                                               'producer-price',
                                                                'size': '6'}))
     qty_per_year = forms.DecimalField(widget=forms.TextInput(attrs={'class':
                                                                'quantity-field',
                                                                'size': '6'}))
+    delete = forms.BooleanField(required=False)
 
     class Meta:
         model = ProducerProduct
-        fields = ('producer', 'product', 'producer_price',
-                   'qty_per_year',)
+        fields = ('id', 'producer_price', 'qty_per_year',)
+
+
+class ProducerProductAddForm(forms.Form):
+    error_css_class = 'error'
+    required_css_class = 'required'
+    product = forms.ModelChoiceField(required=False,
+        queryset=QuerySet(model=Product),
+        widget=forms.Select(attrs={'class': 'added_product',}))
+    producer_price = forms.DecimalField(required=False, widget=forms.TextInput(attrs={
+        'class':'added-producer-price', 'size': '6'}))
+    qty_per_year = forms.DecimalField(required=False, widget=forms.TextInput(attrs={'class':
+                                                               'quantity-field',
+                                                               'size': '6'}))
+    min = forms.CharField(required=False,
+        widget=forms.TextInput(attrs={'readonly':'true', 
+                                      'class': 'read-only-input', 
+                                      'size': '6',
+                                      'style': 'text-align: right',
+                                     }))
+    max = forms.CharField(required=False,
+        widget=forms.TextInput(attrs={'readonly':'true', 
+                                      'class': 'read-only-input', 
+                                      'size': '6',
+                                      'style': 'text-align: right',
+                                     }))
+
+    def __init__(self, products, *args, **kwargs):
+        super(ProducerProductAddForm, self).__init__(*args, **kwargs)
+        self.fields['product'].choices = [('', '----------')] + [
+            (p.id, p.name_with_method()) for p in products]
 
 
     def clean(self):
@@ -74,21 +106,22 @@ class ProducerProductForm(forms.ModelForm):
         if self.errors:
             return cleaned_data
         product = cleaned_data.get("product")
-        producer_price = cleaned_data.get("producer_price")
-        min = product.producer_price_minimum
-        max = product.producer_price_maximum
+        if product:
+            producer_price = cleaned_data.get("producer_price")
+            min = product.producer_price_minimum
+            max = product.producer_price_maximum
 
-        msg = None
-        if min:
-            if producer_price < min:
-                msg = u" ".join(["Set price is less than minimum of", str(min)])
-        if max:
-            if producer_price > max:
-                msg = u" ".join(["Set price is more than maximum of", str(max)])
-        if msg:
-            #self._errors["producer_price"] = self.error_class([msg])
-            del cleaned_data["producer_price"]
-            raise forms.ValidationError(msg)
+            msg = None
+            if min:
+                if producer_price < min:
+                    msg = u" ".join(["Set price is less than minimum of", str(min)])
+            if max:
+                if producer_price > max:
+                    msg = u" ".join(["Set price is more than maximum of", str(max)])
+            if msg:
+                #self._errors["producer_price"] = self.error_class([msg])
+                del cleaned_data["producer_price"]
+                raise forms.ValidationError(msg)
         return cleaned_data
 
 

@@ -38,7 +38,7 @@ def create_pricing_masterboard_forms(delivery_date, data=None):
                 'selling_price': pp.compute_selling_price(),
             }
         )
-        form.product = pp.product
+        form.product = pp.product.name_with_method()
         form.producer = pp.producer
         forms.append(form)
     return forms
@@ -692,7 +692,7 @@ def create_avail_item_forms(avail_date, data=None):
             'expiration_date': item.expiration_date,
             'quantity': item.avail_qty(),
         })
-        the_form.description = item.product.long_name
+        the_form.description = item.product.name_with_method()
         the_form.producer = item.producer.short_name
         the_form.ordered = item.product.total_ordered_for_timespan(
             item.inventory_date, item.expiration_date)
@@ -711,7 +711,12 @@ def send_avail_emails(cycle):
         for contact in customer.contacts.all():
             if contact.email != customer.email:
                 users.append(contact)
-    users.append(fn)
+    oc = fn.order_contact()
+    if oc:
+        users.append(oc)
+    if fn.email != oc.email:
+        if fn.email:
+            users.append(fn)
     users = list(set(users))
     intro = avail_email_intro()
     domain = Site.objects.get_current().domain

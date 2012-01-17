@@ -211,7 +211,7 @@ dojo.require("dojo.parser");
 			{% for product in products %}
 			<tr>
 				<td>{{ product.category }}</td>
-				<td>{{ product.product }}</td>
+				<td>{{ product.product.name_with_method }}</td>
 				<td>{{ product.producer }}</td>
 				<td style="text-align: right;" >{{ product.qty }}</td>
 				<td style="text-align: right;" >{{ product.price }}</td>

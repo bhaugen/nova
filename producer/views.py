@@ -94,50 +94,92 @@ def edit_producer_profile(request):
 def edit_producer_products(request):
     producer = get_producer(request)
     fn = food_network()
-    ProducerProductFormSet = inlineformset_factory(Producer, ProducerProduct, 
-        fk_name="producer",
-        form=ProducerProductForm,
-        extra=2)
-    formset = ProducerProductFormSet(
-        data=request.POST or None,
-        instance=producer)
+    #ProducerProductFormSet = inlineformset_factory(Producer, ProducerProduct, 
+    #    fk_name="producer",
+    #    form=ProducerProductForm,
+    #    extra=2)
+    #formset = ProducerProductFormSet(
+    #    data=request.POST or None,
+    #    instance=producer)
     other_prices = comparative_prices(producer)
     price_change_date = fn.next_delivery_date_using_inventory_closing()
     td = datetime.date.today()
-    #forms = create_producer_product_forms(producer, data=request.POST or None)
+    pps = producer.producer_products.all()
+    deletables = False
+    product_list = []
+    for pp in pps:
+        if pp.is_deletable():
+            deletables = True
+        product = pp.product
+        product_list.append([product.id, float(product.producer_price_minimum),
+            float(product.producer_price_maximum)])
+    edit_forms = create_producer_product_forms(pps, data=request.POST or None)
+    exclude_ids = [pp.product.id for pp in pps]
+    products = Product.objects.filter(sellable=True).exclude(id__in=exclude_ids)
+    for product in products:
+        product_list.append([product.id, float(product.producer_price_minimum),
+            float(product.producer_price_maximum)])
+    adds = min(3, products.count())
+    add_forms = []
+    for i in range(adds):
+        prefix = "".join(["add", str(i)])
+        add_forms.append(ProducerProductAddForm(products=products,
+            prefix=prefix, data=request.POST or None))
     if request.method == "POST":
         #import pdb; pdb.set_trace()
-        if formset.is_valid():
-            saved_pps = formset.save(commit=False)
-            for pp in saved_pps:
-                id = pp.id
-                price = pp.producer_price
-                if id:
-                    prev = ProducerProduct.objects.get(id=id)
-                    prev_price = prev.producer_price
-                    if price != prev_price:
-                        pp.price_change_delivery_date = price_change_date
-                        pp.price_changed_by = request.user
-                        ppc = ProducerPriceChange(
-                            producer_product=pp,
-                            producer_price=prev_price,
-                            price_change_delivery_date=prev.price_change_delivery_date,
-                            changed_by=request.user,
-                            when_changed=datetime.datetime.now(),
-                        )
-                        ppc.save()
-                else:
-                    pp.price_change_delivery_date = td
-                    pp.price_changed_by = request.user
-                pp.save()
+        #if formset.is_valid():
+        #    saved_pps = formset.save(commit=False)
+        #    for pp in saved_pps:
+        if all([form.is_valid() for form in add_forms]):
+            for form in add_forms:
+                data = form.cleaned_data
+                product = data['product']
+                if product:
+                    price = data['producer_price']
+                    qty_per_year = data['qty_per_year'] or Decimal("0")
+                    pp = ProducerProduct(
+                        producer=producer,
+                        product=product,
+                        producer_price=price,
+                        qty_per_year=qty_per_year,
+                        price_change_delivery_date=td,
+                        price_changed_by=request.user,
+                    )
+                    pp.save()
+            for form in edit_forms:
+                #import pdb; pdb.set_trace()
+                if form.is_valid():
+                    data = form.cleaned_data
+                    id = data['id']
+                    pp = ProducerProduct.objects.get(id=id)
+                    delete = data['delete']
+                    if delete:
+                        prev.delete()
+                    else:
+                        price = data['producer_price']
+                        prev_price = pp.producer_price
+                        if price != prev_price:
+                            pp.producer_price = price
+                            pp.price_change_delivery_date = price_change_date
+                            pp.price_changed_by = request.user
+                            pp.producer_fee = Decimal("0")
+                            pp.markup_percent = Decimal("0")
+                            pp.selling_price = Decimal("0")
+                            pp.qty_per_year = data['qty_per_year'] or Decimal("0")
+                            ProducerPriceChange.create_producer_price_change(
+                                id, request.user)
+                            pp.save()
             return HttpResponseRedirect("/producer/profile")
     return render_to_response('producer/products_edit.html', 
         {'producer': producer,
-         'formset': formset,
+         #'formset': formset,
          'comparative_prices': other_prices,
          'fn': fn,
          'price_change_date': price_change_date,
-         #'forms': forms,
+         'edit_forms': edit_forms,
+         'add_forms': add_forms,
+         'deletables': deletables,
+         'product_list': product_list,
          }, context_instance=RequestContext(request))
 
 @login_required

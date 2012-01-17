@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block title %}
-{% trans "Pricing for" %}{{ product }}
+{% trans "Pricing for" %}{{ product.name_with_method }}
 {% endblock %}
 
 {% block header %}
@@ -132,7 +132,7 @@
 
 	{% include "distribution/tabnav.html" %}
 
-	<h4>{% trans "Product" %} {{ product }}</h4>
+	<h4>{% trans "Product" %} {{ product.name_with_method }}</h4>
 
 	<form action="." method="POST" >{% csrf_token %}	
 		<p style="margin-left: 20em;" >

@@ -15,12 +15,19 @@ def is_number(s):
     except ValueError:
         return False
 
-def create_producer_product_forms(producer, data=None):
-    pps = producer.producer_products.all()
+def create_producer_product_forms(producer_products, data=None):
     form_list = []
-    for pp in pps:
-        form = ProducerProductForm(data, prefix=pp.id, instance=pp)
-        form.selling_price = pp.product.selling_price
+    for pp in producer_products:
+        init = {'product_id': pp.product.id,}
+        form = ProducerProductEditForm(data, 
+            prefix=pp.id, instance=pp, initial=init)
+        form.product = pp.product.name_with_method()
+        form.min = pp.product.formatted_min_price()
+        form.max = pp.product.formatted_max_price()
+        form.deletable = pp.is_deletable()
+        #form.selling_price = pp.product.selling_price
+        #if not pp.is_deletable():
+        #    form.fields['delete'] = None
         form_list.append(form)
     return form_list
 
@@ -38,29 +45,6 @@ def comparative_prices(producer):
     fn = food_network()
     for pp in pps:
         product = pp.product
-        price = product.producer_price
-        min_price = product.producer_price_minimum
-        max_price = product.producer_price_maximum
-        if price + min_price + max_price:
-            cp = ComparativePrice(
-                product=product,
-                producer=fn,
-                price=product.producer_price.quantize(Decimal('.01'), rounding=ROUND_UP)
-            )
-            min = ""
-            max = ""
-            if min_price:
-                min = " ".join([
-                    "Min:",
-                    str(min_price.quantize(Decimal('.01'), rounding=ROUND_UP)),
-                ])
-            if max_price:
-                max = " ".join([
-                    "Max:",
-                    str(max_price.quantize(Decimal('.01'), rounding=ROUND_UP)),
-                ])
-                cp.price_range = " ".join(["Range:", min, max])
-            prices.append(cp)
         cps = ProducerProduct.objects.filter(
             product=product).exclude(producer=producer)
         for cp in cps:

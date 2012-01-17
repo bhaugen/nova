@@ -117,7 +117,7 @@
 			{% for product in producer.producer_products.all %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td>{{ product.product.long_name }}</td>
-				<td style="text-align: right; ">${{ product.formatted_unit_price_now }}</td>
+				<td style="text-align: right; ">${{ product.formatted_selling_price_now }}</td>
 			</tr>
 			{% endfor %}
 		</table>

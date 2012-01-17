@@ -3506,10 +3506,55 @@ def pricing(request, product_id):
 
 
 def pricing_masterboard(request, year, month, day):
+    try:
+        fn = food_network()
+    except FoodNetwork.DoesNotExist:
+        return render_to_response('distribution/network_error.html')
     delivery_date = datetime.date(int(year), int(month), int(day))
     forms = create_pricing_masterboard_forms(
         delivery_date,
         data=request.POST or None)
+    if request.method == "POST":
+        for form in forms:
+            if form.is_valid():
+                data = form.cleaned_data
+                id = data['id']
+                pp = ProducerProduct.objects.get(id=id)
+                producer_price = data['producer_price']
+                producer_fee = data['producer_fee']
+                pay_price = data['pay_price']
+                markup_percent = data['markup_percent']
+                selling_price = data['selling_price']
+                default_fee = pp.producer.as_leaf_class().decide_producer_fee()
+                default_markup = fn.customer_fee
+                #default_pay_price = pp.basic_compute_pay_price(
+                #    producer_price, default_fee)
+                #default_selling_price = pp.basic_compute_selling_price(
+                #    producer_price, default_markup)
+                #import pdb; pdb.set_trace()
+                save_pp = False
+                if producer_price != pp.producer_price:
+                    pp.producer_price = producer_price
+                    save_pp = True
+                if producer_fee != default_fee:
+                    if producer_fee != pp.producer_fee:
+                        pp.producer_fee = producer_fee
+                        save_pp = True
+                    if pay_price != pp.pay_price:
+                        pp.pay_price = pay_price
+                        save_pp = True
+                if markup_percent != default_markup:
+                    if markup_percent != pp.markup_percent:
+                        pp.markup_percent = markup_percent
+                        save_pp = True
+                    if selling_price != pp.selling_price:
+                        pp.selling_price = selling_price
+                        save_pp = True
+                if save_pp:
+                    ProducerPriceChange.create_producer_price_change(
+                        id, request.user)
+                    pp.save()
+        return HttpResponseRedirect("/distribution/pricingselection/")
     return render_to_response('distribution/pricing_masterboard.html', 
         {'delivery_date': delivery_date,
          'forms': forms,

@@ -39,6 +39,7 @@ def get_producer(request):
     except ProducerContact.DoesNotExist:
         return None
 
+@login_required
 def producer_dashboard(request):
     fn = food_network()
     producer = get_producer(request)
@@ -47,6 +48,7 @@ def producer_dashboard(request):
          'food_network': fn,
          }, context_instance=RequestContext(request))
 
+@login_required
 def producer_profile(request):
     producer = get_producer(request)
     td = datetime.date.today()
@@ -71,6 +73,7 @@ def producer_profile(request):
          'inventory_closing': inventory_closing,
          }, context_instance=RequestContext(request))
 
+@login_required
 def edit_producer_profile(request):
     producer = get_producer(request)
     form = ProducerProfileForm(data=request.POST or None, instance=producer)
@@ -91,6 +94,7 @@ def edit_producer_profile(request):
          'formset': formset,
          }, context_instance=RequestContext(request))
 
+@login_required
 def edit_producer_products(request):
     producer = get_producer(request)
     fn = food_network()
@@ -1176,8 +1180,6 @@ def json_income(request, from_date, to_date):
     response['Content-Range'] = "".join(["items ", str(range_start),
         "-", str(range_end), "/", str(count + 1)])
     return response
-
-
 
 @login_required
 def supply_and_demand(request, from_date, to_date):

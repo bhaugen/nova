@@ -3462,6 +3462,7 @@ def pricing_selection(request):
          'board_form': board_form,
         }, context_instance=RequestContext(request))
 
+@login_required
 def pricing(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product_form = ProductPriceForm(data=request.POST or None, instance=product)
@@ -3504,7 +3505,7 @@ def pricing(request, product_id):
          #'producer_product_formset': producer_product_formset,
         }, context_instance=RequestContext(request))
 
-
+@login_required
 def pricing_masterboard(request, year, month, day):
     try:
         fn = food_network()

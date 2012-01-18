@@ -423,7 +423,7 @@ class FoodNetwork(Party):
    
     @property
     def email(self):
-        return self.email_address
+        return self.email_address or self.order_contact().email
 
     def order_contact(self):
         contacts = self.contacts.filter(Q(role=1)|Q(role=3))

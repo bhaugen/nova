@@ -81,7 +81,7 @@
 
 	<h3>Comments about recently delivered items</h3>
 	{% for item in items %}
-	{% get_comment_list for item as comments flat %}
+	{% get_comment_list for item as comments %}
 	{% if comments %}
 	<div style="margin-top: 2px;" >
 		<strong>
@@ -91,6 +91,7 @@
 			{{ item.order_item.order.delivery_date }} 
 		</strong>
 		{% include "producer/comments_for_producer.html" %}
+
 	</div>
 	{% endif %}
 	{% endfor %}

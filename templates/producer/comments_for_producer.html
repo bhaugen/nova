@@ -1,12 +1,42 @@
+{% load threadedcomments_tags %}
+
+<style>
+	ul {list-style-type:none;}
+</style>
+
 {% if comments %}
-	<div style="color: grey;">
-	{% for comment in comments %}
-	<p style="margin-top: 1px;" >
-	<strong>{{ comment.title }}</strong> {{ comment.submit_date }}</br>
-	from {{ comment.user.get_full_name }} of {{ comment.user.customer_contact.customer }}
-	{{ comment.comment|linebreaks }}
-	</p>
-	{% endfor %}
+	<div style="color: grey; margin-left: 1em;">
+		{% for comment in comments|fill_tree|annotate_tree %}
+		
+			{% if not comment.open and not comment.close %}
+				</li>
+			{% endif %}
+    
+			{% if comment.open %}
+    				<ul>
+			{% endif %}
+
+			<li{% if comment.last %} class="last"{% endif %}>
+	
+			<p style="margin-top: 1px;" >
+				<strong>{{ comment.title }}</strong> {{ comment.submit_date }}</br>
+				from {{ comment.user.get_full_name }} 
+				{% if comment.user.customer_contact %}
+				of {{ comment.user.customer_contact.customer }}
+				{% endif %}
+				{{ comment.comment|linebreaks }}
+			</p>
+			<strong>Reply</strong> <button id="toggle-reply{{ comment.id }}comment" class="toggle" >+</button>
+			<div id="reply{{ comment.id }}comment" style="display: none;" >
+				{% get_comment_form for comment.content_object as form %}
+				{% include "threadedcomments/reply_form.html" %}
+			</div>
+			{% for close in comment.close %}
+    				</li>
+    				</ul>
+			{% endfor %}
+	
+		{% endfor %}
 	</div>
 {% endif %}
 

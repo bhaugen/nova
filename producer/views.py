@@ -1245,4 +1245,21 @@ def member_supply_and_demand(request, from_date, to_date, member_id):
             'tabnav': "producer/producer_tabnav.html", 
         }, context_instance=RequestContext(request))
 
-
+@login_required
+def community(request):
+    producer = get_producer(request)
+    party = Party.objects.get(id=producer.id)
+    fn = food_network()
+    user = request.user
+    user_email = user.email or user.producer_contact.email
+    items = InventoryTransaction.objects.filter(
+        inventory_item__producer=producer)[:5]
+    return render_to_response('producer/community.html', 
+        {'producer': producer,
+         'party': party,
+         #'products': products,
+         'items': items,
+         'fn': fn,
+         'user': user,
+         'user_email': user_email,
+         }, context_instance=RequestContext(request))

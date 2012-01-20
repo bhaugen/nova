@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% load threadedcomments_tags %}
+
+{% block title %}
+     {{ food_network }} Community 
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+<style type="text/css">
+	button
+	{
+		font-size: 50%;
+	}
+	input, textarea
+	{
+		border : 1px solid lightgrey;
+
+	}
+	p
+	{
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+</style>
+
+{% include "dojo_include.html" %}
+
+<script type="text/javascript" >
+
+	function toggleComment(evt)
+{
+	elId = evt.target.id.split('-')[1];;
+	var el = dojo.byId(elId);
+ 	if(el.style.display != "none")
+  	{
+		el.style.display = "none";
+		evt.target.innerHTML="+";
+  	}
+  	else
+	{
+		el.style.display = "";
+		evt.target.innerHTML="-";
+	}
+
+}	
+
+	dojo.addOnLoad(function()
+	{
+		var queryNodes = dojo.query(".toggle");
+		for(var i=0;i<queryNodes.length;i++)
+		{
+			var node = queryNodes[i];
+			dojo.connect(node, "onclick", "toggleComment");
+		}
+	});
+
+</script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="community" style="margin-bottom: 2em;" >
+
+	{% include "producer/producer_tabnav.html" %}
+	
+	<h3 style="padding-top: 0; margin-top: 0; " >Comments from customers </h3>
+
+	<h3>Recent general comments</h3>
+	<div>
+		{% get_comment_list for party as comments flat %}
+		{% include "producer/comments_for_producer.html" %}
+	</div>
+
+	<h3>Comments about recently delivered items</h3>
+	{% for item in items %}
+	{% get_comment_list for item as comments flat %}
+	{% if comments %}
+	<div style="margin-top: 2px;" >
+		<strong>
+			{{ item.amount }} 
+			{{ item.inventory_item.product }} delivered to 
+			{{ item.order_item.order.customer }} on 
+			{{ item.order_item.order.delivery_date }} 
+		</strong>
+		{% include "producer/comments_for_producer.html" %}
+	</div>
+	{% endif %}
+	{% endfor %}
+	
+</div>
+{% endblock %}
+
+

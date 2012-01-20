@@ -79,6 +79,9 @@ urlpatterns = patterns('',
     url(r'^dojosupplydemandweek/(?P<tabs>\w{1})/(?P<week_date>\w{10})/$',
         'producer.views.dojo_supply_and_demand_week', name='producer_dojo_supply_and_demand_week'),
 
+    # community
+    url(r'^community/$', "producer.views.community", name="producer_community"),
+
 )
 
 

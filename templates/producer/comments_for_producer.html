@@ -2,9 +2,11 @@
 	<div style="color: grey;">
 	{% for comment in comments %}
 	<p style="margin-top: 1px;" >
-	<strong>{{ comment.title }}</strong> {{ comment.submit_date }}
+	<strong>{{ comment.title }}</strong> {{ comment.submit_date }}</br>
+	from {{ comment.user.get_full_name }} of {{ comment.user.customer_contact.customer }}
 	{{ comment.comment|linebreaks }}
 	</p>
 	{% endfor %}
 	</div>
 {% endif %}
+

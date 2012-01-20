@@ -1,0 +1,11 @@
+{% if comments %}
+	<div style="color: grey;">
+	<p style="margin-top: 3px;" ><strong>Previous comments</strong></p>
+	{% for comment in comments %}
+	<p style="margin-top: 1px;" >
+	<strong>{{ comment.title }}</strong> {{ comment.submit_date }}
+	{{ comment.comment|linebreaks }}
+	</p>
+	{% endfor %}
+	</div>
+{% endif %}

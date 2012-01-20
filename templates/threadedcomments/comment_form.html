@@ -1,0 +1,31 @@
+<table>
+	<form action="/comments/post/" method="post">
+		{% csrf_token %}
+		<input type="hidden" name="next" value="{% url customer_comments %}" />
+		<input id="id_name" type="hidden" name="name" value="{{ user.username }}" />
+		<input type="hidden" name="email" id="id_email" value="{{ user_email }}" />
+		<input type="hidden" name="honeypot" id="id_honeypot" />
+		{{ form.content_type }} 
+		{{ form.object_pk }}
+		{{ form.timestamp }}
+		{{ form.security_hash }}
+		{{ form.parent }}
+		<tr>
+			<th>Title:</th>
+			<td>{{ form.title }}</td>
+		</tr>
+		<tr>
+			<td colspan="2">{{ form.comment }}</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<input type="submit" name="submit" value="Post">
+				{% comment %}
+				<input type="submit" name="preview" value="Preview">
+				{% endcomment %}
+			</td>
+		</tr>
+	</form>
+</table>
+

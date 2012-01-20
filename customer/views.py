@@ -834,6 +834,7 @@ def customer_plans(request, from_date, to_date, member_id):
             'tabnav': "customer/customer_tabnav.html", 
         }, context_instance=RequestContext(request))
 
+@login_required
 def producer_profile_for_customer(request, producer_id, tabs, tab):
     producer = get_object_or_404(Producer, pk=producer_id)
     customer = get_customer(request)
@@ -852,5 +853,26 @@ def producer_profile_for_customer(request, producer_id, tabs, tab):
          'tabnav': tabnav,
          'div_class': tab,
          'available': available,
+         }, context_instance=RequestContext(request))
+
+@login_required
+def customer_comments(request):
+    fn = food_network()
+    customer = get_customer(request)
+    orders = Order.objects.filter(
+            customer=customer,
+            state__contains="Filled")
+    producers = customer.recent_producers()
+    items = customer.recent_deliveries()
+    user = request.user
+    user_email = user.email or user.customer_contact.email
+    return render_to_response('customer/comments.html', 
+        {'customer': customer,
+         'orders': orders,
+         'producers': producers,
+         'items': items,
+         'fn': fn,
+         'user': user,
+         'user_email': user_email,
          }, context_instance=RequestContext(request))
 

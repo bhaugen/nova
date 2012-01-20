@@ -58,5 +58,8 @@ urlpatterns = patterns('',
     #todo: tab regex only allows one /-
     url(r'^publicproducerprofile/(?P<producer_id>\d+)/(?P<tabs>\w{1})/(?P<tab>\w+\-?\w+)/$', 
         "customer.views.producer_profile_for_customer", name="producer_profile_for_customer"),
+
+    # comments
+    url(r'^comments/$', "customer.views.customer_comments", name="customer_comments"),
 )
 

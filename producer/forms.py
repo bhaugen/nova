@@ -17,6 +17,20 @@ class TdErrorList(ErrorList):
             return u''
         return u'<td class="errorlist">%s</td>' % ''.join([u'<div class="error">%s</div>' % e for e in self])
 
+COLOR_CHOICES = (
+    ("#F0F8FF", 'Alice Blue'),
+    ("#F0FFFF", 'Azure'),
+    ("#F5F5DC", 'Beige'),
+    ("#FFE4C4", 'Bisque'),
+    ("#FFF8DC", 'Cornsilk'),
+    ("#DAA520", 'Goldenrod'),
+    ("#F0FFF0", 'Honeydew'),
+    ("#FFA07A", 'Light Salmon'),
+    ("#FFDEAD", 'Navajo White'),
+    ("#98FB98", 'Pale Green'),
+    ('White', 'White'),
+)
+
 class ProducerProfileForm(forms.ModelForm):
     long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
     phone = forms.CharField(required=False)
@@ -35,11 +49,12 @@ class ProducerProfileForm(forms.ModelForm):
         widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
     storage_capacity = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+    background_color = forms.ChoiceField(choices=COLOR_CHOICES)
 
 
     class Meta:
         model = Producer
-        exclude = ('member_id', 'short_name', 'delivers')
+        exclude = ('member_id', 'short_name', 'delivers', 'producer_fee')
 
 
 class ProducerContactForm(forms.ModelForm): 

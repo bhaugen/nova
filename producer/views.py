@@ -71,6 +71,7 @@ def producer_profile(request):
          'start': start,
          'end': end,
          'inventory_closing': inventory_closing,
+         'background': producer.background_color,
          }, context_instance=RequestContext(request))
 
 @login_required
@@ -92,6 +93,7 @@ def edit_producer_profile(request):
         {'producer': producer,
          'form': form,
          'formset': formset,
+         'background': producer.background_color,
          }, context_instance=RequestContext(request))
 
 @login_required

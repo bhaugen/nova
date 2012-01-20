@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% load threadedcomments_tags %}
+
+{% block title %}
+     {{ food_network }} Customer Comments
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+<style type="text/css">
+	button
+	{
+		font-size: 50%;
+	}
+	input, textarea
+	{
+		border : 1px solid lightgrey;
+
+	}
+	p
+	{
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+</style>
+
+{% include "dojo_include.html" %}
+
+<script type="text/javascript" >
+
+	function toggleComment(evt)
+{
+	elId = evt.target.id.split('-')[1];;
+	var el = dojo.byId(elId);
+ 	if(el.style.display != "none")
+  	{
+		el.style.display = "none";
+		evt.target.innerHTML="+";
+  	}
+  	else
+	{
+		el.style.display = "";
+		evt.target.innerHTML="-";
+	}
+
+}	
+
+	dojo.addOnLoad(function()
+	{
+		var queryNodes = dojo.query(".toggle");
+		for(var i=0;i<queryNodes.length;i++)
+		{
+			var node = queryNodes[i];
+			dojo.connect(node, "onclick", "toggleComment");
+		}
+	});
+
+</script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="comments">
+
+	{% include "customer/customer_tabnav.html" %}
+	
+	<h3 style="padding-top: 0; margin-top: 0; " >Comment on {{ fn.long_name }}, Invoices, Producers, Products, and delivered items</h3>
+
+	<h3>Send a comment to {{fn.long_name}} <button id="toggle-fncomment" class="toggle" >+</button></h3>
+	<div id="fncomment" style="display: none; margin-left: 2em;" >
+	{% get_comment_form for fn as fn_form %}
+	<table>
+		<form action="/comments/post/" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="next" value="{% url customer_comments %}" />
+			<input id="id_name" type="hidden" name="name" value="{{ user.username }}" />
+			<input type="hidden" name="email" id="id_email" value="{{ user_email }}" />
+			<input type="hidden" name="honeypot" id="id_honeypot" />
+			{{ fn_form.content_type }} 
+			{{ fn_form.object_pk }}
+			{{ fn_form.timestamp }}
+			{{ fn_form.security_hash }}
+			{{ fn_form.parent }}
+			<tr>
+				<th>Title:</th>
+				<td>{{ fn_form.title }}</td>
+			</tr>
+			<tr>
+				<td colspan="2">{{ fn_form.comment }}</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<input type="submit" name="submit" value="Post">
+					{% comment %}
+					<input type="submit" name="preview" value="Preview">
+					{% endcomment %}
+				</td>
+			</tr>
+		</form>
+	</table>
+	</div>
+	<div style="margin-left: 2em;">
+		{% get_comment_list for fn as comments %}
+		{% if comments %}
+		<div style="color: grey;">
+		<p style="margin-top: 3px;" ><strong>Previous comments</strong></p>
+		{% for comment in comments %}
+		<p style="margin-top: 1px;" >
+		<strong>{{ comment.title }}</strong> {{ comment.submit_date }}
+		{{ comment.comment|linebreaks }}
+		</p>
+		{% endfor %}
+		</div>
+		{% endif %}
+	</div>
+
+	<h3>Send a comment to {{fn}} about a recent invoice:</h3>
+	<div style="margin-left: 2em;" >
+	{% for order in orders %}
+	<p>
+	{{ order }} ${{ order.grand_total }} <button id="toggle-order{{ order.id }}comment" class="toggle" >+</button>
+	</p>
+	<div id="order{{ order.id }}comment" style="display: none;" >
+	{% get_comment_form for order as order_form %}
+	<table>
+		<form action="/comments/post/" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="next" value="{% url customer_comments %}" />
+			<input id="id_name" type="hidden" name="name" value="{{ user.username }}" />
+			<input type="hidden" name="email" id="id_email" value="{{ user_email }}" />
+			<input type="hidden" name="honeypot" id="id_honeypot" />
+			{{ order_form.content_type }} 
+			{{ order_form.object_pk }}
+			{{ order_form.timestamp }}
+			{{ order_form.security_hash }}
+			{{ order_form.parent }}
+			<tr>
+				<th>Title:</th>
+				<td>{{ order_form.title }}</td>
+			</tr>
+			<tr>
+				<td colspan="2">{{ order_form.comment }}</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<input type="submit" name="submit" value="Post">
+					{% comment %}
+					<input type="submit" name="preview" value="Preview">
+					{% endcomment %}
+				</td>
+			</tr>
+		</form>
+	</table>
+	</div>
+	<div>
+		{% get_comment_list for order as comments %}
+		{% if comments %}
+		<div style="color: grey;">
+		<p style="margin-top: 3px;" ><strong>Previous comments</strong></p>
+		{% for comment in comments %}
+		<p style="margin-top: 1px;" >
+		<strong>{{ comment.title }}</strong> {{ comment.submit_date }}
+		{{ comment.comment|linebreaks }}
+		</p>
+		{% endfor %}
+		</div>
+		{% endif %}
+	</div>
+	{% endfor %}
+	</div>
+
+	<h3>Send a comment to a producer that you have recently purchased from:</h3>
+	<div style="margin-left: 2em;" >
+	{% for producer in producers %}
+	<p>
+	{{ producer.long_name }} <button id="toggle-producer{{ producer.id }}comment" class="toggle" >+</button>
+	</p>
+	<div id="producer{{ producer.id }}comment" style="display: none;" >
+	{% get_comment_form for producer as producer_form %}
+	<table>
+		<form action="/comments/post/" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="next" value="{% url customer_comments %}" />
+			<input id="id_name" type="hidden" name="name" value="{{ user.username }}" />
+			<input type="hidden" name="email" id="id_email" value="{{ user_email }}" />
+			<input type="hidden" name="honeypot" id="id_honeypot" />
+			{{ producer_form.content_type }} 
+			{{ producer_form.object_pk }}
+			{{ producer_form.timestamp }}
+			{{ producer_form.security_hash }}
+			{{ producer_form.parent }}
+			<tr>
+				<th>Title:</th>
+				<td>{{ producer_form.title }}</td>
+			</tr>
+			<tr>
+				<td colspan="2">{{ producer_form.comment }}</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<input type="submit" name="submit" value="Post">
+					{% comment %}
+					<input type="submit" name="preview" value="Preview">
+					{% endcomment %}
+				</td>
+			</tr>
+		</form>
+	</table>
+	</div>
+	<div>
+		{% get_comment_list for producer as comments %}
+		{% if comments %}
+		<div style="color: grey;">
+		<p style="margin-top: 3px;" ><strong>Previous comments</strong></p>
+		{% for comment in comments %}
+		<p style="margin-top: 1px;" >
+		<strong>{{ comment.title }}</strong> {{ comment.submit_date }}
+		{{ comment.comment|linebreaks }}
+		</p>
+		{% endfor %}
+		</div>
+		{% endif %}
+	</div>
+	{% endfor %}
+	</div>
+
+	<h3>Send a comment to a producer about a recently delivered item:</h3>
+	<div style="margin-left: 2em;" >
+	{% for item in items %}
+	<p>
+	{{ item.transaction_date }} {{ item.producer }} {{ item.product }} {{ item.amount }}
+	</p>
+	{% endfor %}
+	</div>
+
+	
+</div>
+{% endblock %}
+

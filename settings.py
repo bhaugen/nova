@@ -85,6 +85,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_extensions',
     'django.contrib.humanize',
+    'django.contrib.comments',
+    'threadedcomments',
     'distribution',
     'customer',
     'producer',
@@ -96,6 +98,8 @@ INSTALLED_APPS = (
     'pay',
     'south',
 )
+
+COMMENTS_APP = 'threadedcomments'
 
 PAYPAL_RECEIVER_EMAIL = "bobha_1286809456_biz@gmail.com"
 PAYPAL_IMAGE = "https://www.paypalobjects.com/WEBSCR-640-20101108-1/en_US/i/bnr/horizontal_solution_PP.gif"

@@ -2468,6 +2468,7 @@ def public_producer_profile(request, producer_id, tabs, tab):
          'end': end,
          'tabnav': tabnav,
          'div_class': tab,
+         'background': producer.background_color,
          }, context_instance=RequestContext(request))
 
 @login_required

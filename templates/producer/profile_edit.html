@@ -21,6 +21,24 @@
 	}
 </style>
 
+{% include "dojo_include.html" %}
+
+<script type="text/javascript" >
+
+	function colorChanged(evt)
+	{
+		color = evt.target.value;
+		document.body.style.background = color;
+	}
+
+	dojo.addOnLoad(function()
+	{
+	var node = dojo.byId("id_background_color");
+	dojo.connect(node, "onchange", "colorChanged");
+	});
+
+</script>
+
 {% endblock %}
 
 
@@ -113,6 +131,9 @@
 		            <input type="submit" name="submit-contacts" value="Save Profile changes" />
 			</p>
 			{% endcomment %}
+			<p style="margin-top: 1em;" >
+			<strong>Background color:</strong> {{ form.background_color }}
+			</p>
 		</form>
 
 	</div>

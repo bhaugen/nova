@@ -306,6 +306,8 @@ class Party(models.Model):
     storage_capacity = models.TextField(_('storage capacity'), blank=True)
     website = models.CharField(_('website'), max_length=255, blank=True)
     content_type = models.ForeignKey(ContentType,editable=False,null=True)
+    background_color = models.CharField(_('background color'), max_length=32,
+                                        default="White")
     
     objects = models.Manager()
     subclass_objects = PartyManager()
@@ -922,8 +924,21 @@ class Customer(Party):
     apply_transportation_fee = models.BooleanField(_('apply transportation fee'), default=True,
         help_text=_('Add transportation fee to all orders for this customer, or not?'))
 
+    class Meta:
+        ordering = ('short_name',)
+
     def __unicode__(self):
         return self.short_name
+
+    def recent_deliveries(self):
+        return InventoryTransaction.objects.filter(order_item__order__customer=self)
+
+    def recent_producers(self):
+        items = self.recent_deliveries()
+        producers = list(set([item.producer() for item in items]))
+        producers.sort(lambda x, y: cmp(x.producer.short_name,
+                                           y.producer.short_name))
+        return producers
     
     def distributor(self):
         #todo: revise when 5S distributor assignments are clear
@@ -988,9 +1003,6 @@ class Customer(Party):
     @property
     def email(self):
         return self.email_address
-
-    class Meta:
-        ordering = ('short_name',)
 
 
 class CustomerContact(models.Model):

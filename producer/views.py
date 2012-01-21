@@ -1252,14 +1252,16 @@ def community(request):
     fn = food_network()
     user = request.user
     user_email = user.email or user.producer_contact.email
-    items = InventoryTransaction.objects.filter(
-        inventory_item__producer=producer)[:5]
+    #items = InventoryTransaction.objects.filter(
+    #    inventory_item__producer=producer)[:5]
+    products = producer.producer_products.all()
     return render_to_response('producer/community.html', 
         {'producer': producer,
          'party': party,
-         #'products': products,
-         'items': items,
+         'products': products,
+         #'items': items,
          'fn': fn,
          'user': user,
          'user_email': user_email,
+         'next': '/producer/community',
          }, context_instance=RequestContext(request))

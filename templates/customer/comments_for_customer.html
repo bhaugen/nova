@@ -19,7 +19,7 @@
 			<li{% if comment.last %} class="last"{% endif %}>
 	
 			<div style="margin-top: 1em; border: 1px solid lightgrey; padding-left: 4px; width: 40%; " >
-				<strong>{{ comment.title }}</strong> 
+				<strong>{{ comment.title }}</strong>
 				<div style="margin-top: 0; margin-bottom: 2px; font-size: 80%;">
 					<i>
 						{% if comment.title %}
@@ -28,13 +28,15 @@
 						Reply from 
 						{% endif %}
 						{{ comment.user.get_full_name }} 
-						{% if comment.user.customer_contact %}
-						of {{ comment.user.customer_contact.customer.long_name }}
+						{% if comment.user.producer_contact %}
+						of {{ comment.user.producer_contact.producer.long_name }}
 						{% endif %}
 						{{ comment.submit_date }}
 					</i>
 				</div>
-				{{ comment.comment|linebreaks }}
+				<div style="margin-top: 2px; ">
+					{{ comment.comment|linebreaks }}
+				</div>
 			</div>
 			<i>Reply</i> <button id="toggle-reply{{ comment.id }}comment" class="toggle" >+</button>
 			<div id="reply{{ comment.id }}comment" style="display: none; " >
@@ -49,4 +51,5 @@
 		{% endfor %}
 	</div>
 {% endif %}
+
 

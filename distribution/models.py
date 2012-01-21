@@ -933,11 +933,18 @@ class Customer(Party):
     def recent_deliveries(self):
         return InventoryTransaction.objects.filter(order_item__order__customer=self)
 
+    def recent_products(self):
+        items = self.recent_deliveries()
+        producer_products = list(set([item.inventory_item.producer_product for item in items]))
+        producer_products.sort(lambda x, y: cmp(x.product.short_name,
+                                           y.product.short_name))
+        return producer_products
+
     def recent_producers(self):
         items = self.recent_deliveries()
         producers = list(set([item.producer() for item in items]))
-        producers.sort(lambda x, y: cmp(x.producer.short_name,
-                                           y.producer.short_name))
+        producers.sort(lambda x, y: cmp(x.short_name,
+                                           y.short_name))
         return producers
     
     def distributor(self):

@@ -71,8 +71,9 @@
 
 	{% include "customer/customer_tabnav.html" %}
 	
-	<h3 style="padding-top: 0; margin-top: 0; " >Comment on {{ fn.long_name }}, Invoices, Producers, Products, and delivered items</h3>
+	<h3 style="padding-top: 0; margin-top: 0; " >Comment on Producers and Products</h3>
 
+	{% comment %}
 	<h3>Send a comment to {{fn.long_name}} <button id="toggle-fncomment" class="toggle" >+</button></h3>
 	<div id="fncomment" style="display: none; margin-left: 2em;" >
 	{% get_comment_form for fn as form %}
@@ -99,6 +100,7 @@
 	</div>
 	{% endfor %}
 	</div>
+	{% endcomment %}
 
 	<h3>Send a comment to a producer that you have recently purchased from:</h3>
 	<div style="margin-left: 2em;" >
@@ -111,26 +113,26 @@
 	{% include "threadedcomments/comment_form.html" %}
 	</div>
 	<div>
-		{% get_comment_list for producer as comments flat %}
-		{% include "threadedcomments/comment_list.html" %}
+		{% get_comment_list for producer as comments %}
+		{% include "customer/comments_for_customer.html" %}
 	</div>
 	{% endfor %}
 	</div>
 
-	<h3>Send a comment to a producer about a recently delivered item:</h3>
+	<h3>Send a comment to a producer about a recently purchased product:</h3>
 	<div style="margin-left: 2em;" >
-	{% for item in items %}
+	{% for product in products %}
 	<p>
-	{{ item.transaction_date }} {{ item.producer }} {{ item.product }} {{ item.amount }}
-	<button id="toggle-item{{ item.id }}comment" class="toggle" >+</button>
+	{{ product.producer }} {{ product.product }}
+	<button id="toggle-product{{ product.id }}comment" class="toggle" >+</button>
 	</p>
-	<div id="item{{ item.id }}comment" style="display: none;" >
-	{% get_comment_form for item as form %}
+	<div id="product{{ product.id }}comment" style="display: none;" >
+	{% get_comment_form for product as form %}
 	{% include "threadedcomments/comment_form.html" %}
 	</div>
 	<div>
-		{% get_comment_list for item as comments flat %}
-		{% include "threadedcomments/comment_list.html" %}
+		{% get_comment_list for product as comments %}
+		{% include "customer/comments_for_customer.html" %}
 	</div>
 	{% endfor %}
 	</div>

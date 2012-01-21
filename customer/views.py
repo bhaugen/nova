@@ -863,16 +863,19 @@ def customer_comments(request):
             customer=customer,
             state__contains="Filled")
     producers = customer.recent_producers()
-    items = customer.recent_deliveries()
+    #items = customer.recent_deliveries()
+    products = customer.recent_products()
     user = request.user
     user_email = user.email or user.customer_contact.email
     return render_to_response('customer/comments.html', 
         {'customer': customer,
          'orders': orders,
          'producers': producers,
-         'items': items,
+         #'items': items,
+         'products': products,
          'fn': fn,
          'user': user,
          'user_email': user_email,
+         'next': '/customer/comments',
          }, context_instance=RequestContext(request))
 

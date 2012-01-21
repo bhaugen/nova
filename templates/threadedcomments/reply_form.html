@@ -1,7 +1,7 @@
 <table>
 	<form action="/comments/post/" method="post">
 		{% csrf_token %}
-		<input type="hidden" name="next" value="{% url producer_community %}" />
+		<input type="hidden" name="next" value="{{ next }}" />
 		<input id="id_name" type="hidden" name="name" value="{{ user.username }}" />
 		<input type="hidden" name="email" id="id_email" value="{{ user_email }}" />
 		<input type="hidden" name="parent" id="id_parent" value="{{ comment.id }}" />

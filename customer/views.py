@@ -68,12 +68,21 @@ def customer_dashboard(request):
     specials = Special.objects.filter(
         from_date__lte=dd,
         to_date__gte=dd)
+    producers = producers_with_comments()
+    products = products_with_comments()
+    some_comments = False
+    if producers or products:
+        some_comments = True
+    print "producers:", producers, "products:", products, "some_comments:", some_comments
     return render_to_response('customer/customer_dashboard.html', 
         {'customer': customer,
          'food_network': fn,
          'avail_rows': avail_rows,
          'specials': specials,
          'cycle': cycle,
+         'producers': producers,
+         'products': products,
+         'some_comments': some_comments,
          }, context_instance=RequestContext(request))
 
 @login_required

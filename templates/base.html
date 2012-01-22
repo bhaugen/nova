@@ -21,6 +21,16 @@
 		table th
 		{
 			font-weight: bold;
+			color: gray;
+		}
+
+		th, td
+		{
+			padding-left:5px;
+		}
+		th
+		{
+			font-weight:bold;
 		}
 
 		.ga-event-table
@@ -73,6 +83,20 @@
 				display: none !important; 
 			}
 		}
+
+	tr.even td 
+	{
+		color:#000000;
+		background-color:#EAF2D3;
+	}
+	.errorlist
+	{
+		color: red;
+	}
+	.errorlist ul
+	{
+		list-style-type:none;
+	}
     </style>
 
 	{% block extra_head %}

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% load humanize %}
+{% load threadedcomments_tags %}
+
 
 {% block title %}
      {{ food_network }} Customer Dashboard
@@ -38,8 +40,8 @@
 
 	<div style="float: left; width: 40%;">
 	<h3 style="padding-top: 0; margin-top: 0; " >What's available:</h3>
-	<table class="ga-event-table" >
-		<thead>
+	<table >
+		<thead style="background-color: #EAF2D3;" >
 		<tr>
 			<th style="text-align:left;" >Product</th>
 			<th style="text-align:left;" >Producer</th>
@@ -51,7 +53,7 @@
 		<tbody>
 
 		{% for row in avail_rows %}
-			<tr>
+			<tr class="{% cycle 'odd' 'even' %}" >
 				<th style="text-align:left;" >{{ row.product }}</th>
 				<th style="text-align:left;" >
 					<a href="{% url producer_profile_for_customer producer_id=row.producer.id tabs='C' tab='customer-dashboard' %}">
@@ -70,7 +72,7 @@
 	</div>
 
 	{% if specials %}
-	<div style="float: left; border: 2px solid grey; width: 40%; padding-left: 1em; padding-bottom: 4px;" >
+	<div style="float: left; border: 2px solid grey; width: 40%; margin-top: 0; padding-left: 1em; padding-bottom: 4px;" >
 		<h2>Specials</h2>
 		{% for special in specials %}
 		<h4>{{ special.headline }}</h4>
@@ -83,6 +85,43 @@
 		{% endfor %}
 	</div>
 	{% endif %}
+
+	{% if some_comments %}
+	<div style="float: left; width: 40%; margin-top: 0; padding-top: 0; padding-left: 1em; padding-bottom: 4px; color: gray; " >
+		<h3 style="padding-top: 0; margin-top: 0; margin-bottom: 0; " >Praise and feedback:</h3>
+		{% if producers %}
+		<div style="margin-left: 1em; margin-top: 0; ">
+			<h4 style="margin-top: 0; ">- to a producer:</h4>
+			{% for producer in producers %}
+			<span style="margin-left: 1em;">
+				{{ producer.long_name }}
+			</span>
+			<div>
+				{% get_comment_list for producer as comments %}
+				{% include "threadedcomments/comment_list.html" %}
+			</div>
+			{% endfor %}
+		</div>
+		{% endif %}
+		{% if products %}
+		<div style="margin-left: 1em;">
+			<h4>- about a product:</h4>
+			{% for product in products %}
+			<span style="margin-left: 1em; margin-top: 2px;">
+				{{ product.producer.short_name }} {{ product.product.long_name }}
+			</span>
+			<div>
+				{% get_comment_list for product as comments %}
+				{% include "threadedcomments/comment_list.html" %}
+			</div>
+			{% endfor %}
+		</div>
+		{% endif %}
+		{% for special in specials %}
+		{% endfor %}
+	</div>
+	{% endif %}
+
 	<div style="clear: both;"></div>
 
 </div>

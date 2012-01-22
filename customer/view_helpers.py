@@ -9,6 +9,31 @@ from customer.forms import *
 from paypal.standard.forms import PayPalPaymentsForm
 from pay.models import *
 from distribution.view_helpers import SupplyDemandTable
+from threadedcomments.models import *
+
+
+class TargetAndComments(object):
+     def __init__(self, target, comments):
+         self.target = target
+         self.comments = comments
+
+
+def producers_with_comments():
+    candidates = Producer.objects.all()
+    answers = []
+    for c in candidates:
+        party = Party.objects.get(id=c.id)
+        if ThreadedComment.objects.for_model(party).count():
+            answers.append(party)
+    return answers
+
+def products_with_comments():
+    candidates = ProducerProduct.objects.all()
+    answers = []
+    for c in candidates:
+        if ThreadedComment.objects.for_model(c).count():
+            answers.append(c)
+    return answers
 
 
 def create_paypal_form(order, return_page='unpaid_invoice'):

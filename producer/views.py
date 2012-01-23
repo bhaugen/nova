@@ -43,9 +43,15 @@ def get_producer(request):
 def producer_dashboard(request):
     fn = food_network()
     producer = get_producer(request)
+    unfilled = producer.unfilled_order_items()
+    filled = producer.recently_filled_order_items()
+    payments = producer.upcoming_payments()
     return render_to_response('producer/producer_dashboard.html', 
         {'producer': producer,
          'food_network': fn,
+         'unfilled': unfilled,
+         'filled': filled,
+         'payments': payments,
          }, context_instance=RequestContext(request))
 
 @login_required

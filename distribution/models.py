@@ -863,6 +863,29 @@ class Producer(Party):
     def decide_producer_fee(self):
         return self.producer_fee or default_producer_fee()
 
+    def unfilled_order_items(self):
+        return OrderItem.objects.filter(
+            producer=self,
+            order__state="Submitted",
+        )
+
+    def recently_filled_order_items(self):
+        td = datetime.date.today()
+        start = td - datetime.timedelta(weeks=1)
+        return OrderItem.objects.filter(
+            producer=self,
+            order__state__contains="Filled",
+            order__delivery_date__gte=start)
+
+    def upcoming_payments(self):
+        txs = InventoryTransaction.objects.filter(
+            inventory_item__producer=self)
+        answers = []
+        for tx in txs:
+            if not tx.payments():
+                answers.append(tx)
+        return answers
+
     def available_for_date(self, thisdate):
         pps = self.producer_products.all()
         lots = []
@@ -2800,7 +2823,15 @@ class InventoryTransaction(EconomicEvent):
 
     def inventory_date(self):
         return self.inventory_item.inventory_date
-    
+
+    def payment_due_date(self):
+        if self.inventory_item.product.pay_producer_on_terms:
+            term_days = member_terms()
+            return self.transaction_date + datetime.timedelta(days=term_days)
+        else:
+            term_days = customer_terms()
+            return self.transaction_date + datetime.timedelta(days=term_days)
+
     def due_to_member(self):
         if self.transaction_type=='Reject' or self.transaction_type=="Production" :
             return Decimal(0)

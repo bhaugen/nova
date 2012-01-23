@@ -54,12 +54,12 @@
 
 		{% for row in avail_rows %}
 			<tr class="{% cycle 'odd' 'even' %}" >
-				<th style="text-align:left;" >{{ row.product }}</th>
-				<th style="text-align:left;" >
+				<td style="text-align:left;" >{{ row.product }}</th>
+				<td style="text-align:left;" >
 					<a href="{% url producer_profile_for_customer producer_id=row.producer.id tabs='C' tab='customer-dashboard' %}">
 						{{ row.producer }}
 					</a>
-				</th>
+				</td>
 				<td>{{ row.product.growing_method }}</td>
 				<td style="text-align: right;" >{{ row.qty|intcomma }}</td>
 				<td style="text-align: right;" >{{ row.price}}</td>

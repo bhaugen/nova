@@ -1279,10 +1279,12 @@ def all_profiles(request):
     party = Party.objects.get(id=producer.id)
     fn = food_network()
     all_producers = Producer.objects.all()
+    all_customers = Customer.objects.all()
     return render_to_response('distribution/all_profiles.html', 
         {'producer': producer,
          'food_network': fn,
          'all_producers': all_producers,
+         'all_customers': all_customers,
          'tabnav': 'producer/producer_tabnav.html',
          }, context_instance=RequestContext(request))
 

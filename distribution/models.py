@@ -985,6 +985,13 @@ class Customer(Party):
     def __unicode__(self):
         return self.short_name
 
+    def main_contact(self):
+        all = self.contacts.all()
+        if all:
+            return all[0]
+        else:
+            return ""
+
     def recent_deliveries(self):
         return InventoryTransaction.objects.filter(order_item__order__customer=self)
 

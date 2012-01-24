@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+
+{% block title %}
+     {{ customer }} Profile
+{% endblock %}
+
+{% block header %}
+
+<style type="text/css">
+	h4
+	{
+		margin-top: 2px; 
+		margin-bottom: 0;
+	}
+	th, td
+	{
+		padding-left:5px;
+	}
+	th
+	{
+		font-weight:bold;
+	}
+	tr.even td 
+	{
+		color:#000000;
+		background-color:#EAF2D3;
+	}
+	p
+	{
+		margin-top: 0;
+		font-size: 80%;
+	}
+
+</style>
+
+{% endblock %}
+
+<body>
+{% block content %}
+
+<div class="profile">
+
+	{% include "customer/customer_tabnav.html" %}
+	
+	<h3 style="padding-top: 0; margin-top: 0; " >
+		{{ customer.long_name }} Profile &nbsp;&nbsp;&nbsp;
+		<a href="{% url edit_customer_profile %}">Change profile</a>
+	</h3>
+	{% comment %}
+	<p style="margin-left: 30em;" >
+		<a href="{% url public_customer_profile customer_id=customer.id tabs='P' tab='profile' %}">How producers will see our profile</a>
+		</p>
+		{% endcomment %}
+
+	<div style="float: left; margin-left: 1em; width: 40%;" >
+		<table>
+			<tr>
+				<th style="text-align: right; " >Name:</th>
+				<td> {{ customer.long_name }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Tag line:</th>
+				<td> {{ customer.tag_line }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Phone:</th>
+				<td> {{ customer.phone }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Fax:</th>
+				<td> {{ customer.fax }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Email:</th>
+				<td> {{ customer.email_address }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Website:</th>
+				<td> {{ customer.website|urlize }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Specialties:</th>
+				<td> {{ producer.specialty_names }} </td>
+			</tr>
+		</table>
+		<h4>Address</h4>
+		<p>{{ customer.address|linebreaksbr }}</p>
+
+		<h4>Contacts</h4>
+		<p>
+		{% for contact in customer.contacts.all %}
+			{{ contact.name }} {{contact.phone }} {{ contact.email|urlize }}</br>
+		{% endfor %}
+		</p>
+
+		<h4>Description</h4>
+		<p>{{ customer.description|linebreaksbr }}</p>
+		{% comment %}
+		<h4 >Philosophy</h4>
+		<p>{{ customer.philosophy|linebreaksbr }}</p>
+		{% endcomment %}
+
+		<h4>Storage capacity</h4>
+		<p>{{ customer.storage_capacity|linebreaksbr }}</p>
+	</div>
+
+
+	<div style="clear: both; " ></div>
+
+
+</div>
+{% endblock %}
+
+
+

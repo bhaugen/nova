@@ -1,5 +1,6 @@
 from django import forms
 from django.db.models.query import QuerySet
+from django.conf import settings
 
 import datetime
 
@@ -7,12 +8,41 @@ from distribution.models import *
 
 
 class CustomerProfileForm(forms.ModelForm):
-    name = forms.CharField(widget=forms.TextInput(attrs={'size': '64', 'value': ''}))
+    long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    tag_line = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    phone = forms.CharField(required=False)
+    fax = forms.CharField(required=False)
+    email_address = forms.CharField(required=False,
+        widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    #email_address = forms.CharField(required=False, widget=forms.EmailField)
+    website = forms.CharField(required=False,
+        widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    #website = forms.CharField(required=False, widget=forms.URLField)
+    address = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'rows': '4','value': ''}))
+    description = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+    philosophy = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+    storage_capacity = forms.CharField(required=False,
+        widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
+    background_color = forms.ChoiceField(choices=settings.COLOR_CHOICES)
 
     class Meta:
-        model = Producer
-        exclude = ('member_id', 'short_name', 'long_name', 
+        model = Customer
+        exclude = ('member_id', 'short_name', 
                    'customer_transportation_fee', 'apply_transportation_fee')
+
+
+class CustomerContactForm(forms.ModelForm): 
+    name = forms.CharField(widget=forms.TextInput(attrs={'size': '16', 'value': ''}))
+    phone = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
+    #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
+    email = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
+
+    class Meta:
+        model = CustomerContact
+        exclude = ('login_user', 'cell')
 
 
 class NewOrderSelectionForm(forms.Form):

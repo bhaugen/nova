@@ -1,0 +1,27 @@
+<div style="border: 1px solid lightgrey; padding-left: 4px; background-color: {{ customer.background_color }};">
+	<div id="customer{{ customer.id }}-mini" style="float: left; width: 90%; ">
+		<table>
+			<tr>
+				<th style="text-align: right; vertical-align: top; " >Name:</th>
+				<td> 
+					{{ customer.long_name }} <br/> 
+					<span style="color: grey; font-style:italic; ">
+						{{ customer.tag_line }}
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Contact:</th>
+				<td> {{ customer.main_contact.name }} </td>
+			</tr>
+		</table>
+	</div>
+	<div id="customer{{ customer.id }}-full" style="float: left; width: 90%; display: none;">
+		{% include "customer/full_profile.html" %}
+	</div>
+	<div style="float: right;">
+		<button id="toggle-customer{{ customer.id }}" class="toggle" >More +</button>
+	</div>
+	<div style="clear: both;"></div>
+</div>
+

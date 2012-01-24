@@ -105,6 +105,20 @@ PAYPAL_RECEIVER_EMAIL = "bobha_1286809456_biz@gmail.com"
 PAYPAL_IMAGE = "https://www.paypalobjects.com/WEBSCR-640-20101108-1/en_US/i/bnr/horizontal_solution_PP.gif"
 PAYPAL_SANDBOX_IMAGE = "https://www.paypalobjects.com/WEBSCR-640-20101108-1/en_US/i/bnr/horizontal_solution_PP.gif"
 
+COLOR_CHOICES = (
+    ("#F0F8FF", 'Alice Blue'),
+    ("#F0FFFF", 'Azure'),
+    ("#F5F5DC", 'Beige'),
+    ("#FFE4C4", 'Bisque'),
+    ("#FFF8DC", 'Cornsilk'),
+    ("#DAA520", 'Goldenrod'),
+    ("#F0FFF0", 'Honeydew'),
+    ("#FFA07A", 'Light Salmon'),
+    ("#FFDEAD", 'Navajo White'),
+    ("#98FB98", 'Pale Green'),
+    ('White', 'White'),
+)
+
 # local_settings.py can be used to override environment-specific settings
 # like database and email that differ between development and production.
 try:

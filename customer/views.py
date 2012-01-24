@@ -887,3 +887,32 @@ def customer_comments(request):
          'next': '/customer/comments',
          }, context_instance=RequestContext(request))
 
+@login_required
+def customer_profile(request):
+    customer = get_customer(request)
+    return render_to_response('customer/profile.html', 
+        {'customer': customer,
+         'background': customer.background_color,
+         }, context_instance=RequestContext(request))
+
+@login_required
+def edit_customer_profile(request):
+    customer = get_customer(request)
+    form = CustomerProfileForm(data=request.POST or None, instance=customer)
+    ContactFormSet = inlineformset_factory(Customer, CustomerContact, 
+        form=CustomerContactForm,
+        extra=2)
+    formset = ContactFormSet(data=request.POST or None, instance=customer)
+    if request.method == "POST":
+        #import pdb; pdb.set_trace()
+        if form.is_valid():
+            form.save()
+            if formset.is_valid():
+                formset.save()
+                return HttpResponseRedirect("/customer/profile")
+    return render_to_response('customer/profile_edit.html', 
+        {'customer': customer,
+         'form': form,
+         'formset': formset,
+         'background': customer.background_color,
+         }, context_instance=RequestContext(request))

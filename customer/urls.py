@@ -5,6 +5,11 @@ from django.views.generic.simple import direct_to_template
 urlpatterns = patterns('',
     url(r'^customerdashboard/$', "customer.views.customer_dashboard", name="customer_dashboard"),
 
+    # profile
+    url(r'^profile/$', "customer.views.customer_profile", name="customer_profile"),
+    url(r'^editprofile/$', "customer.views.edit_customer_profile",
+        name="edit_customer_profile"),
+
     #orders
     url(r'^orderselection/$', "customer.views.order_selection", name="customer_order_selection"),
     url(r'^neworder/(?P<cust_id>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<list_id>\d+)/$',

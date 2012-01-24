@@ -1,4 +1,6 @@
 {% load foodnetwork_tags %}
+{% load i18n %}
+
 
 <!-- 
 	CSS Tabs is licensed under Creative Commons Attribution 2.5 - http://creativecommons.org/licenses/by/2.5/ 
@@ -25,7 +27,8 @@ ul#tabnav li
 display: inline;
 }
 
-div.customer-dashboard li.customer-dashboard, 
+div.customer-dashboard li.customer-dashboard,
+div.profile li.profile,
 div.order li.order,
 div.invoices li.invoices,
 div.history li.history, 
@@ -39,6 +42,7 @@ div.product-lists li.product-lists
 }
 
 div.customer-dashboard li.customer-dashboard a, 
+div.profile li.profile a,
 div.order li.order a,
 div.invoices li.invoices a,
 div.history li.history a, 
@@ -77,6 +81,7 @@ ul#tabnav a:hover
 <div style="float: left;">
 	<ul id="tabnav" class="do-not-print" >
 		<li class="customer-dashboard" ><a title="Home page" href="/customer/customerdashboard">Dashboard</a> </li>
+		<li class="profile" ><a title="My Profile" href="/customer/profile">{% trans "Profile" %}</a></li>
 		<li class="order" ><a title="Create or update orders" href="/customer/orderselection">Order</a></li>
 		<li class="product-lists" ><a title="Create or update product lists" href="/customer/listselection">Product Lists</a></li>
 		<li class="invoices" ><a title="View or pay invoices" href="/customer/invoiceselection">Invoices</a></li>

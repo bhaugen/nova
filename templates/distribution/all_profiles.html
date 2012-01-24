@@ -84,10 +84,17 @@
 	</div>
 	<div style="clear: both;"></div>
 
-	<div style="float:left; width: 45%;">
+	<div style="float:left; width: 45%; ">
 		<h4>Producers</h4>
 		{% for producer in all_producers %}
 		{% include "producer/mini_profile.html" %}
+		{% endfor %}
+	</div>
+
+	<div style="float:left; width: 45%; margin-left: 4px; ">
+		<h4>Customers</h4>
+		{% for customer in all_customers %}
+		{% include "customer/mini_profile.html" %}
 		{% endfor %}
 	</div>
 

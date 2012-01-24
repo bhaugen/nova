@@ -3487,15 +3487,15 @@ def pricing(request, product_id):
         if product_form.is_valid():
             if all([form.is_valid() for form in producer_product_forms]):
                 if all([form.is_valid() for form in order_item_forms]):
-                    if all([form.is_valid() for form in inventory_item_forms]):
-                        product_form.save()
-                        for form in producer_product_forms:
-                            form.save()
-                        for form in order_item_forms:
-                            form.save()
+                    #if all([form.is_valid() for form in inventory_item_forms]):
+                    product_form.save()
+                    for form in producer_product_forms:
+                        form.save()
+                    for form in order_item_forms:
+                        form.save()
                         #for form in inventory_item_forms:
                         #    form.save()
-                        return HttpResponseRedirect("/distribution/pricingselection/")
+                    return HttpResponseRedirect("/distribution/pricingselection/")
 
     return render_to_response('distribution/pricing.html', 
         {'product': product,

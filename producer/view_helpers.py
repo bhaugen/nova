@@ -119,7 +119,7 @@ def create_inventory_item_forms(producer, avail_date, data=None):
     pps = producer.producer_products.all()
     for pp in pps:
         if not pp.product.id in plan_dict:
-            expiration_date = avail_date + datetime.timedelta(days=plan.product.expiration_days)
+            expiration_date = avail_date + datetime.timedelta(days=pp.product.expiration_days)
             prefix = "".join(["pp", str(pp.id)])
             the_form = InventoryItemForm(data, prefix=prefix, initial={
                 'prod_id': pp.product.id, 

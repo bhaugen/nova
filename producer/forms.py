@@ -43,6 +43,10 @@ class ProducerProfileForm(forms.ModelForm):
     #website = forms.CharField(required=False, widget=forms.URLField)
     address = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'rows': '4','value': ''}))
+    specialties = forms.ModelMultipleChoiceField(
+        queryset=Specialty.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+    )
     description = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
     philosophy = forms.CharField(required=False,

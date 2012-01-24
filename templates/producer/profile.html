@@ -74,6 +74,10 @@
 				<th style="text-align: right; " >Website:</th>
 				<td> {{ producer.website|urlize }} </td>
 			</tr>
+			<tr>
+				<th style="text-align: right; " >Specialties:</th>
+				<td> {{ producer.specialty_names }} </td>
+			</tr>
 		</table>
 		<h4>Address</h4>
 		<p>{{ producer.address|linebreaksbr }}</p>

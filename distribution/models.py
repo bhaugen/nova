@@ -308,6 +308,7 @@ class Party(models.Model):
     content_type = models.ForeignKey(ContentType,editable=False,null=True)
     background_color = models.CharField(_('background color'), max_length=32,
                                         default="White")
+    tag_line = models.CharField(_('tag line'), max_length=255, blank=True)
     
     objects = models.Manager()
     subclass_objects = PartyManager()
@@ -418,6 +419,7 @@ class FoodNetwork(Party):
 
     class Meta:
         ordering = ('short_name',)
+        verbose_name_plural = "FoodNetwork"
 
 
     def __unicode__(self):
@@ -839,7 +841,18 @@ class FoodNetwork(Party):
         return InventoryItem.objects.filter(
             inventory_date__lte=weekend,
             expiration_date__gt=weekend)
-          
+      
+
+class Specialty(models.Model):
+    name = models.CharField(_('name'), max_length=128)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name_plural = "Specialties"
+
+    def __unicode__(self):
+        return self.name
+
 
 class ProducerManager(models.Manager):
 
@@ -859,6 +872,25 @@ class Producer(Party):
     philosophy = models.TextField(_('philosophy'), blank=True)
     delivers = models.BooleanField(_('delivers'), default=False,
         help_text=_('Delivers products directly to customers?'))
+    specialties = models.ManyToManyField(Specialty,
+        verbose_name=_('specialties'), related_name='producers',
+        blank=True, null=True)
+
+
+    def main_contact(self):
+        all = self.contacts.all()
+        if all:
+            return all[0]
+        else:
+            return ""
+
+    def product_names(self):
+        return ", ".join([pp.product.short_name for pp in
+                          self.producer_products.all()])
+
+    def specialty_names(self):
+        return ", ".join([spec.name for spec in
+                          self.specialties.all()])
 
     def decide_producer_fee(self):
         return self.producer_fee or default_producer_fee()

@@ -1,11 +1,14 @@
 {% load threadedcomments_tags %}
 
 <style>
-	ul {list-style-type:none;}
+	ul {
+		list-style-type:none;
+		margin-top: 0;
+	}
 </style>
 
 {% if comments %}
-	<div style="color: grey; margin-left: 1em;">
+	<div style="color: grey; margin-left: 4px; margin-top: 0;">
 		{% for comment in comments|fill_tree|annotate_tree %}
 		
 			{% if not comment.open and not comment.close %}
@@ -18,7 +21,7 @@
 
 			<li{% if comment.last %} class="last"{% endif %}>
 	
-			<div style="margin-top: 1em; border: 1px solid lightgrey; padding-left: 4px; width: 40%; " >
+			<div style="margin-top: 4px; border: 1px solid lightgrey; padding-left: 4px; width: 40%; " >
 				<strong>{{ comment.title }}</strong> 
 				<div style="margin-top: 0; margin-bottom: 2px; font-size: 80%;">
 					<i>

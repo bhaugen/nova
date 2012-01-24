@@ -1,0 +1,26 @@
+<div style="border: 1px solid lightgrey; padding-left: 4px; width: 50%;">
+	<div style="float: left;">
+		<table>
+			<tr>
+				<th style="text-align: right; " >Company Name:</th>
+				<td> {{ producer.long_name }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Contact Name:</th>
+				<td> {{ producer.main_contact.name }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; " >Specialties:</th>
+				<td> {{ producer.specialty_names }} </td>
+			</tr>
+			<tr>
+				<th style="text-align: right; vertical-align: top; " >Products:</th>
+				<td> {{ producer.product_names }} </td>
+			</tr>
+		</table>
+	</div>
+	<div style="float: right;">
+		<a href="{% url producer_profile %}">Full</a>
+	</div>
+	<div style="clear: both;"></div>
+</div>

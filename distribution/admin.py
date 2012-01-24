@@ -230,3 +230,9 @@ class DeliveryCycleAdmin(admin.ModelAdmin):
 
 admin.site.register(DeliveryCycle, DeliveryCycleAdmin)
 
+
+class SpecialtyAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+admin.site.register(Specialty, SpecialtyAdmin)
+

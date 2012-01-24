@@ -72,8 +72,7 @@ def customer_dashboard(request):
     products = products_with_comments()
     some_comments = False
     if producers or products:
-        some_comments = True
-    print "producers:", producers, "products:", products, "some_comments:", some_comments
+        some_comments = True 
     return render_to_response('customer/customer_dashboard.html', 
         {'customer': customer,
          'food_network': fn,

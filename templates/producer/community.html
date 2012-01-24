@@ -70,30 +70,45 @@
 <div class="community" style="margin-bottom: 2em;" >
 
 	{% include "producer/producer_tabnav.html" %}
-	
-	<h3 style="padding-top: 0; margin-top: 0; " >Comments from customers </h3>
 
-	<h3>Recent general comments about us:</h3>
-	<div>
+	<div style="float: left;" >
+		<h4 style="margin-top: 1em; margin-bottom: 0;" >Our profile</h4>
+	</div>
+
+	<div style="float: right; margin-right: 15em; ">
+		<a href="{% url producer_profile %}">More profiles</a>
+	</div>
+	<div style="clear: both;"></div>
+
+
+	{% include "producer/mini_profile.html" %}
+
+	</div>
+		
+	<h4 style="margin-top: 1em; margin-bottom: 0;" >Comments</h4>
+	<div style="color: grey; margin-top: 0; " >
 		{% get_comment_list for party as comments %}
 		{% include "producer/comments_for_producer.html" %}
 	</div>
 
-	<h3>Comments about recently purchased products:</h3>
-	<div style="margin-left: 2em;" >
+	<div>
 	{% for product in products %}
 	{% get_comment_list for product as comments %}
 	{% if comments %}
-	<div style="margin-top: 1em;" >
+	<div style="margin-top: 0; color: grey; " >
+		<div style="margin-left: 1em; margin-bottom: 0;">
 		<strong>
 			{{ product.product.long_name }} 
 		</strong>
+		</div>
 		{% include "producer/comments_for_producer.html" %}
 
 	</div>
 	{% endif %}
 	{% endfor %}
 	</div>
+	</div>
+
 	
 </div>
 {% endblock %}

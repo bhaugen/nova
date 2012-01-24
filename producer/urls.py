@@ -81,6 +81,8 @@ urlpatterns = patterns('',
 
     # community
     url(r'^community/$', "producer.views.community", name="producer_community"),
+     url(r'^allprofiles/$', "producer.views.all_profiles",
+        name="producer_all_profiles"),
 
 )
 

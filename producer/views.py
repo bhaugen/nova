@@ -1271,3 +1271,18 @@ def community(request):
          'user_email': user_email,
          'next': '/producer/community',
          }, context_instance=RequestContext(request))
+
+
+@login_required
+def all_profiles(request):
+    producer = get_producer(request)
+    party = Party.objects.get(id=producer.id)
+    fn = food_network()
+    all_producers = Producer.objects.all()
+    return render_to_response('distribution/all_profiles.html', 
+        {'producer': producer,
+         'food_network': fn,
+         'all_producers': all_producers,
+         'tabnav': 'producer/producer_tabnav.html',
+         }, context_instance=RequestContext(request))
+

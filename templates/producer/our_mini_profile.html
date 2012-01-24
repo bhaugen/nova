@@ -1,5 +1,5 @@
-<div style="border: 1px solid lightgrey; padding-left: 4px; background-color: {{ producer.background_color }};">
-	<div id="producer{{ producer.id }}-mini" style="float: left; width: 90%; ">
+<div style="border: 1px solid lightgrey; padding-left: 4px; ">
+	<div style="float: left; width: 90%; ">
 		<table>
 			<tr>
 				<th style="text-align: right; vertical-align: top; " >Name:</th>
@@ -24,11 +24,9 @@
 			</tr>
 		</table>
 	</div>
-	<div id="producer{{ producer.id }}-full" style="float: left; width: 90%; display: none;">
-		{% include "producer/full_profile.html" %}
-	</div>
 	<div style="float: right;">
-		<button id="toggle-producer{{ producer.id }}" class="toggle" >More +</button>
+		<a href="{% url producer_profile %}">Full</a>
 	</div>
 	<div style="clear: both;"></div>
 </div>
+

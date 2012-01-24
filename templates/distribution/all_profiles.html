@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% load threadedcomments_tags %}
+
+{% block title %}
+     {{ food_network }} Company Profiles 
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+
+<style type="text/css">
+	button
+	{
+		font-size: 50%;
+	}
+	input, textarea
+	{
+		border : 1px solid lightgrey;
+
+	}
+	p
+	{
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+</style>
+
+{% include "dojo_include.html" %}
+
+<script type="text/javascript" >
+
+	function toggleProfile(evt)
+{
+	elId = evt.target.id.split('-')[1];;
+	var mini = dojo.byId(elId + "-mini");
+	var full = dojo.byId(elId + "-full");
+ 	if(full.style.display != "none")
+  	{
+		full.style.display = "none";
+		mini.style.display = "";
+		evt.target.innerHTML="More +";
+  	}
+  	else
+	{
+		full.style.display = "";
+		mini.style.display = "none";
+		evt.target.innerHTML="Less -";
+	}
+
+}	
+
+	dojo.addOnLoad(function()
+	{
+		var queryNodes = dojo.query(".toggle");
+		for(var i=0;i<queryNodes.length;i++)
+		{
+			var node = queryNodes[i];
+			dojo.connect(node, "onclick", "toggleProfile");
+		}
+	});
+
+</script>
+
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="community" style="margin-bottom: 2em;" >
+
+	{% include tabnav %}
+
+	<div style="float:left; width: 40%; " >
+		<h3>{{ food_network.short_name }} Company Profiles</h3>
+	</div>
+
+	<div style="float: left; width: 45%; " >
+		<h4 style="margin-top: 1em; margin-bottom: 0;" >Our profile</h4>
+		{% include "producer/our_mini_profile.html" %}
+	</div>
+	<div style="clear: both;"></div>
+
+	<div style="float:left; width: 45%;">
+		<h4>Producers</h4>
+		{% for producer in all_producers %}
+		{% include "producer/mini_profile.html" %}
+		{% endfor %}
+	</div>
+
+	<div style="clear: both;"></div>
+	
+	
+</div>
+{% endblock %}
+
+
+

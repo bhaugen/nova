@@ -33,6 +33,7 @@ COLOR_CHOICES = (
 
 class ProducerProfileForm(forms.ModelForm):
     long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    tag_line = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
     phone = forms.CharField(required=False)
     fax = forms.CharField(required=False)
     email_address = forms.CharField(required=False,

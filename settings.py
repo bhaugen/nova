@@ -97,7 +97,10 @@ INSTALLED_APPS = (
     'paypal.standard.ipn',
     'pay',
     'south',
+    'easy_thumbnails',
 )
+
+THUMBNAIL_DEBUG = True
 
 COMMENTS_APP = 'threadedcomments'
 

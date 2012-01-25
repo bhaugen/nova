@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load thumbnail %}
 
 
 {% block title %}
@@ -48,6 +49,10 @@
 		{{ producer.long_name }} Profile &nbsp;&nbsp;&nbsp;
 		<a href="{% url edit_producer_profile %}">Change profile</a>
 	</h3>
+	{% if producer.logo %}
+	<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+	{% endif %}
+
 	<p style="margin-left: 30em;" >
 		<a href="{% url public_producer_profile producer_id=producer.id tabs='P' tab='profile' %}">How customers will see our profile</a>
 	</p>

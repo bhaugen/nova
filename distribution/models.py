@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from notification.models import NoticeType
 
+from easy_thumbnails.fields import ThumbnailerImageField
+
 def food_network():
     fns = FoodNetwork.objects.all()
     if fns:
@@ -309,6 +311,8 @@ class Party(models.Model):
     background_color = models.CharField(_('background color'), max_length=32,
                                         default="White")
     tag_line = models.CharField(_('tag line'), max_length=255, blank=True)
+    logo = ThumbnailerImageField(
+        upload_to='logos', blank=True, null=True)
     
     objects = models.Manager()
     subclass_objects = PartyManager()
@@ -1083,6 +1087,8 @@ class CustomerContact(models.Model):
     cell = PhoneNumberField(_('cell'), blank=True)
     login_user = models.OneToOneField(User, related_name='customer_contact',
         blank=True, null=True)
+    avatar = ThumbnailerImageField(
+        upload_to='avatars', blank=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -1096,6 +1102,10 @@ class ProducerContact(models.Model):
     phone = PhoneNumberField(_('phone'), blank=True)
     cell = PhoneNumberField(_('cell'), blank=True)
     login_user = models.OneToOneField(User, related_name='producer_contact',
+        blank=True, null=True)
+    avatar = ThumbnailerImageField(
+        upload_to='avatars',
+        resize_source=dict(size=(48, 48), crop='smart'),
         blank=True, null=True)
 
     def __unicode__(self):
@@ -1119,6 +1129,10 @@ class StaffContact(models.Model):
     phone = PhoneNumberField(_('phone'), blank=True)
     cell = PhoneNumberField(_('cell'), blank=True)
     login_user = models.OneToOneField(User, related_name='staff_contact',
+        blank=True, null=True)
+    avatar = ThumbnailerImageField(
+        upload_to='avatars',
+        resize_source=dict(size=(48, 48), crop='smart'),
         blank=True, null=True)
 
     def __unicode__(self):

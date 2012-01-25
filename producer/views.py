@@ -78,6 +78,7 @@ def producer_profile(request):
          'end': end,
          'inventory_closing': inventory_closing,
          'background': producer.background_color,
+         'logo_size': (64, 64),
          }, context_instance=RequestContext(request))
 
 @login_required
@@ -1270,6 +1271,7 @@ def community(request):
          'user': user,
          'user_email': user_email,
          'next': '/producer/community',
+         'logo_size': (64, 64),
          }, context_instance=RequestContext(request))
 
 
@@ -1286,5 +1288,6 @@ def all_profiles(request):
          'all_producers': all_producers,
          'all_customers': all_customers,
          'tabnav': 'producer/producer_tabnav.html',
+         'logo_size': (48, 48),
          }, context_instance=RequestContext(request))
 

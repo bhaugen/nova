@@ -1,5 +1,17 @@
+{% load thumbnail %}
+
 <div style="border: 1px solid lightgrey; padding-left: 4px; ">
 	<div style="float: left; width: 90%; ">
+		<div>
+			{% if producer.logo %}
+			<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			{% endif %}
+			<b>{{ producer.long_name }}</b> <br/> 
+			<span style="color: grey; font-style:italic; ">
+				{{ producer.tag_line }}
+			</span>
+		</div>
+
 		<table>
 			<tr>
 				<th style="text-align: right; vertical-align: top; " >Name:</th>

@@ -20,7 +20,8 @@ class TdErrorList(ErrorList):
 
 class ProducerProfileForm(forms.ModelForm):
     long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
-    tag_line = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    tag_line = forms.CharField(required=False,
+                               widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
     phone = forms.CharField(required=False)
     fax = forms.CharField(required=False)
     email_address = forms.CharField(required=False,
@@ -32,8 +33,9 @@ class ProducerProfileForm(forms.ModelForm):
     address = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'rows': '4','value': ''}))
     specialties = forms.ModelMultipleChoiceField(
+        required=False,
         queryset=Specialty.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.CheckboxSelectMultiple(),
     )
     description = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
@@ -42,6 +44,7 @@ class ProducerProfileForm(forms.ModelForm):
     storage_capacity = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
     background_color = forms.ChoiceField(choices=settings.COLOR_CHOICES)
+    logo = forms.ImageField(required=False)
 
 
     class Meta:
@@ -57,7 +60,7 @@ class ProducerContactForm(forms.ModelForm):
 
     class Meta:
         model = ProducerContact
-        exclude = ('login_user', 'cell')
+        exclude = ('login_user', 'cell', 'avatar')
 
 
 class ProducerProductEditForm(forms.ModelForm):

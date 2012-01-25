@@ -1,15 +1,18 @@
+{% load thumbnail %}
+
 <div style="border: 1px solid lightgrey; padding-left: 4px; background-color: {{ customer.background_color }};">
 	<div id="customer{{ customer.id }}-mini" style="float: left; width: 90%; ">
+		<div>
+			{% if customer.logo %}
+			<img src="/site_media/{% thumbnail customer.logo logo_size %}" />
+			{% endif %}
+			<b>{{ customer.long_name }}</b> <br/> 
+			<span style="color: grey; font-style:italic; ">
+				{{ customer.tag_line }}
+			</span>
+		</div>
+
 		<table>
-			<tr>
-				<th style="text-align: right; vertical-align: top; " >Name:</th>
-				<td> 
-					{{ customer.long_name }} <br/> 
-					<span style="color: grey; font-style:italic; ">
-						{{ customer.tag_line }}
-					</span>
-				</td>
-			</tr>
 			<tr>
 				<th style="text-align: right; " >Contact:</th>
 				<td> {{ customer.main_contact.name }} </td>

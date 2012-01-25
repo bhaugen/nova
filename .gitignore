@@ -10,4 +10,7 @@ local_settings.py
 bin/
 include/
 lib/
-
+media/logos/*.jpg
+media/avatars/*.jpg
+media/logos/*.png
+media/avatars/*.png

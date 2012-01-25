@@ -2450,6 +2450,7 @@ def reset_date(request):
             pass
     return HttpResponseRedirect("/distribution/dashboard/") 
 
+@login_required
 def public_producer_profile(request, producer_id, tabs, tab):
     producer = get_object_or_404(Producer, pk=producer_id)
     start = datetime.date.today() + datetime.timedelta(weeks=1)
@@ -2469,6 +2470,22 @@ def public_producer_profile(request, producer_id, tabs, tab):
          'tabnav': tabnav,
          'div_class': tab,
          'background': producer.background_color,
+         }, context_instance=RequestContext(request))
+
+@login_required
+def public_customer_profile(request, customer_id, tabs, tab):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    tabnav = 'distribution/tabnav.html'
+    if tabs == 'P':
+        tabnav = 'producer/producer_tabnav.html'
+    elif tabs == 'C':
+        tabnav = 'customer/customer_tabnav.html'
+    tab = tab
+    return render_to_response('distribution/customer_profile.html', 
+        {'customer': customer,
+         'tabnav': tabnav,
+         'div_class': tab,
+         'background': customer.background_color,
          }, context_instance=RequestContext(request))
 
 @login_required

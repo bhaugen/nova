@@ -128,7 +128,10 @@ urlpatterns = patterns('',
 
     # profiles
     #todo: tab regex only allows one /-
-    url(r'^publicproducerprofile/(?P<producer_id>\d+)/(?P<tabs>\w{1})/(?P<tab>\w+\-?\w+)/$', public_producer_profile, name="public_producer_profile"),
+    url(r'^publicproducerprofile/(?P<producer_id>\d+)/(?P<tabs>\w{1})/(?P<tab>\w+\-?\w+)/$', 
+        public_producer_profile, name="public_producer_profile"),
+    url(r'^publiccustomerprofile/(?P<customer_id>\d+)/(?P<tabs>\w{1})/(?P<tab>\w+\-?\w+)/$', 
+        public_customer_profile, name="public_customer_profile"),
 
     # pricing
     (r'^pricingselection/$', pricing_selection),

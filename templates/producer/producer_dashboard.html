@@ -31,7 +31,11 @@
 
 		{% for item in unfilled %}
 			<tr class="{% cycle 'odd' 'even' %}" >
-				<td style="text-align:left;" >{{ item.order.customer }}</th>
+				<td style="text-align:left;" >
+					<a href="{% url public_customer_profile customer_id=item.order.customer.id tabs='P' tab='producer-dashboard' %}">
+						{{ item.order.customer }}
+					</a>
+				</th>
 				<td style="text-align:left;" >{{ item.order.delivery_date }}</th>
 				<td style="text-align:left;" >{{ item.product }}</th>
 				<td style="text-align: right;" >{{ item.quantity|intcomma }}</td>		
@@ -91,7 +95,11 @@
 
 		{% for item in filled %}
 			<tr class="{% cycle 'odd' 'even' %}" >
-				<td style="text-align:left;" >{{ item.order.customer }}</th>
+				<td style="text-align:left;" >
+					<a href="{% url public_customer_profile customer_id=item.order.customer.id tabs='P' tab='producer-dashboard' %}">
+						{{ item.order.customer }}
+					</a>
+				</th>
 				<td style="text-align:left;" >{{ item.order.delivery_date }}</th>
 				<td style="text-align:left;" >{{ item.product }}</th>
 				<td style="text-align: right;" >{{ item.quantity|intcomma }}</td>		

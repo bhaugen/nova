@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+
+{% block title %}
+     {{ customer }} Profile
+{% endblock %}
+
+{% block header %}
+
+<style type="text/css">
+	h4
+	{
+		margin-top: 2px; 
+		margin-bottom: 0;"
+	}
+	th, td
+	{
+		padding-left:5px;
+	}
+	th
+	{
+		font-weight:bold;
+	}
+	tr.even td 
+	{
+		color:#000000;
+		background-color:#EAF2D3;
+	}
+	p
+	{
+		margin-top: 0;
+		font-size: 80%;
+	}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="{{ div_class }}">
+
+	{% include tabnav %}
+	
+	<h3 style="padding-top: 0; margin-top: 0; " >
+		{{ customer.long_name }} Profile
+	</h3>
+
+	<div style="float: left; margin-left: 1em; width: 40%;" >
+		<table>
+			{% if customer.phone %}
+			<tr>
+				<th style="text-align: right; " >Phone:</th>
+				<td> {{ customer.phone }} </td>
+			</tr>
+			{% endif %}
+			{% if customer.fax %}
+			<tr>
+				<th style="text-align: right; " >Fax:</th>
+				<td> {{ customer.fax }} </td>
+			</tr>
+			{% endif %}
+			{% if customer.email %}
+			<tr>
+				<th style="text-align: right; " >Email:</th>
+				<td> {{ customer.email_address }} </td>
+			</tr>
+			{% endif %}
+			{% if customer.website %}
+			<tr>
+				<th style="text-align: right; " >Website:</th>
+				<td> {{ customer.website|urlize }} </td>
+			</tr>
+			{% endif %}
+		</table>
+		{% if customer.address %}
+		<h4>Address</h4>
+		<p>{{ customer.address|linebreaksbr }}</p>
+		{% endif %}
+
+		{% if customer.contacts.all %}
+		<h4>Contacts</h4>
+		<p>
+		{% for contact in customer.contacts.all %}
+			{{ contact.name }} {{contact.phone }} {{ contact.email|urlize }}</br>
+		{% endfor %}
+		</p>
+		{% endif %}
+
+		{% if customer.description %}
+		<h4>Description</h4>
+		<p>{{ customer.description|linebreaksbr }}</p>
+		{% endif %}
+
+		{% if producer.philosophy %}
+		<h4 >Philosophy</h4>
+		<p>{{ producer.philosophy|linebreaksbr }}</p>
+		{% endif %}
+
+		{% if customer.storage_capacity %}
+		<h4>Storage capacity</h4>
+		<p>{{ customer.storage_capacity|linebreaksbr }}</p>
+		{% endif %}
+	</div>
+
+	<div style="clear: both; " ></div>
+
+
+</div>
+{% endblock %}
+
+
+

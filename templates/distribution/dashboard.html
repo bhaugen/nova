@@ -160,7 +160,11 @@
 				</tr>
 				{% for order in orders %}
 				<tr>
-					<td>{{ order.customer }}</td>
+					<td>
+						<a href="{% url public_customer_profile customer_id=order.customer.id tabs='D' tab='dashboard' %}">
+							{{ order.customer }}
+						</a>
+					</td>
 					<td>{{ order.delivery_date|date:"n-d" }}</td>
 					<td>
 						{% for oi in order.orderitem_set.all %}

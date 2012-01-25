@@ -167,7 +167,7 @@ def edit_producer_products(request):
                     pp = ProducerProduct.objects.get(id=id)
                     delete = data['delete']
                     if delete:
-                        prev.delete()
+                        pp.delete()
                     else:
                         price = data['producer_price']
                         prev_price = pp.producer_price

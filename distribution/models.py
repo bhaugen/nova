@@ -1545,7 +1545,7 @@ class ProducerProduct(models.Model):
         return self.markup_percent or customer_fee()
 
     def basic_compute_pay_price(self, producer_price, margin):
-        return (producer_price * (1 - margin)).quantize(Decimal('.01'), rounding=ROUND_UP)
+        return (producer_price * (1 - (margin) / 100)).quantize(Decimal('.01'), rounding=ROUND_UP)
 
     def compute_pay_price(self):
         if self.pay_price:

@@ -478,6 +478,7 @@ def edit_order(request, order_id):
         #import pdb; pdb.set_trace()
         itemforms = create_order_item_forms_by_producer(order, product_list, availdate, request.POST)     
         if ordform.is_valid() and all([itemform.is_valid() for itemform in itemforms]):
+            data = ordform.cleaned_data
             order.changed_by = request.user
             order.purchase_order = data['purchase_order']
             order.save()

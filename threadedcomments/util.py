@@ -17,7 +17,16 @@ def fill_tree(comments):
 
     it = iter(comments)
     first = it.next()
-    return chain(imap(_mark_as_root_path, first.root_path), [first], it)
+    #changing so that tree is sorted with no dups if comments flat
+    #return chain(imap(_mark_as_root_path, first.root_path), [first], it)
+    tree = chain(imap(_mark_as_root_path, first.root_path), [first], it)
+    done = set()
+    tree_list = []
+    for branch in tree:
+        if not branch in done:
+            tree_list.append(branch)
+        done.add(branch)
+    return tree_list
 
 def annotate_tree_properties(comments):
     """

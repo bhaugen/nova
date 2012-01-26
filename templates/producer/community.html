@@ -87,13 +87,13 @@
 		
 	<h4 style="margin-top: 1em; margin-bottom: 0;" >Comments</h4>
 	<div style="color: grey; margin-top: 0; " >
-		{% get_comment_list for party as comments %}
+		{% get_comment_list for party as comments flat %}
 		{% include "producer/comments_for_producer.html" %}
 	</div>
 
 	<div>
 	{% for product in products %}
-	{% get_comment_list for product as comments %}
+	{% get_comment_list for product as comments flat %}
 	{% if comments %}
 	<div style="margin-top: 0; color: grey; " >
 		<div style="margin-left: 1em; margin-bottom: 0;">

@@ -97,7 +97,7 @@
 				{{ producer.long_name }}
 			</span>
 			<div>
-				{% get_comment_list for producer as comments %}
+				{% get_comment_list for producer as comments flat %}
 				{% include "threadedcomments/comment_list.html" %}
 			</div>
 			{% endfor %}
@@ -111,7 +111,7 @@
 				{{ product.producer.short_name }} {{ product.product.long_name }}
 			</span>
 			<div>
-				{% get_comment_list for product as comments %}
+				{% get_comment_list for product as comments flat %}
 				{% include "threadedcomments/comment_list.html" %}
 			</div>
 			{% endfor %}

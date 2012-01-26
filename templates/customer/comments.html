@@ -73,35 +73,6 @@
 	
 	<h3 style="padding-top: 0; margin-top: 0; " >Comment on Producers and Products</h3>
 
-	{% comment %}
-	<h3>Send a comment to {{fn.long_name}} <button id="toggle-fncomment" class="toggle" >+</button></h3>
-	<div id="fncomment" style="display: none; margin-left: 2em;" >
-	{% get_comment_form for fn as form %}
-	{% include "threadedcomments/comment_form.html" %}
-	</div>
-	<div style="margin-left: 2em;">
-		{% get_comment_list for fn as comments flat %}
-		{% include "threadedcomments/comment_list.html" %}
-	</div>
-
-	<h3>Send a comment to {{fn}} about a recent invoice:</h3>
-	<div style="margin-left: 2em;" >
-	{% for order in orders %}
-	<p>
-	{{ order }} ${{ order.grand_total }} <button id="toggle-order{{ order.id }}comment" class="toggle" >+</button>
-	</p>
-	<div id="order{{ order.id }}comment" style="display: none;" >
-	{% get_comment_form for order as form %}
-	{% include "threadedcomments/comment_form.html" %}
-	</div>
-	<div>
-		{% get_comment_list for order as comments flat %}
-		{% include "threadedcomments/comment_list.html" %}
-	</div>
-	{% endfor %}
-	</div>
-	{% endcomment %}
-
 	<h3>Send a comment to a producer that you have recently purchased from:</h3>
 	<div style="margin-left: 2em;" >
 	{% for producer in producers %}

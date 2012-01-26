@@ -9,7 +9,8 @@ from distribution.models import *
 
 class CustomerProfileForm(forms.ModelForm):
     long_name = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
-    tag_line = forms.CharField(widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
+    tag_line = forms.CharField(required=False,
+                               widget=forms.TextInput(attrs={'size': '50', 'value': ''}))
     phone = forms.CharField(required=False)
     fax = forms.CharField(required=False)
     email_address = forms.CharField(required=False,
@@ -27,6 +28,7 @@ class CustomerProfileForm(forms.ModelForm):
     storage_capacity = forms.CharField(required=False,
         widget=forms.Textarea(attrs={'cols': '60', 'value': ''}))
     background_color = forms.ChoiceField(choices=settings.COLOR_CHOICES)
+    logo = forms.ImageField(required=False)
 
     class Meta:
         model = Customer
@@ -39,6 +41,7 @@ class CustomerContactForm(forms.ModelForm):
     phone = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     email = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
+    avatar = forms.ImageField(required=False)
 
     class Meta:
         model = CustomerContact

@@ -57,10 +57,11 @@ class ProducerContactForm(forms.ModelForm):
     phone = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     email = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
+    avatar = forms.ImageField(required=False)
 
     class Meta:
         model = ProducerContact
-        exclude = ('login_user', 'cell', 'avatar')
+        exclude = ('login_user', 'cell', )
 
 
 class ProducerProductEditForm(forms.ModelForm):

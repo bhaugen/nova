@@ -79,16 +79,23 @@ def producer_profile(request):
          'inventory_closing': inventory_closing,
          'background': producer.background_color,
          'logo_size': (64, 64),
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 
 @login_required
 def edit_producer_profile(request):
     producer = get_producer(request)
-    form = ProducerProfileForm(data=request.POST or None, instance=producer)
+    form = ProducerProfileForm(
+        data=request.POST or None,
+        files = request.FILES or None,
+        instance=producer)
     ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
         form=ProducerContactForm,
         extra=2)
-    formset = ContactFormSet(data=request.POST or None, instance=producer)
+    formset = ContactFormSet(
+        data=request.POST or None, 
+        files = request.FILES or None,
+        instance=producer)
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if form.is_valid():
@@ -1272,6 +1279,7 @@ def community(request):
          'user_email': user_email,
          'next': '/producer/community',
          'logo_size': (64, 64),
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 
 
@@ -1289,5 +1297,6 @@ def all_profiles(request):
          'all_customers': all_customers,
          'tabnav': 'producer/producer_tabnav.html',
          'logo_size': (48, 48),
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 

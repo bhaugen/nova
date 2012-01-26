@@ -1,3 +1,5 @@
+{% load thumbnail %}
+
 <style type="text/css">
 	h4
 	{
@@ -29,16 +31,16 @@
 
 
 	<div style="float: left; margin-left: 1em; width: 40%;" >
+		<div>
+			{% if producer.logo %}
+			<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			{% endif %}
+			<b>{{ producer.long_name }}</b> <br/> 
+			<span style="color: grey; font-style:italic; ">
+				{{ producer.tag_line }}
+			</span>
+		</div>
 		<table>
-			<tr>
-				<th style="text-align: right; vertical-align: top; " >Name:</th>
-				<td> 
-					{{ producer.long_name }} <br/> 
-					<span style="color: grey; font-style:italic; ">
-						{{ producer.tag_line }}
-					</span>
-				</td>
-			</tr>
 			{% if producer.phone %}
 			<tr>
 				<th style="text-align: right; " >Phone:</th>
@@ -73,6 +75,9 @@
 		<h4>Contacts</h4>
 		<p>
 		{% for contact in producer.contacts.all %}
+			{% if contact.avatar %}
+				<img src="/site_media/{% thumbnail contact.avatar avatar_size %}" />
+			{% endif %}
 			{{ contact.name }} {{contact.phone }} {{ contact.email|urlize }}</br>
 		{% endfor %}
 		</p>

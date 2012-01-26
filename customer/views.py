@@ -893,16 +893,24 @@ def customer_profile(request):
     return render_to_response('customer/profile.html', 
         {'customer': customer,
          'background': customer.background_color,
+         'logo_size': (64, 64),
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 
 @login_required
 def edit_customer_profile(request):
     customer = get_customer(request)
-    form = CustomerProfileForm(data=request.POST or None, instance=customer)
+    form = CustomerProfileForm(
+        data=request.POST or None, 
+        files = request.FILES or None,
+        instance=customer)
     ContactFormSet = inlineformset_factory(Customer, CustomerContact, 
         form=CustomerContactForm,
         extra=2)
-    formset = ContactFormSet(data=request.POST or None, instance=customer)
+    formset = ContactFormSet(
+        data=request.POST or None, 
+        files = request.FILES or None,
+        instance=customer)
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if form.is_valid():

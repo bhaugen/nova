@@ -56,7 +56,7 @@
 	<h3 style="padding-top: 0; margin-top: 0; margin-bottom: 1em;" >{{ customer.long_name }} Profile</h3>
 
 
-	<form action="." method="POST" >{% csrf_token %}
+	<form enctype="multipart/form-data" action="." method="POST" >{% csrf_token %}
 
 		<div style="width: 80%; margin-bottom: 1em;" >
 			<input style="margin-left: 30em; margin-bottom: 1em; " type="submit" name="submit-profile" value='{% trans "Save Profile changes" %}' />
@@ -136,7 +136,11 @@
 							{% endcomment %}
 							<td>{{ form.email }}</td>
 							<td>{{ form.DELETE }}</td>
-        					</tr>
+						</tr>
+						<tr>
+							<th style="text-align: right; " >Photo:</th>
+							<td colspan=3>{{ form.avatar }}</td>
+						</tr>
 					{% endfor %}
 				</tbody>
 			</table>
@@ -147,6 +151,9 @@
 			{% endcomment %}
 			<p style="margin-top: 1em;" >
 			<strong>Background color:</strong> {{ form.background_color }}
+			</p>
+			<p style="margin-top: 1em;" >
+			<strong>Logo:</strong> {{ form.logo }}
 			</p>
 		</form>
 

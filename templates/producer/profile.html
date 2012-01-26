@@ -94,6 +94,9 @@
 		<h4>Contacts</h4>
 		<p>
 		{% for contact in producer.contacts.all %}
+			{% if contact.avatar %}
+				<img src="/site_media/{% thumbnail contact.avatar avatar_size %}" />
+			{% endif %}
 			{{ contact.name }} {{contact.phone }} {{ contact.email|urlize }}</br>
 		{% endfor %}
 		</p>

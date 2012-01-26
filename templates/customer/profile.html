@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
-
+{% load thumbnail %}
 
 {% block title %}
      {{ customer }} Profile
@@ -48,6 +48,10 @@
 		{{ customer.long_name }} Profile &nbsp;&nbsp;&nbsp;
 		<a href="{% url edit_customer_profile %}">Change profile</a>
 	</h3>
+	{% if customer.logo %}
+	<img src="/site_media/{% thumbnail customer.logo logo_size %}" />
+	{% endif %}
+
 	{% comment %}
 	<p style="margin-left: 30em;" >
 		<a href="{% url public_customer_profile customer_id=customer.id tabs='P' tab='profile' %}">How producers will see our profile</a>
@@ -91,6 +95,9 @@
 		<h4>Contacts</h4>
 		<p>
 		{% for contact in customer.contacts.all %}
+			{% if contact.avatar %}
+				<img src="/site_media/{% thumbnail contact.avatar avatar_size %}" />
+			{% endif %}
 			{{ contact.name }} {{contact.phone }} {{ contact.email|urlize }}</br>
 		{% endfor %}
 		</p>

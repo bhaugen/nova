@@ -82,6 +82,7 @@ def customer_dashboard(request):
          'producers': producers,
          'products': products,
          'some_comments': some_comments,
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 
 @login_required
@@ -885,6 +886,7 @@ def customer_comments(request):
          'user': user,
          'user_email': user_email,
          'next': '/customer/comments',
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 
 @login_required

@@ -4,24 +4,21 @@
 	<div style="float: left; width: 90%; ">
 		<div>
 			{% if producer.logo %}
-			<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			<div style="float: left; width: 48px; ">
+				<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			</div>
 			{% endif %}
-			<b>{{ producer.long_name }}</b> <br/> 
-			<span style="color: grey; font-style:italic; ">
-				{{ producer.tag_line }}
-			</span>
+			<div style="float: left; margin-left: 3px;">
+				<b>{{ producer.long_name }}</b> <br/> 
+				<span style="color: grey; font-style:italic; margin-left: 1em; ">
+					{{ producer.tag_line }}
+				</span>
+			</div>
+			<div style="clear: both;"></div>
+
 		</div>
 
 		<table>
-			<tr>
-				<th style="text-align: right; vertical-align: top; " >Name:</th>
-				<td> 
-					{{ producer.long_name }} <br/> 
-					<span style="color: grey; font-style:italic; ">
-						{{ producer.tag_line }}
-					</span>
-				</td>
-			</tr>
 			<tr>
 				<th style="text-align: right; " >Contact:</th>
 				<td> {{ producer.main_contact.name }} </td>

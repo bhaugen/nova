@@ -1599,6 +1599,7 @@ class ProducerProduct(models.Model):
                     if not price:
                         pp = ppc.producer_price
                         markup = ppc.markup_percent or customer_fee()
+                        markup = markup / 100
                         price = self.basic_compute_selling_price(pp, markup)
         return price
 

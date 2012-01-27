@@ -31,7 +31,8 @@ def dfs(node, all_nodes, depth):
 
 def fill_tree(comments):
     """
-    Creates a forest of root comments and their children.
+    Creates a forest of root comments and their children,
+    sorted latest-first.
     Cribbed from legacy_threadedcomments.models.ThreadedCommentManager.get_tree
     
     """

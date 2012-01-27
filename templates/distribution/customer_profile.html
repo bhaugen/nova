@@ -71,7 +71,9 @@
 			{% if customer.website %}
 			<tr>
 				<th style="text-align: right; " >Website:</th>
-				<td> {{ customer.website|urlize }} </td>
+				<td> 
+					<a href="{{ customer.website }}" target="_blank">{{ customer.long_name }}</a>
+				</td>
 			</tr>
 			{% endif %}
 		</table>

@@ -33,13 +33,20 @@
 	<div style="float: left; margin-left: 1em; width: 40%;" >
 		<div>
 			{% if customer.logo %}
-			<img src="/site_media/{% thumbnail customer.logo logo_size %}" />
+			<div style="float: left; width: 48px; ">
+				<img src="/site_media/{% thumbnail customer.logo logo_size %}" />
+			</div>
 			{% endif %}
-			<b>{{ customer.long_name }}</b> <br/> 
-			<span style="color: grey; font-style:italic; ">
-				{{ customer.tag_line }}
-			</span>
+			<div style="float: left; margin-left: 3px;">
+				<b>{{ customer.long_name }}</b> <br/> 
+				<span style="color: grey; font-style:italic; margin-left: 1em; ">
+					{{ customer.tag_line }}
+				</span>
+			</div>
+			<div style="clear: both;"></div>
+
 		</div>
+		<div style="font-size: 90%; margin-top: 1em;">
 		<table>
 
 			{% if customer.phone %}
@@ -98,6 +105,7 @@
 		<h4>Storage capacity</h4>
 		<p>{{ customer.storage_capacity|linebreaksbr }}</p>
 		{% endif %}
+		</div>
 	</div>
 
 

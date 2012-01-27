@@ -1,23 +1,30 @@
 {% load thumbnail %}
 
 <div style="border: 1px solid lightgrey; padding-left: 4px; background-color: {{ customer.background_color }};">
-	<div id="customer{{ customer.id }}-mini" style="float: left; width: 90%; ">
+	<div id="customer{{ customer.id }}-mini" style="float: left; width: 90%; height: 8em; ">
 		<div>
 			{% if customer.logo %}
-			<img src="/site_media/{% thumbnail customer.logo logo_size %}" />
+			<div style="float: left; width: 48px; ">
+				<img src="/site_media/{% thumbnail customer.logo logo_size %}" />
+			</div>
 			{% endif %}
-			<b>{{ customer.long_name }}</b> <br/> 
-			<span style="color: grey; font-style:italic; ">
-				{{ customer.tag_line }}
-			</span>
-		</div>
+			<div style="float: left; margin-left: 3px;">
+				<b>{{ customer.long_name }}</b> <br/> 
+				<span style="color: grey; font-style:italic; margin-left: 1em; ">
+					{{ customer.tag_line }}
+				</span>
+			</div>
+			<div style="clear: both;"></div>
 
+		</div>
+		<div style="font-size: 90%;">
 		<table>
 			<tr>
 				<th style="text-align: right; " >Contact:</th>
 				<td> {{ customer.main_contact.name }} </td>
 			</tr>
 		</table>
+		</div>
 	</div>
 	<div id="customer{{ customer.id }}-full" style="float: left; width: 90%; display: none;">
 		{% include "customer/full_profile.html" %}

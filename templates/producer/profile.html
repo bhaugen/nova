@@ -81,7 +81,9 @@
 			</tr>
 			<tr>
 				<th style="text-align: right; " >Website:</th>
-				<td> {{ producer.website|urlize }} </td>
+				<td> 
+					<a href="{{ producer.website }}" target="_blank">{{ producer.long_name }}</a>
+				</td>
 			</tr>
 			<tr>
 				<th style="text-align: right; " >Specialties:</th>

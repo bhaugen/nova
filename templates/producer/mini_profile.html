@@ -1,16 +1,23 @@
 {% load thumbnail %}
 
 <div style="border: 1px solid lightgrey; padding-left: 4px; background-color: {{ producer.background_color }};">
-	<div id="producer{{ producer.id }}-mini" style="float: left; width: 90%; ">
+	<div id="producer{{ producer.id }}-mini" style="float: left; width: 90%; height: 8em; ">
 		<div>
 			{% if producer.logo %}
-			<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			<div style="float: left; width: 48px; ">
+				<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			</div>
 			{% endif %}
-			<b>{{ producer.long_name }}</b> <br/> 
-			<span style="color: grey; font-style:italic; ">
-				{{ producer.tag_line }}
-			</span>
+			<div style="float: left; margin-left: 3px;">
+				<b>{{ producer.long_name }}</b> <br/> 
+				<span style="color: grey; font-style:italic; margin-left: 1em; ">
+					{{ producer.tag_line }}
+				</span>
+			</div>
+			<div style="clear: both;"></div>
+
 		</div>
+		<div style="font-size: 90%;">
 		<table>
 			<tr>
 				<th style="text-align: right; " >Contact:</th>
@@ -25,6 +32,7 @@
 				<td> {{ producer.product_names }} </td>
 			</tr>
 		</table>
+	</div>
 	</div>
 	<div id="producer{{ producer.id }}-full" style="float: left; width: 90%; display: none;">
 		{% include "producer/full_profile.html" %}

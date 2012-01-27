@@ -33,13 +33,20 @@
 	<div style="float: left; margin-left: 1em; width: 40%;" >
 		<div>
 			{% if producer.logo %}
-			<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			<div style="float: left; width: 48px; ">
+				<img src="/site_media/{% thumbnail producer.logo logo_size %}" />
+			</div>
 			{% endif %}
-			<b>{{ producer.long_name }}</b> <br/> 
-			<span style="color: grey; font-style:italic; ">
-				{{ producer.tag_line }}
-			</span>
+			<div style="float: left; margin-left: 2px;">
+				<b>{{ producer.long_name }}</b> <br/> 
+				<span style="color: grey; font-style:italic; margin-left: 1em; ">
+					{{ producer.tag_line }}
+				</span>
+			</div>
+			<div style="clear: both;"></div>
+
 		</div>
+		<div style="font-size: 90%;">
 		<table>
 			{% if producer.phone %}
 			<tr>
@@ -62,7 +69,9 @@
 			{% if producer.website %}
 			<tr>
 				<th style="text-align: right; " >Website:</th>
-				<td> {{ producer.website|urlize }} </td>
+				<td> 
+					<a href="{{ producer.website }}" target="_blank">{{ producer.long_name }}</a>
+				</td>
 			</tr>
 			{% endif %}
 		</table>
@@ -97,9 +106,10 @@
 		<h4>Storage capacity</h4>
 		<p>{{ producer.storage_capacity|linebreaksbr }}</p>
 		{% endif %}
+		</div>
 	</div>
 
-	<div style="float: left; margin-left: 1em; width: 40%;" >
+	<div style="float: left; margin-left: 1em; width: 40%; font-size: 90%; " >
 		<h4 style="margin-top: 0; " >
 			Today's prices:
 		</h4>

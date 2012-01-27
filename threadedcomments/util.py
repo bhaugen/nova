@@ -7,7 +7,7 @@ def _mark_as_root_path(comment):
     setattr(comment, 'added_path', True)
     return comment
 
-def fill_tree(comments):
+def fill_tree_unsorted(comments):
     """
     Prefix the comment_list with the root_path of the first comment. Use this
     in comments' pagination to fill in the tree information.
@@ -17,16 +17,35 @@ def fill_tree(comments):
 
     it = iter(comments)
     first = it.next()
-    #changing so that tree is sorted with no dups if comments flat
-    #return chain(imap(_mark_as_root_path, first.root_path), [first], it)
-    tree = chain(imap(_mark_as_root_path, first.root_path), [first], it)
-    done = set()
-    tree_list = []
-    for branch in tree:
-        if not branch in done:
-            tree_list.append(branch)
-        done.add(branch)
-    return tree_list
+    return chain(imap(_mark_as_root_path, first.root_path), [first], it)
+
+def dfs(node, all_nodes, depth):
+    """
+    Performs a recursive depth-first search starting at ``node``. 
+    """
+    to_return = [node,]
+    for subnode in all_nodes:
+        if subnode.parent and subnode.parent.id == node.id:
+            to_return.extend(dfs(subnode, all_nodes, depth+1))
+    return to_return
+
+def fill_tree(comments):
+    """
+    Creates a forest of root comments and their children.
+    Cribbed from legacy_threadedcomments.models.ThreadedCommentManager.get_tree
+    
+    """
+
+    if not comments:
+        return
+
+    children = comments.order_by('-submit_date')
+    to_return = []
+    for child in children:
+        if not child.parent:
+            to_return.extend(dfs(child, children, 0))
+    return to_return
+
 
 def annotate_tree_properties(comments):
     """

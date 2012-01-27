@@ -1093,6 +1093,14 @@ class CustomerContact(models.Model):
     def __unicode__(self):
         return self.name
 
+    def find_email(self):
+        if self.email:
+            return self.email
+        if self.login_user:
+            if self.login_user.email:
+                return self.login_user.email
+        return self.customer.email_address
+
 
 class ProducerContact(models.Model):
     producer = models.ForeignKey(Producer,
@@ -1110,6 +1118,14 @@ class ProducerContact(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def find_email(self):
+        if self.email:
+            return self.email
+        if self.login_user:
+            if self.login_user.email:
+                return self.login_user.email
+        return self.producer.email_address
 
 STAFF_ROLE_CHOICES = (
     (1, _('Orders')),

@@ -84,7 +84,7 @@
 	{% include "threadedcomments/comment_form.html" %}
 	</div>
 	<div>
-		{% get_comment_list for producer as comments flat %}
+		{% get_comment_list for producer as comments %}
 		{% include "customer/comments_for_customer.html" %}
 	</div>
 	{% endfor %}
@@ -102,7 +102,7 @@
 	{% include "threadedcomments/comment_form.html" %}
 	</div>
 	<div>
-		{% get_comment_list for product as comments flat %}
+		{% get_comment_list for product as comments %}
 		{% include "customer/comments_for_customer.html" %}
 	</div>
 	{% endfor %}

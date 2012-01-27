@@ -3,7 +3,13 @@
 		{% csrf_token %}
 		<input type="hidden" name="next" value="{% url customer_comments %}" />
 		<input id="id_name" type="hidden" name="name" value="{{ user.username }}" />
-		<input type="hidden" name="email" id="id_email" value="{{ user_email }}" />
+		{% if user.producer_contact %}
+			<input type="hidden" name="email" id="id_email" value="{{ user.producer_contact.find_email }}" />
+		{% else %}
+			{% if comment.user.customer_contact %}
+				<input type="hidden" name="email" id="id_email" value="{{ user.customer_contact.find_email }}" />
+			{% endif %}
+		{% endif %}
 		<input type="hidden" name="honeypot" id="id_honeypot" />
 		{{ form.content_type }} 
 		{{ form.object_pk }}

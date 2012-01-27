@@ -114,11 +114,9 @@ COLOR_CHOICES = (
     ("#F5F5DC", 'Beige'),
     ("#FFE4C4", 'Bisque'),
     ("#FFF8DC", 'Cornsilk'),
-    ("#DAA520", 'Goldenrod'),
     ("#F0FFF0", 'Honeydew'),
-    ("#FFA07A", 'Light Salmon'),
+    ("#CDFFCD", 'Light Sea Green'),
     ("#FFDEAD", 'Navajo White'),
-    ("#98FB98", 'Pale Green'),
     ('White', 'White'),
 )
 

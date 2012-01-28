@@ -183,6 +183,7 @@ def edit_producer_products(request):
                             pp.price_change_delivery_date = price_change_date
                             pp.price_changed_by = request.user
                             pp.producer_fee = Decimal("0")
+                            pp.pay_price = Decimal("0")
                             pp.markup_percent = Decimal("0")
                             pp.selling_price = Decimal("0")
                             pp.qty_per_year = data['qty_per_year'] or Decimal("0")

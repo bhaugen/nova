@@ -1561,23 +1561,23 @@ class ProducerProduct(models.Model):
         return self.markup_percent or customer_fee()
 
     def basic_compute_pay_price(self, producer_price, margin):
-        return (producer_price * (1 - (margin) / 100)).quantize(Decimal('.01'), rounding=ROUND_UP)
+        return (producer_price * (1 - (margin / 100))).quantize(Decimal('.01'), rounding=ROUND_UP)
 
     def compute_pay_price(self):
         if self.pay_price:
             return self.pay_price
         pp = self.decide_producer_price()
-        margin = self.decide_producer_fee()/100
+        margin = self.decide_producer_fee()
         return self.basic_compute_pay_price(pp, margin)
 
     def basic_compute_selling_price(self, producer_price, markup):
-        return (producer_price + (producer_price * markup)).quantize(Decimal('.01'), rounding=ROUND_UP)
+        return (producer_price + (producer_price * markup / 100)).quantize(Decimal('.01'), rounding=ROUND_UP)
         
     def compute_selling_price(self):
         if self.selling_price:
             return self.selling_price
         pp = self.decide_producer_price()
-        markup = self.decide_markup()/100
+        markup = self.decide_markup()
         return self.basic_compute_selling_price(pp, markup)
 
     def selling_price_for_date(self, date):
@@ -1599,8 +1599,8 @@ class ProducerProduct(models.Model):
                     if not price:
                         pp = ppc.producer_price
                         markup = ppc.markup_percent or customer_fee()
-                        markup = markup / 100
                         price = self.basic_compute_selling_price(pp, markup)
+                    break
         return price
 
     def unit_price_for_date(self, date):
@@ -1614,6 +1614,7 @@ class ProducerProduct(models.Model):
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= date:
                     price = ppc.producer_price
+                    break
         return price
 
     def pay_price_for_date(self, date):
@@ -1626,6 +1627,7 @@ class ProducerProduct(models.Model):
                     pp = ppc.producer_price
                     margin = ppc.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
                     price = self.basic_compute_pay_price(pp, margin)
+                    break
         return price
 
     def formatted_producer_price_for_date(self, date):
@@ -1718,9 +1720,9 @@ class ProducerPriceChange(models.Model):
         related_name="price_changes", verbose_name=_('producer product'))
     producer_price = models.DecimalField(_('set price'), 
         max_digits=8, decimal_places=2, default=Decimal(0))
-    producer_fee = models.DecimalField(_('markup percent'), max_digits=4,
+    producer_fee = models.DecimalField(_('margin percent'), max_digits=4,
         decimal_places=2, default=Decimal("0"))
-    pay_price = models.DecimalField(_('selling price'), max_digits=8, decimal_places=2, default=Decimal(0))
+    pay_price = models.DecimalField(_('pay price'), max_digits=8, decimal_places=2, default=Decimal(0))
     markup_percent = models.DecimalField(_('markup percent'), max_digits=4,
         decimal_places=2, default=Decimal("0"))
     selling_price = models.DecimalField(_('selling price'), max_digits=8, decimal_places=2, default=Decimal(0))

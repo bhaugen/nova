@@ -52,7 +52,8 @@ class ProducerProfileForm(forms.ModelForm):
         exclude = ('member_id', 'short_name', 'delivers', 'producer_fee')
 
 
-class ProducerContactForm(forms.ModelForm): 
+class ProducerContactForm(forms.ModelForm):
+    id = forms.CharField(widget=forms.HiddenInput)
     name = forms.CharField(widget=forms.TextInput(attrs={'size': '16', 'value': ''}))
     phone = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
@@ -62,7 +63,7 @@ class ProducerContactForm(forms.ModelForm):
 
     class Meta:
         model = ProducerContact
-        exclude = ('login_user', 'cell', )
+        exclude = ('producer', 'login_user', 'cell', )
 
 
 class ProducerProductEditForm(forms.ModelForm):

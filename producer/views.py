@@ -108,9 +108,18 @@ def edit_producer_profile(request):
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if form.is_valid():
-            form.save()
-            if formset.is_valid():
-                formset.save()
+            if all([cform.is_valid() for cform in contact_forms]):
+                form.save()
+                for cform in contact_forms:
+                    #import pdb; pdb.set_trace()
+                    data = cform.cleaned_data
+                    delete = data['delete']
+                    if delete:
+                        id = data['id']
+                        pc = ProducerContact.objects.get(id=id)
+                        pc.delete()
+                    else:
+                        cform.save()
                 return HttpResponseRedirect("/producer/profile")
     return render_to_response('producer/profile_edit.html', 
         {'producer': producer,

@@ -158,6 +158,27 @@
 							<td colspan=3>{{ form.avatar }}</td>
 						</tr>
 					{% endfor %}
+					{% for form in add_forms %}
+						{% if form.name.errors %}
+						<tr>
+							<td colspan="4" style="color: red; " >
+							Name is required
+							</td>
+						</tr>
+						{% endif %}
+        					<tr>
+							<td>{{ form.name }}</td>
+							<td>{{ form.phone }}</td>
+							{% comment %}
+							<td>{{ form.cell }}</td>
+							{% endcomment %}
+							<td>{{ form.email }}</td>
+						</tr>
+						<tr>
+							<th style="text-align: right; " >Photo:</th>
+							<td colspan=3>{{ form.avatar }}</td>
+						</tr>
+					{% endfor %}
 				</tbody>
 			</table>
 			{% comment %}

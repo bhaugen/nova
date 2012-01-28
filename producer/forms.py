@@ -53,7 +53,7 @@ class ProducerProfileForm(forms.ModelForm):
 
 
 class ProducerContactForm(forms.ModelForm):
-    id = forms.CharField(widget=forms.HiddenInput)
+    id = forms.CharField(required=False, widget=forms.HiddenInput)
     name = forms.CharField(widget=forms.TextInput(attrs={'size': '16', 'value': ''}))
     phone = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))

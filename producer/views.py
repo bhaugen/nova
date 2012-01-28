@@ -105,6 +105,12 @@ def edit_producer_profile(request):
         login_user__isnull=False)
     if logins:
         deletables = False
+    adds = 3
+    add_forms = []
+    for i in range(adds):
+        prefix = "".join(["add", str(i)])
+        add_forms.append(ProducerContactForm(
+            prefix=prefix, data=request.POST or None))
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if form.is_valid():
@@ -114,17 +120,23 @@ def edit_producer_profile(request):
                     #import pdb; pdb.set_trace()
                     data = cform.cleaned_data
                     delete = data['delete']
+                    id = data['id']
                     if delete:
-                        id = data['id']
                         pc = ProducerContact.objects.get(id=id)
                         pc.delete()
                     else:
                         cform.save()
+                for aform in add_forms:
+                    if aform.is_valid():
+                        pc = aform.save(commit=False)
+                        pc.producer = producer
+                        pc.save()
                 return HttpResponseRedirect("/producer/profile")
     return render_to_response('producer/profile_edit.html', 
         {'producer': producer,
          'form': form,
          'contact_forms': contact_forms,
+         'add_forms': add_forms,
          #'formset': formset,
          'background': producer.background_color,
          }, context_instance=RequestContext(request))

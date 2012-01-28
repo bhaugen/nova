@@ -89,13 +89,22 @@ def edit_producer_profile(request):
         data=request.POST or None,
         files = request.FILES or None,
         instance=producer)
-    ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
-        form=ProducerContactForm,
-        extra=2)
-    formset = ContactFormSet(
-        data=request.POST or None, 
-        files = request.FILES or None,
-        instance=producer)
+    #ContactFormSet = inlineformset_factory(Producer, ProducerContact, 
+    #    form=ProducerContactForm,
+    #    extra=2)
+    #formset = ContactFormSet(
+    #    data=request.POST or None, 
+    #    files = request.FILES or None,
+    #    instance=producer)
+    contact_forms = create_contact_forms(
+        producer, 
+        data=request.POST or None,
+    )
+    deletables = True
+    logins = producer.contacts.filter(
+        login_user__isnull=False)
+    if logins:
+        deletables = False
     if request.method == "POST":
         #import pdb; pdb.set_trace()
         if form.is_valid():
@@ -106,7 +115,8 @@ def edit_producer_profile(request):
     return render_to_response('producer/profile_edit.html', 
         {'producer': producer,
          'form': form,
-         'formset': formset,
+         'contact_forms': contact_forms,
+         #'formset': formset,
          'background': producer.background_color,
          }, context_instance=RequestContext(request))
 

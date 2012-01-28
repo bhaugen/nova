@@ -58,6 +58,7 @@ class ProducerContactForm(forms.ModelForm):
     #cell = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     email = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': '32', 'value': ''}))
     avatar = forms.ImageField(required=False)
+    delete = forms.BooleanField(required=False)
 
     class Meta:
         model = ProducerContact

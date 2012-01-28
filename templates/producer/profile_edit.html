@@ -65,9 +65,16 @@
 		<div style="float: left; margin-left: 1em; width: 40%;" >
 
 		<table style="margin-top: 4px;" >
+			{% if form.long_name.errors %}
+			<tr>
+				<td colspan="2" style="color: red; " >
+					{{ form.long_name.errors }}
+				</td>
+			</tr>
+			{% endif %}
 			<tr>
 				<th style="text-align: right; " >Name:</th>
-				<td> {{ form.long_name }} </td>
+				<td> {{ form.long_name }} </td>				
 			</tr>
 			<tr>
 				<th style="text-align: right; " >Tag line:</th>
@@ -121,12 +128,20 @@
 					<th>Cell</th>
 					{% endcomment %}
 					<th>Email</th>
-                			<th>Delete</th>
+                			{% if deletables %}
+						<th>Delete</th>
+					{% endif %}
 				</thead>
 				<tbody>
-			    		{{ formset.management_form }}
-    					{% for form in formset.forms %}
-						{{ form.id }}
+    					{% for form in contact_forms %}
+					{{ form.id }}
+						{% if form.name.errors %}
+						<tr>
+							<td colspan="4" style="color: red; " >
+							Name is required
+							</td>
+						</tr>
+						{% endif %}
         					<tr>
 							<td>{{ form.name }}</td>
 							<td>{{ form.phone }}</td>
@@ -134,7 +149,9 @@
 							<td>{{ form.cell }}</td>
 							{% endcomment %}
 							<td>{{ form.email }}</td>
-							<td>{{ form.DELETE }}</td>
+							{% if form.deletable %}
+								<td>{{ form.delete }}</td>
+							{% endif %}
 						</tr>
 						<tr>
 							<th style="text-align: right; " >Photo:</th>

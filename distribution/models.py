@@ -404,8 +404,8 @@ class FoodNetwork(Party):
     customer_fee_label = models.CharField(_('customer fee label'),
         max_length=64, default="Delivery Cost", 
         help_text=_('This label appears on invoices to customers'))
-    producer_fee = models.DecimalField(_('producer fee'), max_digits=4, decimal_places=2, default=Decimal("0"),
-        help_text=_('Producer Fee is a percentage. It is a margin, subtracted from the producer price, giving the pay price to the producer.'))
+    producer_fee = models.DecimalField(_('margin percent'), max_digits=4, decimal_places=2, default=Decimal("0"),
+        help_text=_('This is a percentage, subtracted from the producer set price, giving the pay price to the producer.'))
     producer_fee_label = models.CharField(_('producer fee label'),
         max_length=64, default="Marketing Cost", 
         help_text=_('This label appears on statements to producers'))
@@ -870,9 +870,9 @@ class ProducerManager(models.Manager):
 
 
 class Producer(Party):
-    producer_fee = models.DecimalField(_('producer fee'), 
+    producer_fee = models.DecimalField(_('margin percent'), 
         max_digits=4, decimal_places=2, default=Decimal("0"),
-        help_text=_('If non-zero, this overrides the Food Network default producer fee.'))
+        help_text=_('If non-zero, this overrides the Food Network default margin percent.'))
     philosophy = models.TextField(_('philosophy'), blank=True)
     delivers = models.BooleanField(_('delivers'), default=False,
         help_text=_('Delivers products directly to customers?'))
@@ -1514,9 +1514,9 @@ class ProducerProduct(models.Model):
         default=datetime.date.today)
     price_changed_by = models.ForeignKey(User, verbose_name=_('price changed by'),
         related_name='producer_products_changed', blank=True, null=True)
-    producer_fee = models.DecimalField(_('producer fee'), 
+    producer_fee = models.DecimalField(_('margin percent'), 
         max_digits=4, decimal_places=2, default=Decimal("0"),
-        help_text=_('If non-zero, this overrides the Food Network default producer fee.'))
+        help_text=_('If non-zero, this overrides the Food Network default margin percent.'))
     pay_price = models.DecimalField(_('pay price'), 
         max_digits=8, decimal_places=2, default=Decimal(0),
         help_text=_('If non-zero, this overrides the automatically calculated pay price.'))

@@ -15,6 +15,23 @@ def is_number(s):
     except ValueError:
         return False
 
+def create_contact_forms(producer, data=None):
+    form_list = []
+    for contact in producer.contacts.all():
+        deletable = True
+        if contact.login_user:
+            deletable = False
+        prefix = "".join(["contact", str(contact.id)])
+        form = ProducerContactForm(
+            data,
+            prefix=prefix,
+            instance=contact,
+        )
+        form.deletable = deletable
+        form_list.append(form)
+    return form_list
+
+
 def create_producer_product_forms(producer_products, data=None):
     form_list = []
     for pp in producer_products:

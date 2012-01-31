@@ -118,7 +118,7 @@
 			Today's prices: &nbsp;&nbsp;&nbsp;
 			<a href="{% url edit_producer_products %}">Change products and prices</a>
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Growing Method</th>
@@ -127,7 +127,7 @@
 				<th>Selling Price</th>
 			</tr>
 			{% for product in producer.producer_products.all %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ product.product.long_name }}</td>
 				<td>{{ product.product.growing_method }}</td>
 				<td style="text-align: right; ">${{ product.formatted_producer_price_now }}</td>
@@ -144,14 +144,14 @@
 			</a>
 		</h4>
 		<p style="margin-left: 1em; margin-bottom: 0; ">Next inventory closing: {{ inventory_closing }}</p>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Quantity</th>
 				<th>Ordered</th>
 			</tr>
 			{% for item in producer.available_now %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ item.product }}</td>
 				<td style="text-align: right; ">{{ item.qty }}</td>
 				<td style="text-align: right; ">{{ item.product.total_ordered_now }}</td>
@@ -166,14 +166,14 @@
 				Change plans
 			</a>
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Date</th>
 				<th>Quantity</th>
 			</tr>
 			{% for plan in producer.planned_available %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ plan.product.long_name }}</td>
 				<td>{{ plan.from_date }}</td>
 				<td style="text-align: right; ">{{ plan.quantity }}</td>

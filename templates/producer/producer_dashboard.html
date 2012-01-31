@@ -18,7 +18,7 @@
 	{% if unfilled %}
 	<div style="float: left; width: 40%;">
 	<h3 style="padding-top: 0; margin-top: 0; " >Unfilled Orders:</h3>
-	<table >
+	<table class="ga-event-table" >
 		<thead style="background-color: #EAF2D3;" >
 		<tr>
 			<th style="text-align:left;" >Customer</th>
@@ -30,7 +30,7 @@
 		<tbody>
 
 		{% for item in unfilled %}
-			<tr class="{% cycle 'odd' 'even' %}" >
+			<tr>
 				<td style="text-align:left;" >
 					<a href="{% url public_customer_profile customer_id=item.order.customer.id tabs='P' tab='producer-dashboard' %}">
 						{{ item.order.customer }}
@@ -50,7 +50,7 @@
 	{% if payments %}
 	<div style="float: left; width: 50%; margin-left: 1em;">
 		<h3 style="padding-top: 0; margin-top: 0; " >Upcoming Payments from {{ food_network.long_name }}:</h3>
-	<table >
+	<table class="ga-event-table" >
 		<thead style="background-color: #EAF2D3;" >
 		<tr>
 			<th style="text-align:left;" >Due Date</th>
@@ -64,7 +64,7 @@
 		<tbody>
 
 		{% for item in payments %}
-			<tr class="{% cycle 'odd' 'even' %}" >
+			<tr >
 				<td style="text-align:left;" >{{ item.payment_due_date }}</th>
 				<td style="text-align:left;" >{{ item.order_customer }}</th>
 				<td style="text-align:left;" >{{ item.transaction_date }}</th>
@@ -82,7 +82,7 @@
 	{% if filled %}
 	<div style="float: left; width: 40%; margin-left: 1em;">
 	<h3 style="padding-top: 0; margin-top: 0; " >Recently Filled Orders:</h3>
-	<table >
+	<table class="ga-event-table" >
 		<thead style="background-color: #EAF2D3;" >
 		<tr>
 			<th style="text-align:left;" >Customer</th>
@@ -94,7 +94,7 @@
 		<tbody>
 
 		{% for item in filled %}
-			<tr class="{% cycle 'odd' 'even' %}" >
+			<tr >
 				<td style="text-align:left;" >
 					<a href="{% url public_customer_profile customer_id=item.order.customer.id tabs='P' tab='producer-dashboard' %}">
 						{{ item.order.customer }}

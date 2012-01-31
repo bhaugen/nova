@@ -300,12 +300,12 @@
 	{% include "distribution/tabnav.html" %}
 
 	<h3>
-            {% blocktrans %}Delivery date: {{delivery_date}}{% endblocktrans %}
+            {% blocktrans %}Effective delivery date: {{delivery_date}}{% endblocktrans %}
         </h3>
 
     <form action="." method="POST" >{% csrf_token %}
 
-        <table>
+        <table class="ga-event-table" >
 		<tr>
 			<th>{% trans "Product" %}</th>
 			<th>{% trans "Producer" %}</th>
@@ -313,10 +313,11 @@
         	        <th>{% trans "Margin" %}</th>
                 	<th>{% trans "Pay Price" %}</th>
 	                <th>{% trans "Markup" %}</th>
-                	<th>{% trans "Selling Price" %}</th>
+			<th>{% trans "Selling Price" %}</th>
+			<th style="text-align: center;" >{% trans "Upcoming Producer Changes" %}</th>
             </tr>
             {% for form in forms %}
-                 <tr class="{% cycle 'odd' 'even' %}">
+                 <tr>
 			<td>
 				{% ifchanged form.product %}
 				{{ form.product }}
@@ -329,7 +330,11 @@
 			<td> {{ form.pay_price }} </td>
 			<td> {{ form.markup_percent }} </td>
 			<td> {{ form.selling_price }} </td>
+			<td> {{ form.changes }}</td>
 			{{ form.id }}
+			{{ form.producer_id }}
+			{{ form.product_id }}
+			{{ form.content_type }}
                 </tr>
            {% endfor %} 
         </table>

@@ -1105,8 +1105,11 @@ class EmailIntroForm(forms.ModelForm):
         model = EmailIntro
         exclude = ('notice_type',)
 
-class PricingMasterboardForm(forms.ModelForm):
+class PricingMasterboardForm(forms.Form):
     id = forms.CharField(widget=forms.HiddenInput(attrs={'class': 'id-field'}))
+    content_type = forms.CharField(widget=forms.HiddenInput(attrs={'class': 'type-field'}))
+    producer_id = forms.CharField(widget=forms.HiddenInput())
+    product_id = forms.CharField(widget=forms.HiddenInput())
     producer_price = forms.DecimalField(widget=forms.TextInput(
         attrs={'class': 'producer-price-field', 'size': '10'}))
     producer_fee = forms.DecimalField(widget=forms.TextInput(
@@ -1118,13 +1121,4 @@ class PricingMasterboardForm(forms.ModelForm):
     selling_price = forms.DecimalField(widget=forms.TextInput(
         attrs={'class': 'selling-price-field', 'size': '10'}))
     
-    class Meta:
-        model = ProducerProduct
-        fields = ('id',
-                  'producer_price',
-                  'producer_fee',
-                  'pay_price',
-                  'markup_percent',
-                  'selling_price',
-                 )
 

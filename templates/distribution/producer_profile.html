@@ -111,13 +111,13 @@
 		<h4 style="margin-top: 0; " >
 			Today's prices:
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Unit Price</th>
 			</tr>
 			{% for product in producer.producer_products.all %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ product.product.long_name }}</td>
 				<td style="text-align: right; ">${{ product.formatted_selling_price_now }}</td>
 			</tr>
@@ -128,14 +128,14 @@
 		<h4 style="margin-top: 1em;" >
 			What we have available now:
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Quantity</th>
 				<th>Ordered</th>
 			</tr>
 			{% for item in producer.available_now %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ item.product }}</td>
 				<td style="text-align: right; ">{{ item.qty }}</td>
 				<td style="text-align: right; ">{{ item.product.total_ordered_now }}</td>
@@ -148,14 +148,14 @@
 		<h4 style="margin-top: 1em;" >
 			Our 4 week harvest plan:
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Date</th>
 				<th>Quantity</th>
 			</tr>
 			{% for plan in producer.planned_available %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ plan.product.long_name }}</td>
 				<td>{{ plan.from_date }}</td>
 				<td style="text-align: right; ">{{ plan.quantity }}</td>

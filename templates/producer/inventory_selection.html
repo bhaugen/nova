@@ -81,7 +81,9 @@
 			<th>{% trans "Lot" %}</th>
 			<th>{% trans "Inventory Date" %}</th>
 			<th>{% trans "Expiration Date" %}</th>
-			<th>{% trans "Where" %}</th>		
+			{% comment %}
+			<th>{% trans "Where" %}</th>	
+			{% endcomment %}	
 	        	<th>{% trans "Avail" %}</th>
 			<th>{% trans "Shipped" %}</th>
 			<th>{% trans "Buyers" %}</th>
@@ -92,7 +94,9 @@
 			<td>{{ lot.lot_id }}</td>
 			<td>{{ lot.inventory_date }}</td>
 			<td>{{ lot.expiration_date }}</td>
+			{% comment %}
 			<td>{{ lot.where }}</td>
+			{% endcomment %}
 			<td style="text-align: right;" >{{ lot.avail_qty }}</td>
 			<td style="text-align: right;" >{{ lot.delivered_qty }}</td>
 			<td>{{ lot.customers }}</td>

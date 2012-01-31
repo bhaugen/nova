@@ -100,11 +100,10 @@ def edit_producer_profile(request):
         producer, 
         data=request.POST or None,
     )
-    deletables = True
-    logins = producer.contacts.filter(
-        login_user__isnull=False)
-    if logins:
-        deletables = False
+    deletables = False
+    for contact in producer.contacts.all():
+        if not contact.login_user:
+            deletables = True
     adds = 3
     add_forms = []
     for i in range(adds):
@@ -138,6 +137,7 @@ def edit_producer_profile(request):
          'contact_forms': contact_forms,
          'add_forms': add_forms,
          #'formset': formset,
+         'deletables': deletables,
          'background': producer.background_color,
          }, context_instance=RequestContext(request))
 

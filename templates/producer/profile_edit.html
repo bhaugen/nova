@@ -120,7 +120,7 @@
 	<div style="float: left; margin-left: 2em; width: 40%;" >
 
 		<h4>Contacts</h4>
-			<table >
+			<table class="ga-event-table" >
 				<thead>
 					<th>Name</th>
 					<th>Phone</th>
@@ -150,11 +150,11 @@
 							{% endcomment %}
 							<td>{{ form.email }}</td>
 							{% if form.deletable %}
-								<td>{{ form.delete }}</td>
+								<td style="text-align: center; " >{{ form.delete }}</td>
 							{% endif %}
 						</tr>
 						<tr>
-							<th style="text-align: right; " >Photo:</th>
+							<td style="text-align: right; " >Photo:</td>
 							<td colspan=3>{{ form.avatar }}</td>
 						</tr>
 					{% endfor %}
@@ -175,7 +175,7 @@
 							<td>{{ form.email }}</td>
 						</tr>
 						<tr>
-							<th style="text-align: right; " >Photo:</th>
+							<td style="text-align: right; " >Photo:</td>
 							<td colspan=3>{{ form.avatar }}</td>
 						</tr>
 					{% endfor %}

@@ -3538,7 +3538,22 @@ def pricing_masterboard(request, year, month, day):
             if form.is_valid():
                 data = form.cleaned_data
                 id = data['id']
-                pp = ProducerProduct.objects.get(id=id)
+                type = data['content_type']
+                #import pdb; pdb.set_trace()
+                if id:
+                    if type == 'ProducerProduct':
+                        pp = ProducerProduct.objects.get(id=id)
+                    elif type == 'ProducerPriceChange':
+                        pp = ProducerPriceChange.objects.get(id=id)
+                else:
+                    producer_id = data['producer_id']
+                    product_id = data['product_id']
+                    base_pp = ProducerProduct.objects.get(
+                        producer__id=producer_id,
+                        product__id=product_id,
+                    )
+                    pp =ProducerPriceChange.create_default_producer_price_change(base_pp)
+                        
                 producer_price = data['producer_price']
                 producer_fee = data['producer_fee']
                 pay_price = data['pay_price']
@@ -3570,8 +3585,18 @@ def pricing_masterboard(request, year, month, day):
                         pp.selling_price = selling_price
                         save_pp = True
                 if save_pp:
-                    ProducerPriceChange.create_producer_price_change(
-                        id, request.user)
+                    if type == 'ProducerProduct':
+                        dd = pp.price_change_delivery_date
+                    else:
+                        dd = delivery_date
+                    if id:
+                        ProducerPriceChange.create_producer_price_change(
+                            id, 
+                            request.user,
+                            dd,
+                        )
+                    else:
+                        pp.changed_by=request.user
                     pp.save()
         return HttpResponseRedirect("/distribution/pricingselection/")
     return render_to_response('distribution/pricing_masterboard.html', 

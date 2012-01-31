@@ -680,12 +680,15 @@ class FoodNetwork(Party):
                                                        "product__short_name")
         return items
 
-    def producer_products_for_date(self, delivery_date):
+    def producer_product_prices_for_date(self, delivery_date):
         items = self.avail_items_for_customer(delivery_date)
         pps = list(set([item.producer_product for item in items]))
-        return sorted(pps, key=attrgetter('product.short_name',
+        pps = sorted(pps, key=attrgetter('product.short_name',
                                           'producer.short_name'))
-            
+        pricing_objects = []
+        for pp in pps:
+            pricing_objects.append(pp.pricing_object_for_date(delivery_date))
+        return pricing_objects           
 
     def customer_availability(self, delivery_date):
         avail = []
@@ -1582,6 +1585,7 @@ class ProducerProduct(models.Model):
 
     def selling_price_for_date(self, date):
         price = self.compute_selling_price()
+        effective_price = True
         #todo: need ProducerProductSpecials
         #specials = Special.objects.filter(
         #    product=self,
@@ -1592,6 +1596,7 @@ class ProducerProduct(models.Model):
         #    price = special.price
         pcdd = self.price_change_delivery_date or date
         if  pcdd > date:
+            effective_price = False
             ppcs = self.price_changes.all()
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= date:
@@ -1600,7 +1605,12 @@ class ProducerProduct(models.Model):
                         pp = ppc.producer_price
                         markup = ppc.markup_percent or customer_fee()
                         price = self.basic_compute_selling_price(pp, markup)
+                        effective_price = True
                     break
+        if not effective_price:
+            markup = customer_fee()
+            pp = self.product.producer_price
+            price = self.basic_compute_selling_price(pp, markup)
         return price
 
     def unit_price_for_date(self, date):
@@ -1608,26 +1618,54 @@ class ProducerProduct(models.Model):
 
     def producer_price_for_date(self, date):
         price = self.producer_price
+        effective_price = True
         pcdd = self.price_change_delivery_date or date
         if  pcdd > date:
+            effective_price = False
             ppcs = self.price_changes.all()
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= date:
                     price = ppc.producer_price
+                    effective_price = True
                     break
+        if not effective_price:
+            price = self.product.producer_price
         return price
+
+    def pricing_object_for_date(self, date):
+        answer = self
+        effective_price = True
+        pcdd = self.price_change_delivery_date or date
+        if  pcdd > date:
+            effective_price = False
+            ppcs = self.price_changes.all()
+            for ppc in ppcs:
+                if ppc.price_change_delivery_date <= date:
+                    answer = ppc
+                    effective_price = True
+                    break
+        if not effective_price:
+            answer = ProducerPriceChange.create_default_producer_price_change(self)
+        return answer
 
     def pay_price_for_date(self, date):
         price = self.compute_pay_price()
+        effective_price = True
         pcdd = self.price_change_delivery_date or date
         if  pcdd > date:
+            effective_price = False
             ppcs = self.price_changes.all()
             for ppc in ppcs:
                 if ppc.price_change_delivery_date <= date:
                     pp = ppc.producer_price
                     margin = ppc.producer_fee or self.producer.as_leaf_class().decide_producer_fee()
                     price = self.basic_compute_pay_price(pp, margin)
+                    effective_price = True
                     break
+        if not effective_price:
+            margin = self.producer.as_leaf_class().decide_producer_fee()
+            pp = self.product.producer_price
+            price = self.basic_compute_pay_price(pp, margin)
         return price
 
     def formatted_producer_price_for_date(self, date):
@@ -1746,19 +1784,118 @@ class ProducerPriceChange(models.Model):
         ])
 
     @classmethod
-    def create_producer_price_change(cls, producer_product_id, changed_by):
-        pp = ProducerProduct.objects.get(id=producer_product_id)
+    def create_producer_price_change(
+        cls, 
+        producer_product_id, 
+        changed_by,
+        delivery_date,
+    ):
+        producer_product = ProducerProduct.objects.get(id=producer_product_id)
         ppc = cls(
-            producer_product=pp,
-            producer_price=pp.producer_price,
-            producer_fee=pp.producer_fee,
-            pay_price=pp.pay_price,
-            markup_percent=pp.markup_percent,
-            selling_price=pp.selling_price,
-            price_change_delivery_date=pp.price_change_delivery_date,
+            producer_product=producer_product,
+            producer_price=producer_product.producer_price,
+            producer_fee=producer_product.producer_fee,
+            pay_price=producer_product.pay_price,
+            markup_percent=producer_product.markup_percent,
+            selling_price=producer_product.selling_price,
+            price_change_delivery_date=delivery_date,
             changed_by=changed_by,
         )
         ppc.save()
+
+    @classmethod
+    def create_default_producer_price_change(cls, producer_product):
+        pp = producer_product.product.producer_price
+        margin = producer_product.producer.as_leaf_class().decide_producer_fee()
+        fn = food_network()
+        markup = fn.customer_fee
+        if pp:
+            pay_price = producer_product.basic_compute_pay_price(pp, margin)
+            selling_price = producer_product.basic_compute_selling_price(pp, markup)
+        else:
+            pay_price=Decimal("0")
+            selling_price=producer_product.product.selling_price
+        #try:
+        #    prod_prod = producer_product.producer_product
+        #except AttributeError:
+        #    prod_prod = producer_product
+        ppc = cls(
+            producer_product=producer_product,
+            producer_price=pp,
+            producer_fee=margin,
+            pay_price=pay_price,
+            markup_percent=markup,
+            selling_price=selling_price,
+            price_change_delivery_date=fn.next_delivery_date,
+            #changed_by=changed_by,
+        )
+        return ppc
+
+    def basic_compute_pay_price(self, pp, margin):
+        return self.producer_product.basic_compute_pay_price(pp, margin)
+
+    def basic_compute_selling_price(self, pp, markup):
+        return self.producer_product.basic_compute_selling_price(pp, markup)
+
+    @property
+    def producer(self):
+        return self.producer_product.producer
+
+    @property
+    def product(self):
+        return self.producer_product.product
+
+    def what_changed(self):
+        answer = ""
+        pp = self.producer_product
+        changes = []
+        if pp.producer_price != self.producer_price:
+            change = " ".join(["Set Price changed from",
+                                str(self.producer_price),
+                                "to", str(pp.producer_price)])
+            changes.append(change)
+        if pp.pay_price != self.pay_price:
+            change = " ".join(["Pay Price changed from",
+                                str(self.pay_price),
+                                "to", str(pp.compute_pay_price())])
+            changes.append(change)
+        if pp.selling_price != self.selling_price:
+            change = " ".join(["Selling Price changed from",
+                                str(self.selling_price),
+                                "to", str(pp.compute_selling_price())])
+            changes.append(change)
+        if len(changes) > 0:
+            answer = ', '.join(changes)
+            answer = " ".join([
+                answer, "effective",
+                self.producer_product.price_change_delivery_date.strftime('%Y-%m-%d')
+            ])
+        return answer
+
+    def decide_producer_price(self):
+        return self.producer_price or self.producer_product.decide_producer_price()
+
+    def decide_producer_fee(self):
+        return self.producer_fee or self.producer_product.decide_producer_fee()
+
+    def decide_markup(self):
+        return self.markup_percent or self.producer_product.decide_markup()
+
+    def compute_pay_price(self):
+        if self.pay_price:
+            return self.pay_price
+        else:
+            margin = self.decide_producer_fee()
+            pp = self.decide_producer_price()
+            return self.producer_product.basic_compute_pay_price(pp, margin)
+
+    def compute_selling_price(self):
+        if self.selling_price:
+            return self.selling_price
+        else:
+            markup = self.decide_markup()
+            pp = self.decide_producer_price()
+            return self.producer_product.basic_compute_selling_price(pp, markup)
 
 
 PLAN_ROLE_CHOICES = (

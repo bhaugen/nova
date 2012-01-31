@@ -24,25 +24,33 @@ def is_number(s):
 def create_pricing_masterboard_forms(delivery_date, data=None):
     fn = food_network()
     forms = []
-    producer_products = fn.producer_products_for_date(delivery_date)
-    for pp in producer_products:
+    pricing_objects = fn.producer_product_prices_for_date(delivery_date)
+    for pp in pricing_objects:
+        content_type = pp.__class__.__name__
+        prefix = "".join([content_type, str(pp.id)])
         form = PricingMasterboardForm(
-            prefix = str(pp.id),
+            prefix =  prefix,
             data=data,
             initial={
                 'id': pp.id,
+                'producer_id': pp.producer.id,
+                'product_id': pp.product.id,
                 'producer_price': pp.decide_producer_price(),
                 'producer_fee': pp.decide_producer_fee(),
                 'pay_price': pp.compute_pay_price(),
                 'markup_percent': pp.decide_markup(),
                 'selling_price': pp.compute_selling_price(),
+                'content_type': content_type,
             }
         )
         form.product = pp.product.name_with_method()
         form.producer = pp.producer
+        changes = ""
+        if isinstance(pp, ProducerPriceChange):
+            changes = pp.what_changed()
+        form.changes = changes
         forms.append(form)
     return forms
-
 
 def create_producer_product_price_forms(product, data=None):
     pps = product.product_producers.all()

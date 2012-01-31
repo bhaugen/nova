@@ -3587,17 +3587,24 @@ def pricing_masterboard(request, year, month, day):
                 if save_pp:
                     if type == 'ProducerProduct':
                         dd = pp.price_change_delivery_date
-                    else:
-                        dd = delivery_date
-                    if id:
                         ProducerPriceChange.create_producer_price_change(
                             id, 
                             request.user,
                             dd,
                         )
+                        pp.price_change_delivery_date = delivery_date
+                        pp.save()
                     else:
-                        pp.changed_by=request.user
-                    pp.save()
+                        dd = delivery_date
+                        if id:
+                            ProducerPriceChange.create_another_producer_price_change(
+                                pp, 
+                                request.user,
+                                dd,
+                            )
+                        else:
+                            pp.changed_by=request.user
+                            pp.save()
         return HttpResponseRedirect("/distribution/pricingselection/")
     return render_to_response('distribution/pricing_masterboard.html', 
         {'delivery_date': delivery_date,

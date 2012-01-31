@@ -1106,7 +1106,7 @@ class EmailIntroForm(forms.ModelForm):
         exclude = ('notice_type',)
 
 class PricingMasterboardForm(forms.Form):
-    id = forms.CharField(widget=forms.HiddenInput(attrs={'class': 'id-field'}))
+    id = forms.CharField(required=False, widget=forms.HiddenInput(attrs={'class': 'id-field'}))
     content_type = forms.CharField(widget=forms.HiddenInput(attrs={'class': 'type-field'}))
     producer_id = forms.CharField(widget=forms.HiddenInput())
     product_id = forms.CharField(widget=forms.HiddenInput())

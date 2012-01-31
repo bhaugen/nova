@@ -493,7 +493,7 @@ class FoodNetwork(Party):
             if not qty:
                 qty = item.planned
             money = qty * item.product.price
-            money -= money * item.producer_fee()/100
+            money -= money * item.producer_product.decide_producer_fee()/100
             if item.inventory_date >= week_start:
                 pras.receipts_qty_week += qty
                 pras.receipts_money_week += money
@@ -1800,6 +1800,28 @@ class ProducerPriceChange(models.Model):
             selling_price=producer_product.selling_price,
             price_change_delivery_date=delivery_date,
             changed_by=changed_by,
+            when_changed = datetime.datetime.now(),
+        )
+        ppc.save()
+
+    @classmethod
+    def create_another_producer_price_change(
+        cls, 
+        producer_price_change, 
+        changed_by,
+        delivery_date,
+    ):
+        #producer_product = ProducerProduct.objects.get(id=producer_product_id)
+        ppc = cls(
+            producer_product=producer_price_change.producer_product,
+            producer_price=producer_price_change.producer_price,
+            producer_fee=producer_price_change.producer_fee,
+            pay_price=producer_price_change.pay_price,
+            markup_percent=producer_price_change.markup_percent,
+            selling_price=producer_price_change.selling_price,
+            price_change_delivery_date=delivery_date,
+            changed_by=changed_by,
+            when_changed = datetime.datetime.now(),
         )
         ppc.save()
 

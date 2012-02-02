@@ -74,14 +74,14 @@ class ProducerProductEditForm(forms.ModelForm):
     producer_price = forms.DecimalField(widget=forms.TextInput(attrs={'class':
                                                                'producer-price',
                                                                'size': '6'}))
-    qty_per_year = forms.DecimalField(widget=forms.TextInput(attrs={'class':
-                                                               'quantity-field',
-                                                               'size': '6'}))
+    #qty_per_year = forms.DecimalField(widget=forms.TextInput(attrs={'class':
+    #                                                           'quantity-field',
+    #                                                           'size': '6'}))
     delete = forms.BooleanField(required=False)
 
     class Meta:
         model = ProducerProduct
-        fields = ('id', 'producer_price', 'qty_per_year',)
+        fields = ('id', 'producer_price', )
 
 
 class ProducerProductAddForm(forms.Form):
@@ -92,9 +92,9 @@ class ProducerProductAddForm(forms.Form):
         widget=forms.Select(attrs={'class': 'added_product',}))
     producer_price = forms.DecimalField(required=False, widget=forms.TextInput(attrs={
         'class':'added-producer-price', 'size': '6'}))
-    qty_per_year = forms.DecimalField(required=False, widget=forms.TextInput(attrs={'class':
-                                                               'quantity-field',
-                                                               'size': '6'}))
+    #qty_per_year = forms.DecimalField(required=False, widget=forms.TextInput(attrs={'class':
+    #                                                           'quantity-field',
+    #                                                           'size': '6'}))
     min = forms.CharField(required=False,
         widget=forms.TextInput(attrs={'readonly':'true', 
                                       'class': 'read-only-input', 
@@ -141,11 +141,13 @@ class ProducerProductAddForm(forms.Form):
 class InventoryItemForm(forms.ModelForm):
     prod_id = forms.CharField(widget=forms.HiddenInput)
     freeform_lot_id = forms.CharField(required=False,
-                                      widget=forms.TextInput(attrs={'size': '16', 'value': ''}))
+                                      widget=forms.TextInput(attrs={'size': '10', 'value': ''}))
     field_id = forms.CharField(required=False,
-                               widget=forms.TextInput(attrs={'size': '5', 'value': ''}))
-    inventory_date = forms.DateField(widget=forms.TextInput(attrs={'size': '10'}))
-    expiration_date = forms.DateField(widget=forms.TextInput(attrs={'size': '10'}))
+                               widget=forms.TextInput(attrs={'size': '4', 'value': ''}))
+    inventory_date = forms.DateField(widget=forms.TextInput(attrs={
+        "style": "width: 7em;", "dojoType": "dijit.form.DateTextBox", "constraints": "{datePattern:'yyyy-MM-dd'}"}))
+    expiration_date = forms.DateField(widget=forms.TextInput(attrs={
+        "style": "width: 7em;", "dojoType": "dijit.form.DateTextBox", "constraints": "{datePattern:'yyyy-MM-dd'}"}))
     remaining = forms.DecimalField(widget=forms.TextInput(attrs={'class':
                                                                'quantity-field',
                                                                'size': '6'}))
@@ -155,11 +157,11 @@ class InventoryItemForm(forms.ModelForm):
     class Meta:
         model = InventoryItem
         exclude = ('producer', 'product', 'planned', 'received', 'onhand',
-                   'unit_price')
+                   'unit_price', 'custodian')
         
-    def __init__(self, *args, **kwargs):
-        super(InventoryItemForm, self).__init__(*args, **kwargs)
-        self.fields['custodian'].choices = [('', '------------')] + [(prod.id, prod.short_name) for prod in Party.subclass_objects.possible_custodians()]
+    #def __init__(self, *args, **kwargs):
+    #    super(InventoryItemForm, self).__init__(*args, **kwargs)
+        #self.fields['custodian'].choices = [('', '------------')] + [(prod.id, prod.short_name) for prod in Party.subclass_objects.possible_custodians()]
 
 
 class ProcessSelectionForm(forms.Form):

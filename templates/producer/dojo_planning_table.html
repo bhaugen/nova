@@ -150,7 +150,9 @@ dojo.require("dojo.window");
     <thead>
 	<tr>
 		<th field="product" width="16em" >Product</a></th>
+		{% comment %}
 		<th field="yearly" width="3em" styles="text-align: right;" >Year</a></th>
+		{% endcomment %}
             {% for column in columns %}
 	    <th field="{{ column }}" 
 		    width="4em" 

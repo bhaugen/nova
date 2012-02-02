@@ -111,7 +111,7 @@ def create_inventory_item_forms(producer, avail_date, data=None):
             'prod_id': item.product.id,
             'freeform_lot_id': item.freeform_lot_id,
             'field_id': item.field_id,
-            'custodian': item.custodian,
+            #'custodian': item.custodian,
             'inventory_date': item.inventory_date,
             'expiration_date': item.expiration_date,
             'remaining': item.remaining,

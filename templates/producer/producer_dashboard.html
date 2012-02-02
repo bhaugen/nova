@@ -14,7 +14,30 @@
 	{% include "producer/producer_tabnav.html" %}
 	
 	<h3 style="padding-top: 0; margin-top: 0; margin-bottom: 1em; " >{{ food_network.long_name }} Producer Dashboard for {{ producer.long_name }}</h3>
-	
+	{% comment %}
+	{% if recent_comments %}
+	<div style="float: left; width: 40%; margin-top: 0; padding-top: 0; padding-left: 1em; margin-bottom: 2em; color: gray; " >
+	<h3 style="padding-top: 0; margin-top: 0; margin-bottom: 0; " >Recent comments:</h3>	
+	<div style="color: grey; margin-top: 0; " >
+		{% include "threadedcomments/comment_list.html" %}
+	</div>
+	{% for key, value in commented_products.items %}
+		<div style="margin-top: 0; color: grey; " >
+		<div style="margin-left: 1em; margin-bottom: 0;">
+		<strong>
+			{{ key.product }}
+		</strong>
+		</div>
+		{% with comments=value.comments %}
+		{% include "threadedcomments/comment_list.html" %}
+		{% endwith %}
+
+		</div>
+	{% endfor %}
+	</div>
+	{% endif %}
+	{% endcomment %}
+
 	{% if unfilled %}
 	<div style="float: left; width: 40%;">
 	<h3 style="padding-top: 0; margin-top: 0; " >Unfilled Orders:</h3>
@@ -63,7 +86,7 @@
 		</thead>
 		<tbody>
 
-		{% for item in payments %}
+			{% for item in payments %}
 			<tr >
 				<td style="text-align:left;" >{{ item.payment_due_date }}</th>
 				<td style="text-align:left;" >{{ item.order_customer }}</th>
@@ -73,6 +96,10 @@
 				<td style="text-align: right;" >${{ item.due_to_member|intcomma }}</td>		
 			</tr>
 			{% endfor %}
+			<tr>
+				<th colspan="5" style="text-align: right;" >Total:</th>
+				<td style="text-align: right;" >${{ payment_total|intcomma }}</td>
+
 		</tbody>
 
 	</table>

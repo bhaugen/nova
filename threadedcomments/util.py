@@ -36,7 +36,7 @@ def fill_tree(comments):
     Cribbed from legacy_threadedcomments.models.ThreadedCommentManager.get_tree
     
     """
-
+    
     if not comments:
         return
 
@@ -45,6 +45,9 @@ def fill_tree(comments):
     for child in children:
         if not child.parent:
             to_return.extend(dfs(child, children, 0))
+    # if only children, no parents, in comments
+    #if not to_return:
+    #    to_return = children
     return to_return
 
 

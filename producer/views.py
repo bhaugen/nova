@@ -26,6 +26,7 @@ from producer.forms import *
 from producer.view_helpers import *
 from distribution.forms import DateRangeSelectionForm, DeliveryDateForm
 from distribution.view_helpers import plan_weeks, create_weekly_plan_forms, SupplyDemandTable
+from threadedcomments.models import ThreadedComment
 
 try:
     from notification import models as notification
@@ -39,6 +40,11 @@ def get_producer(request):
     except ProducerContact.DoesNotExist:
         return None
 
+class CommentList(object):
+     def __init__(self, comments):
+         self.comments = comments
+
+
 @login_required
 def producer_dashboard(request):
     fn = food_network()
@@ -46,12 +52,39 @@ def producer_dashboard(request):
     unfilled = producer.unfilled_order_items()
     filled = producer.recently_filled_order_items()
     payments = producer.upcoming_payments()
+    payment_total = Decimal("0")
+    for payment in payments:
+        payment_total += payment.due_to_member()
+    party = Party.objects.get(id=producer.id)
+    #todo: recent comments is not working
+    #if only replies, where's the comment?
+    #gets snakey
+    #maybe need to implement notifications?
+    #now = datetime.datetime.now()
+    #then = now - datetime.timedelta(days=6)
+    #comments = ThreadedComment.objects.for_model(
+    #    party).filter(submit_date__range=(then, now))
+    #pps = producer.producer_products.all()
+    #commented_products = {}
+    #for pp in pps:
+    #    pp_comments = ThreadedComment.objects.for_model(
+    #        pp).filter(submit_date__range=(then, now))
+    #    if pp_comments:
+    #        commented_products[pp] = CommentList(pp_comments)
+    #recent_comments = False
+    #if comments or commented_products:
+    #    recent_comments = True
     return render_to_response('producer/producer_dashboard.html', 
         {'producer': producer,
          'food_network': fn,
          'unfilled': unfilled,
          'filled': filled,
          'payments': payments,
+         'payment_total': payment_total,
+         #'recent_comments': recent_comments,
+         #'comments': comments,
+         #'commented_products': commented_products,
+         'avatar_size': (32, 32),
          }, context_instance=RequestContext(request))
 
 @login_required
@@ -59,7 +92,9 @@ def producer_profile(request):
     producer = get_producer(request)
     td = datetime.date.today()
     start = td + datetime.timedelta(weeks=1)
-    end = (start + datetime.timedelta(weeks=4)).strftime('%Y_%m_%d')
+    if datetime.date.weekday(start) > 0:
+        start = start + datetime.timedelta(weeks=1)
+    end = (start + datetime.timedelta(weeks=3)).strftime('%Y_%m_%d')
     start = start.strftime('%Y_%m_%d')
     dcs = DeliveryCycle.objects.all()
     ndc = None
@@ -187,12 +222,12 @@ def edit_producer_products(request):
                 product = data['product']
                 if product:
                     price = data['producer_price']
-                    qty_per_year = data['qty_per_year'] or Decimal("0")
+                    #qty_per_year = data['qty_per_year'] or Decimal("0")
                     pp = ProducerProduct(
                         producer=producer,
                         product=product,
                         producer_price=price,
-                        qty_per_year=qty_per_year,
+                        #qty_per_year=qty_per_year,
                         price_change_delivery_date=td,
                         price_changed_by=request.user,
                     )
@@ -208,6 +243,7 @@ def edit_producer_products(request):
                         pp.delete()
                     else:
                         price = data['producer_price']
+                        dd = pp.price_change_delivery_date
                         prev_price = pp.producer_price
                         if price != prev_price:
                             pp.producer_price = price
@@ -217,9 +253,12 @@ def edit_producer_products(request):
                             pp.pay_price = Decimal("0")
                             pp.markup_percent = Decimal("0")
                             pp.selling_price = Decimal("0")
-                            pp.qty_per_year = data['qty_per_year'] or Decimal("0")
+                            #pp.qty_per_year = data['qty_per_year'] or Decimal("0")
                             ProducerPriceChange.create_producer_price_change(
-                                id, request.user)
+                                id, 
+                                request.user,
+                                dd,
+                            )
                             pp.save()
             return HttpResponseRedirect("/producer/profile")
     return render_to_response('producer/products_edit.html', 
@@ -276,7 +315,7 @@ def inventory_update(request, prod_id, year, month, day,
                 data = itemform.cleaned_data
                 prod_id = data['prod_id']
                 item_id = data['item_id']
-                custodian = data['custodian']
+                #custodian = data['custodian']
                 inventory_date = data['inventory_date']
                 expiration_date = data['expiration_date']
                 remaining = data['remaining']
@@ -286,7 +325,7 @@ def inventory_update(request, prod_id, year, month, day,
 
                 if item_id:
                     item = InventoryItem.objects.get(pk=item_id)
-                    item.custodian = custodian
+                    #item.custodian = custodian
                     item.inventory_date = inventory_date
                     item.expiration_date = expiration_date
                     rem_change = remaining - item.remaining
@@ -303,7 +342,7 @@ def inventory_update(request, prod_id, year, month, day,
                         product = Product.objects.get(pk=prod_id)
                         item = itemform.save(commit=False)
                         item.producer = producer
-                        item.custodian = custodian
+                        #item.custodian = custodian
                         item.inventory_date = inventory_date
                         item.expiration_date = expiration_date
                         item.product = product

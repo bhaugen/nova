@@ -10,6 +10,11 @@
 
 {% include "dojo_include.html" %}
 
+<script type="text/javascript">
+	dojo.require("dojo.parser");
+        dojo.require("dijit.form.DateTextBox");
+</script>
+
 
     <script type="text/javascript" >
 
@@ -116,12 +121,14 @@
 		<tr>
 			<th>{% trans "Product" %}</th>
 			<th>{% trans "Lot Id" %}</th>
-            		<th>{% trans "Field" %}</th>
+			<th>{% trans "Field" %}</th>
+			{% comment %}
 			<th>{% trans "Custodian" %}</th>
+			{% endcomment %}
 			<th>{% trans "Available Date" %}</th>
 			<th>{% trans "Availability Ends" %}</th>
 			<th>{% trans "Quantity" %}</th>
-			<th>{% trans "Ordered" %}</th>
+			<th>{% trans "Orders" %}</th>
 			<th>{% trans "Notes" %}</th>
             </tr>
             {% for item_form in item_forms %}
@@ -129,7 +136,9 @@
 			 <td class="read-only-td" > {{ item_form.description }} </td>
 			 <td> {{ item_form.freeform_lot_id }} </td>
 			 <td> {{ item_form.field_id }} </td>
-			<td> {{ item_form.custodian }} </td>
+			 {% comment %}
+			 <td> {{ item_form.custodian }} </td>
+			 {% endcomment %}
 			<td> {{ item_form.inventory_date }} </td>
 			<td> {{ item_form.expiration_date }} </td>
 			<td> {{ item_form.remaining }} </td>

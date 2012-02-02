@@ -223,7 +223,7 @@ function finishAddedPriceChange(evt)
 		</p>
 
 	<form action="." method="POST" >{% csrf_token %}
-		<table >
+		<table class="ga-event-table" >
 			<thead>
 				<th>Product</th>
 				<th style="text-align: center; " >Min</th>
@@ -231,8 +231,8 @@ function finishAddedPriceChange(evt)
 				<th style="text-align: center; " >Max</th>
 				{% comment %}
 				<th>Selling Price</th>
-				{% endcomment %}
 				<th>Qty Per Year</th>
+				{% endcomment %}
 				{% if deletables %}
 				<th>Delete</th>
 				{% endif %}
@@ -255,8 +255,8 @@ function finishAddedPriceChange(evt)
 						<td style="text-align: right; " >{{ form.max }}</td>
 						{% comment %}
 						<td style="text-align: right; " >{{ form.selling_price }}</td>
-						{% endcomment %}
 						<td>{{ form.qty_per_year }}</td>
+						{% endcomment %}
 						{% if form.deletable %}
 						<td>{{ form.delete }}</td>
 						{% endif %}
@@ -297,7 +297,7 @@ function finishAddedPriceChange(evt)
 	<div style="float: left; margin-left: 3em; margin-right: 2em; " >
 		{% if comparative_prices %}
 		<h4>Comparative prices from {{ fn.long_name }}</h4>
-		<table>
+		<table class="ga-event-table" >
 			<thead>
 				<th>Product</th>
 				<th>Growing Method</th>
@@ -306,7 +306,7 @@ function finishAddedPriceChange(evt)
 			</thead>
 			<tbody>
 				{% for price in comparative_prices %}
-				<tr class="{% cycle 'odd' 'even' %}" >
+				<tr>
 					<td>{{ price.product.long_name }}</td>
 					<td>{{ price.product.growing_method }}</td>
 					<td>{{ price.producer.long_name }}</td>

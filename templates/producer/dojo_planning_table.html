@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load i18n %}
+{% load url from future %}
 
 {% block title %}
      {% trans "Planning Table" %}
@@ -60,22 +61,33 @@ dojo.require("dojo.window");
 		dojo.byId("saveMessage").innerHTML = "Error";
 	}
 
+	function next()
+	{
+		{% if next %}		
+		window.location = "{% url next %}";
+		{% else %}
+		window.location = "{% url 'producer_dojo_member_plans' from_date=from_datestring to_date=to_datestring member_id=member.id %}";
+		{% endif %}
+	}
+
 	function saveSucceeded()
 	{
 		dojo.style("saveMessage", "color", "green");
 		dojo.byId("saveMessage").innerHTML = "Changes saved";
 		dojo.fadeOut({ node:"saveMessage", duration:3000  }).play();
-		{% if next %}		
-		window.location = "{% url producer_profile %}";
-		{% else %}
-		window.location = "{% url producer_dojo_member_plans from_date=from_datestring to_date=to_datestring member_id=member.id %}";
-		{% endif %}
+		next();
 	}
 
 	function saveStore()
 	{
-		jsonStore.save({onComplete: saveSucceeded, onError: saveFailed});
-
+		if(jsonStore.isDirty())
+		{
+			jsonStore.save({onComplete: saveSucceeded, onError: saveFailed});
+		}
+		else
+		{
+			next();
+		}
 	}
 
 	function onTableBlur() 
@@ -126,7 +138,7 @@ dojo.require("dojo.window");
 
 <div 
 	dojoType="dojox.data.JsonRestStore" 
-	target="{% url producer_json_planning_table member_id=member.id list_type=list_type from_date=from_datestring to_date=to_datestring %}" 
+	target="{% url 'producer_json_planning_table' member_id=member.id list_type=list_type from_date=from_datestring to_date=to_datestring %}" 
 	idAttribute="id" 
 	jsId="jsonStore">
 </div>

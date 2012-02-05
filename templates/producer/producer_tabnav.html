@@ -28,7 +28,7 @@ display: inline;
 
 div.producer-dashboard li.producer-dashboard, 
 div.community li.community,
-div.profile li.profile,
+div.products li.products,
 div.avail li.avail,
 div.process li.process,
 div.statements li.statements,
@@ -43,7 +43,7 @@ div.product-lists li.product-lists
 
 div.producer-dashboard li.producer-dashboard a, 
 div.community li.community a,
-div.profile li.profile a,
+div.products li.products a,
 div.avail li.avail a,
 div.process li.process a,
 div.statements li.statements a,
@@ -82,10 +82,10 @@ ul#tabnav a:hover
 <div style="float: left;">
 	<ul id="tabnav" class="do-not-print" >
 		<li class="producer-dashboard" ><a title="Home page" href="/producer/producerdashboard">Dashboard</a> </li>
-		<li class="profile" ><a title="My Profile" href="/producer/profile">{% trans "Profile" %}</a></li>
+		<li class="products" ><a title="Products and Pricing" href="/producer/products">{% trans "Products and Pricing" %}</a></li>
 		<li class="community" ><a title="Customer comments etc" href="/producer/community">{% trans "Community" %}</a></li>
-		<li class="avail" ><a title="Update available products" href="/producer/inventoryselection">{% trans "Avail" %}</a></li>
 		{% comment %}
+		<li class="avail" ><a title="Update available products" href="/producer/inventoryselection">{% trans "Avail" %}</a></li>	
 		<li class="process" ><a title="Create or update processes" href="/producer/processselection">{% trans "Process" %}</a></li>
 		<li class="payments" ><a title="View payment status" href="/producer/paymentselection">Payments</a></li>
 		<li class="statements" ><a title="View statements for past payments" href="/producer/statementselection">Statements</a></li>

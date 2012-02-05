@@ -6,6 +6,7 @@ urlpatterns = patterns('',
     url(r'^producerdashboard/$', "producer.views.producer_dashboard", name="producer_dashboard"),
 
     # profile
+    url(r'^products/$', "producer.views.products", name="products"),
     url(r'^profile/$', "producer.views.producer_profile", name="producer_profile"),
     url(r'^editprofile/$', "producer.views.edit_producer_profile",
         name="edit_producer_profile"),

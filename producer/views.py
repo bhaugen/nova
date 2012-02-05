@@ -88,6 +88,36 @@ def producer_dashboard(request):
          }, context_instance=RequestContext(request))
 
 @login_required
+def products(request):
+    producer = get_producer(request)
+    td = datetime.date.today()
+    start = td + datetime.timedelta(weeks=1)
+    if datetime.date.weekday(start) > 0:
+        start = start + datetime.timedelta(weeks=1)
+    end = (start + datetime.timedelta(weeks=3)).strftime('%Y_%m_%d')
+    start = start.strftime('%Y_%m_%d')
+    dcs = DeliveryCycle.objects.all()
+    ndc = None
+    inventory_closing = td
+    for dc in dcs:
+        dd = dc.next_delivery_date_using_inventory_closing()
+        if dd > td:
+            ndc = dc
+            break
+    if ndc:
+        inventory_closing = ndc.inventory_closing(dd)
+    return render_to_response('producer/products.html', 
+        {'producer': producer,
+         'date': datetime.date.today(),
+         'start': start,
+         'end': end,
+         'inventory_closing': inventory_closing,
+         'background': producer.background_color,
+         'logo_size': (64, 64),
+         'avatar_size': (32, 32),
+         }, context_instance=RequestContext(request))
+
+@login_required
 def producer_profile(request):
     producer = get_producer(request)
     td = datetime.date.today()
@@ -260,7 +290,7 @@ def edit_producer_products(request):
                                 dd,
                             )
                             pp.save()
-            return HttpResponseRedirect("/producer/profile")
+            return HttpResponseRedirect("/producer/products")
     return render_to_response('producer/products_edit.html', 
         {'producer': producer,
          #'formset': formset,

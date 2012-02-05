@@ -41,7 +41,7 @@
 <body>
 {% block content %}
 
-<div class="profile">
+<div class="products">
 
 	{% include "producer/producer_tabnav.html" %}
 	
@@ -113,75 +113,7 @@
 		<p>{{ producer.storage_capacity|linebreaksbr }}</p>
 	</div>
 
-	<div style="float: left; margin-left: 1em; width: 40%;" >
-		<h4 style="margin-top: 0; " >
-			Today's prices: &nbsp;&nbsp;&nbsp;
-			<a href="{% url edit_producer_products %}">Change products and prices</a>
-		</h4>
-		<table class="ga-event-table" >
-			<tr>
-				<th>Product</th>
-				<th>Growing Method</th>
-				<th>Set Price</th>
-				<th>Pay Price</th>
-				<th>Selling Price</th>
-			</tr>
-			{% for product in producer.producer_products.all %}
-			<tr>
-				<td>{{ product.product.long_name }}</td>
-				<td>{{ product.product.growing_method }}</td>
-				<td style="text-align: right; ">${{ product.formatted_producer_price_now }}</td>
-				<td style="text-align: right; ">${{ product.formatted_pay_price_now }}</td>
-				<td style="text-align: right; ">${{ product.formatted_selling_price_now }}</td>
-			</tr>
-			{% endfor %}
-		</table>
 
-		<h4 style="margin-top: 1em;" >
-			What we have available now: &nbsp;&nbsp;&nbsp;
-			<a href="{% url producer_inventory_update prod_id=producer.id year=date.year month=date.month day=date.day next="profile" %}">
-				Change availability
-			</a>
-		</h4>
-		<p style="margin-left: 1em; margin-bottom: 0; ">Next inventory closing: {{ inventory_closing }}</p>
-		<table class="ga-event-table" >
-			<tr>
-				<th>Product</th>
-				<th>Quantity</th>
-				<th>Ordered</th>
-			</tr>
-			{% for item in producer.available_now %}
-			<tr>
-				<td>{{ item.product }}</td>
-				<td style="text-align: right; ">{{ item.qty }}</td>
-				<td style="text-align: right; ">{{ item.product.total_ordered_now }}</td>
-			</tr>
-			{% endfor %}
-		</table>
-		
-
-		<h4 style="margin-top: 1em;" >
-			Our 4 week harvest plan: &nbsp;&nbsp;&nbsp;
-			<a href="{% url producer_dojo_planning_table member_id=producer.id list_type='M' from_date=start to_date=end next="producer_profile" %}">
-				Change plans
-			</a>
-		</h4>
-		<table class="ga-event-table" >
-			<tr>
-				<th>Product</th>
-				<th>Date</th>
-				<th>Quantity</th>
-			</tr>
-			{% for plan in producer.planned_available %}
-			<tr>
-				<td>{{ plan.product.long_name }}</td>
-				<td>{{ plan.from_date }}</td>
-				<td style="text-align: right; ">{{ plan.quantity }}</td>
-			</tr>
-			{% endfor %}
-		</table>
-
-	</div>
 
 	<div style="clear: both; " ></div>
 

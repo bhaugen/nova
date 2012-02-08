@@ -895,6 +895,13 @@ class Producer(Party):
         return ", ".join([pp.product.short_name for pp in
                           self.producer_products.all()])
 
+    def product_categories(self):
+        cats = [pp.product.parent.short_name for pp in
+                self.producer_products.all()]
+        cats = list(set(cats))
+        cats.sort()
+        return ", ".join(cats)
+
     def specialty_names(self):
         return ", ".join([spec.name for spec in
                           self.specialties.all()])

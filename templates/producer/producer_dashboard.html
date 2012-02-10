@@ -40,7 +40,7 @@
 
 	{% if unfilled %}
 	<div style="float: left; width: 40%;">
-	<h3 style="padding-top: 0; margin-top: 0; " >Unfilled Orders:</h3>
+	<h3 style="padding-top: 0; margin-top: 0; " >New orders not yet filled by {{ food_network.short_name }}:</h3>
 	<table class="ga-event-table" >
 		<thead style="background-color: #EAF2D3;" >
 		<tr>
@@ -72,7 +72,7 @@
 
 	{% if payments %}
 	<div style="float: left; width: 50%; margin-left: 1em;">
-		<h3 style="padding-top: 0; margin-top: 0; " >Upcoming Payments from {{ food_network.long_name }}:</h3>
+		<h3 style="padding-top: 0; margin-top: 0; " >Upcoming Payments from {{ food_network.short_name }}:</h3>
 	<table class="ga-event-table" >
 		<thead style="background-color: #EAF2D3;" >
 		<tr>
@@ -108,7 +108,7 @@
 
 	{% if filled %}
 	<div style="float: left; width: 40%; margin-left: 1em;">
-	<h3 style="padding-top: 0; margin-top: 0; " >Recently Filled Orders:</h3>
+	<h3 style="padding-top: 0; margin-top: 0; " >Orders recently filled by {{ food_network.short_name }}:</h3>
 	<table class="ga-event-table" >
 		<thead style="background-color: #EAF2D3;" >
 		<tr>

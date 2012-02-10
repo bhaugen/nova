@@ -897,7 +897,7 @@ class Producer(Party):
 
     def product_categories(self):
         cats = [pp.product.parent.short_name for pp in
-                self.producer_products.all()]
+            self.producer_products.all() if pp.product.parent ]
         cats = list(set(cats))
         cats.sort()
         return ", ".join(cats)

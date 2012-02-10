@@ -108,37 +108,22 @@
 	</div>
 
 	<div style="float: left; margin-left: 1em; width: 40%;" >
-		<h4 style="margin-top: 0; " >
-			Today's prices:
-		</h4>
-		<table class="ga-event-table" >
-			<tr>
-				<th>Product</th>
-				<th>Unit Price</th>
-			</tr>
-			{% for product in producer.producer_products.all %}
-			<tr>
-				<td>{{ product.product.long_name }}</td>
-				<td style="text-align: right; ">${{ product.formatted_selling_price_now }}</td>
-			</tr>
-			{% endfor %}
-		</table>
 
-		{% if producer.available_now %}
+		{% if available %}
 		<h4 style="margin-top: 1em;" >
-			What we have available now:
+			What we have available for delivery on {{ date }}:
 		</h4>
 		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Quantity</th>
-				<th>Ordered</th>
+				<th>Price</th>
 			</tr>
-			{% for item in producer.available_now %}
+			{% for item in available %}
 			<tr>
 				<td>{{ item.product }}</td>
 				<td style="text-align: right; ">{{ item.qty }}</td>
-				<td style="text-align: right; ">{{ item.product.total_ordered_now }}</td>
+				<td style="text-align: right; ">{{ item.price }}</td>
 			</tr>
 			{% endfor %}
 		</table>

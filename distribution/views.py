@@ -2456,6 +2456,8 @@ def public_producer_profile(request, producer_id, tabs, tab):
     start = datetime.date.today() + datetime.timedelta(weeks=1)
     end = (start + datetime.timedelta(weeks=4)).strftime('%Y_%m_%d')
     start = start.strftime('%Y_%m_%d')
+    dd = next_delivery_date()
+    available = producer.available_for_date(dd)
     tabnav = 'distribution/tabnav.html'
     if tabs == 'P':
         tabnav = 'producer/producer_tabnav.html'
@@ -2464,9 +2466,10 @@ def public_producer_profile(request, producer_id, tabs, tab):
     tab = tab
     return render_to_response('distribution/producer_profile.html', 
         {'producer': producer,
-         'date': datetime.date.today(),
+         'date': dd,
          'start': start,
          'end': end,
+         'available': available,
          'tabnav': tabnav,
          'div_class': tab,
          'background': producer.background_color,

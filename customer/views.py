@@ -860,6 +860,7 @@ def producer_profile_for_customer(request, producer_id, tabs, tab):
     tab = tab
     return render_to_response('customer/producer_profile.html', 
         {'producer': producer,
+         'date': dd,
          'tabnav': tabnav,
          'div_class': tab,
          'available': available,

@@ -105,16 +105,16 @@
 
 		{% if available %}
 		<h4 style="margin-top: 1em;" >
-			What we have available now:
+			What we have available for delivery on {{ date }}:
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Quantity</th>
 				<th>Price</th>
 			</tr>
 			{% for item in available %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ item.product }}</td>
 				<td style="text-align: right; ">{{ item.qty }}</td>
 				<td style="text-align: right; ">{{ item.price }}</td>
@@ -127,14 +127,14 @@
 		<h4 style="margin-top: 1em;" >
 			Our 4 week harvest plan:
 		</h4>
-		<table>
+		<table class="ga-event-table" >
 			<tr>
 				<th>Product</th>
 				<th>Date</th>
 				<th>Quantity</th>
 			</tr>
 			{% for plan in producer.planned_available %}
-			<tr class="{% cycle 'odd' 'even' %}">
+			<tr>
 				<td>{{ plan.product.long_name }}</td>
 				<td>{{ plan.from_date }}</td>
 				<td style="text-align: right; ">{{ plan.quantity }}</td>
